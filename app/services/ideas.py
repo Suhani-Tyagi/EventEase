@@ -17,15 +17,21 @@ from app.services.llm_client import LLMClientProtocol
 
 logger = logging.getLogger("eventease.ideas")
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-FALLBACK_IDEAS_FILE = DATA_DIR / "fallback_ideas.json"
-
-
 def _load_fallback_ideas() -> dict[str, Any]:
     """Load curated offline ideas from JSON."""
-    with open(FALLBACK_IDEAS_FILE, encoding="utf-8") as f:
-        data: dict[str, Any] = json.load(f)
-        return data
+    possible_paths = [
+        Path(__file__).resolve().parent.parent / "data" / "fallback_ideas.json",
+        Path.cwd() / "app" / "data" / "fallback_ideas.json",
+        Path.cwd() / "data" / "fallback_ideas.json",
+    ]
+    for path in possible_paths:
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
+                data: dict[str, Any] = json.load(f)
+                return data
+    with open(possible_paths[0], encoding="utf-8") as f:
+        fallback_data: dict[str, Any] = json.load(f)
+        return fallback_data
 
 
 FALLBACK_IDEAS = _load_fallback_ideas()

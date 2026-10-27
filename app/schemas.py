@@ -1,5 +1,3 @@
-"""Pydantic schemas for EventEase requests and responses."""
-
 import datetime as dt
 from enum import StrEnum
 

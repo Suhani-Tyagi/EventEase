@@ -6,15 +6,23 @@ from typing import Any
 
 from app.schemas import BudgetAllocationItem, BudgetPlan, EventType
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-BUDGET_TEMPLATES_FILE = DATA_DIR / "budget_templates.json"
-
 
 def _load_budget_templates() -> dict[str, Any]:
     """Load pre-configured budget category templates from JSON."""
-    with open(BUDGET_TEMPLATES_FILE, encoding="utf-8") as f:
-        data: dict[str, Any] = json.load(f)
-        return data
+    possible_paths = [
+        Path(__file__).resolve().parent.parent / "data" / "budget_templates.json",
+        Path.cwd() / "app" / "data" / "budget_templates.json",
+        Path.cwd() / "data" / "budget_templates.json",
+    ]
+    for path in possible_paths:
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
+                data: dict[str, Any] = json.load(f)
+                return data
+    # Fallback to direct file path
+    with open(possible_paths[0], encoding="utf-8") as f:
+        fallback_data: dict[str, Any] = json.load(f)
+        return fallback_data
 
 
 BUDGET_TEMPLATES = _load_budget_templates()

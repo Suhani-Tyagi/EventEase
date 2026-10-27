@@ -1,5 +1,3 @@
-"""API routes for EventEase planning assistant."""
-
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 

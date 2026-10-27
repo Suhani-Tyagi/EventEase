@@ -6,15 +6,22 @@ from typing import Any
 
 from app.schemas import ChecklistStatus, ChecklistTask, EventType, VendorChecklist
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-CHECKLIST_TEMPLATES_FILE = DATA_DIR / "checklist_templates.json"
-
 
 def _load_checklist_templates() -> dict[str, Any]:
     """Load baseline vendor checklist templates from JSON."""
-    with open(CHECKLIST_TEMPLATES_FILE, encoding="utf-8") as f:
-        data: dict[str, Any] = json.load(f)
-        return data
+    possible_paths = [
+        Path(__file__).resolve().parent.parent / "data" / "checklist_templates.json",
+        Path.cwd() / "app" / "data" / "checklist_templates.json",
+        Path.cwd() / "data" / "checklist_templates.json",
+    ]
+    for path in possible_paths:
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
+                data: dict[str, Any] = json.load(f)
+                return data
+    with open(possible_paths[0], encoding="utf-8") as f:
+        fallback_data: dict[str, Any] = json.load(f)
+        return fallback_data
 
 
 CHECKLIST_TEMPLATES = _load_checklist_templates()

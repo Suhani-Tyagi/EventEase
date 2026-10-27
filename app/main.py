@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -121,7 +121,6 @@ def create_app() -> FastAPI:
         request: Request, exc: Exception
     ) -> JSONResponse:
         _ = request
-        # Log error securely without client PII
         logger.error("Unhandled server exception: %s", str(exc), exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -132,20 +131,35 @@ def create_app() -> FastAPI:
         )
 
     # Mount static assets if directory exists
-    if STATIC_DIR.exists():
-        app.mount(
-            "/static",
-            StaticFiles(directory=str(STATIC_DIR), html=False),
-            name="static",
-        )
+    static_paths = [STATIC_DIR, Path.cwd() / "static"]
+    for s_path in static_paths:
+        if s_path.exists():
+            app.mount(
+                "/static",
+                StaticFiles(directory=str(s_path), html=False),
+                name="static",
+            )
+            break
 
-    # Serve index.html template at root
+    # Serve index.html with serverless fallback search
     @app.get("/", include_in_schema=False)
-    async def index() -> FileResponse:
-        index_file = TEMPLATES_DIR / "index.html"
-        response = FileResponse(index_file)
-        response.headers["Cache-Control"] = "public, max-age=3600"
-        return response
+    async def index() -> HTMLResponse:
+        possible_paths = [
+            TEMPLATES_DIR / "index.html",
+            Path.cwd() / "templates" / "index.html",
+            Path(__file__).resolve().parent.parent / "templates" / "index.html",
+        ]
+        for path in possible_paths:
+            if path.exists():
+                content = path.read_text(encoding="utf-8")
+                return HTMLResponse(
+                    content=content,
+                    headers={"Cache-Control": "public, max-age=3600"},
+                )
+        return HTMLResponse(
+            content="<h1>EventEase: templates/index.html not found</h1>",
+            status_code=500,
+        )
 
     # Include API routes
     app.include_router(api_router)

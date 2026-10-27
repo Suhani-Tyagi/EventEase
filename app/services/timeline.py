@@ -7,15 +7,22 @@ from typing import Any
 
 from app.schemas import EventType, TimelineMilestone, TimelinePlan
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-TIMELINE_TEMPLATES_FILE = DATA_DIR / "timeline_templates.json"
-
 
 def _load_timeline_templates() -> dict[str, Any]:
     """Load baseline milestone templates from JSON."""
-    with open(TIMELINE_TEMPLATES_FILE, encoding="utf-8") as f:
-        data: dict[str, Any] = json.load(f)
-        return data
+    possible_paths = [
+        Path(__file__).resolve().parent.parent / "data" / "timeline_templates.json",
+        Path.cwd() / "app" / "data" / "timeline_templates.json",
+        Path.cwd() / "data" / "timeline_templates.json",
+    ]
+    for path in possible_paths:
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
+                data: dict[str, Any] = json.load(f)
+                return data
+    with open(possible_paths[0], encoding="utf-8") as f:
+        fallback_data: dict[str, Any] = json.load(f)
+        return fallback_data
 
 
 TIMELINE_TEMPLATES = _load_timeline_templates()
