@@ -1,0 +1,162 @@
+{
+  "wedding": [
+    {
+      "period_label": "12 to 9 Months Out",
+      "days_before": 270,
+      "description": "Establish core foundation and secure major high-demand suppliers.",
+      "tasks": [
+        "Finalize guest list estimate and target budget",
+        "Book ceremony and reception venue",
+        "Hire wedding planner and lead photographer/videographer",
+        "Draft theme color palette and design vision"
+      ]
+    },
+    {
+      "period_label": "6 to 4 Months Out",
+      "days_before": 120,
+      "description": "Lock down experiential elements and guest logistics.",
+      "tasks": [
+        "Secure caterer, bar package, and order wedding cake",
+        "Hire DJ or live band and sound engineer",
+        "Select wedding attire and schedule first fitting",
+        "Send out Save-the-Date cards and launch event website"
+      ]
+    },
+    {
+      "period_label": "2 to 3 Months Out",
+      "days_before": 60,
+      "description": "Refine details, send invitations, and book rentals.",
+      "tasks": [
+        "Mail formal invitations with RSVP deadline",
+        "Confirm floral arrangements, arch, and lighting rentals",
+        "Purchase wedding bands and book hair/makeup trials",
+        "Plan rehearsal dinner and reserve hotel room blocks"
+      ]
+    },
+    {
+      "period_label": "1 Month Out",
+      "days_before": 30,
+      "description": "Consolidate headcounts and confirm day-of schedule.",
+      "tasks": [
+        "Collect final RSVPs and submit headcount to caterer",
+        "Finalize day-of minute-by-minute timeline with vendors",
+        "Complete seating chart and print place cards/menus",
+        "Conduct final dress and suit fittings"
+      ]
+    },
+    {
+      "period_label": "1 to 2 Weeks Out",
+      "days_before": 7,
+      "description": "Final confirmations and emergency pack preparation.",
+      "tasks": [
+        "Confirm arrival windows and load-in logistics with venue",
+        "Distribute final shot list to photographer",
+        "Assemble wedding day emergency kit and pack bridal items",
+        "Pick up marriage license"
+      ]
+    },
+    {
+      "period_label": "Day Before & Event Day",
+      "days_before": 0,
+      "description": "Execute rehearsal and celebrate without stress.",
+      "tasks": [
+        "Attend ceremony rehearsal and rehearsal dinner",
+        "Distribute vendor tips and final payment envelopes",
+        "Hand off decor boxes and coordinator responsibilities",
+        "Celebrate your unforgettable day!"
+      ]
+    }
+  ],
+  "birthday": [
+    {
+      "period_label": "6 to 8 Weeks Out",
+      "days_before": 45,
+      "description": "Date, venue, and guest list lock-in.",
+      "tasks": [
+        "Select date, time, and reserve venue or party space",
+        "Determine party theme, color scheme, and guest headcount",
+        "Send digital or printed invitations with RSVP deadline",
+        "Book key entertainment (DJ, performer, or entertainer)"
+      ]
+    },
+    {
+      "period_label": "3 to 4 Weeks Out",
+      "days_before": 21,
+      "description": "Catering and activity planning.",
+      "tasks": [
+        "Order custom birthday cake and confirm food/drink menu",
+        "Purchase party favors, games, prizes, and themed tableware",
+        "Hire event photographer or reserve photo booth rental",
+        "Create party music playlist or coordinate with DJ"
+      ]
+    },
+    {
+      "period_label": "1 Week Out",
+      "days_before": 7,
+      "description": "Final headcounts and grocery/decor collection.",
+      "tasks": [
+        "Confirm final guest count with caterer/venue",
+        "Pick up party favors, non-perishable decorations, and signage",
+        "Test audio/video equipment and playlist playback",
+        "Confirm arrival schedule with entertainers/performers"
+      ]
+    },
+    {
+      "period_label": "Day Before & Event Day",
+      "days_before": 0,
+      "description": "Decorate, welcome guests, and celebrate.",
+      "tasks": [
+        "Pick up birthday cake, ice, and fresh floral/balloon decor",
+        "Set up welcome table, games, and photo corner",
+        "Greet guests, serve refreshments, and cut the cake!",
+        "Capture group photos and enjoy the festivities"
+      ]
+    }
+  ],
+  "community": [
+    {
+      "period_label": "3 to 4 Months Out",
+      "days_before": 90,
+      "description": "Permits, community partners, and site permissions.",
+      "tasks": [
+        "Secure municipal permits (parks, noise, road closures, health)",
+        "Form volunteer committees (logistics, safety, hospitality)",
+        "Confirm site booking and reserve staging/AV equipment",
+        "Launch sponsorship and community outreach campaigns"
+      ]
+    },
+    {
+      "period_label": "6 to 8 Weeks Out",
+      "days_before": 45,
+      "description": "Vendors, volunteer recruitment, and promotional blitz.",
+      "tasks": [
+        "Book food trucks, community catering, and waste management",
+        "Recruit community volunteers and assign team leads",
+        "Print directional banners, schedules, and distribute flyers",
+        "Review public liability insurance and safety evacuation protocols"
+      ]
+    },
+    {
+      "period_label": "2 to 3 Weeks Out",
+      "days_before": 14,
+      "description": "Logistics drill-down and volunteer briefing.",
+      "tasks": [
+        "Hold all-hands volunteer orientation and assign shift badges",
+        "Confirm portable restrooms, handwash stations, and trash bins",
+        "Publish schedule and map to community bulletin and social media",
+        "Coordinate electrical drops and generator rentals with AV team"
+      ]
+    },
+    {
+      "period_label": "Event Eve & Day of Event",
+      "days_before": 0,
+      "description": "Setup, safety checks, operations, and teardown.",
+      "tasks": [
+        "Mark vendor booth boundaries and erect canopies/stage",
+        "Conduct morning sound check and safety walk-through",
+        "Open information booth, first-aid station, and water stations",
+        "Execute community program, announce thank-yous, and oversee teardown"
+      ]
+    }
+  ]
+}

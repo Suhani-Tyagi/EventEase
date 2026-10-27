@@ -1,0 +1,167 @@
+{
+  "wedding": [
+    {
+      "id": "wed-venue-01",
+      "category": "Venue",
+      "vendor_type": "Reception & Ceremony Venue",
+      "questions_to_ask": [
+        "What is the maximum capacity and is there a curfew or sound ordinance?",
+        "Are we required to use your preferred vendor list, or may we bring outside vendors?",
+        "What is the weather contingency plan for outdoor spaces?",
+        "What setup and breakdown windows are provided before and after the event?"
+      ],
+      "status": "to-do",
+      "notes": "Verify parking permits and bridal suite access hours"
+    },
+    {
+      "id": "wed-cat-02",
+      "category": "Catering",
+      "vendor_type": "Caterer & Bartender",
+      "questions_to_ask": [
+        "Do you provide a formal tasting session prior to contract signing?",
+        "How do you handle dietary restrictions, allergies, and kid's meals?",
+        "Is alcohol BYO or must it be purchased through your bar package?",
+        "What is your ratio of servers/bartenders to guests?"
+      ],
+      "status": "to-do",
+      "notes": "Ask about vendor meals for photographer/band"
+    },
+    {
+      "id": "wed-photo-03",
+      "category": "Photography",
+      "vendor_type": "Photographer & Videographer",
+      "questions_to_ask": [
+        "How many hours of coverage are included and do you bring a second shooter?",
+        "What is your backup equipment protocol if a camera or drive fails?",
+        "What is the expected turnaround time for sneak peeks and the full gallery?",
+        "Do we receive full personal printing rights to the high-resolution files?"
+      ],
+      "status": "to-do",
+      "notes": "Prepare a family shot list 3 weeks prior"
+    },
+    {
+      "id": "wed-flor-04",
+      "category": "Decor",
+      "vendor_type": "Florist & Event Designer",
+      "questions_to_ask": [
+        "Can you repurpose ceremony flowers (arches, aisle bouquets) to the reception?",
+        "Do you provide candle holders, pedestals, and arch hardware, or do we rent them?",
+        "Will your team handle day-of setup and post-event teardown/donation?"
+      ],
+      "status": "to-do",
+      "notes": "Share mood board and color swatches"
+    },
+    {
+      "id": "wed-dj-05",
+      "category": "Entertainment",
+      "vendor_type": "DJ / Live Band",
+      "questions_to_ask": [
+        "Do you provide wireless microphones for the ceremony and speeches?",
+        "How do you handle guest song requests and do-not-play lists?",
+        "What backup sound equipment do you carry on-site?"
+      ],
+      "status": "to-do",
+      "notes": "Submit first dance and processional songs"
+    }
+  ],
+  "birthday": [
+    {
+      "id": "bday-ven-01",
+      "category": "Venue",
+      "vendor_type": "Party Hall / Lounge / Activity Center",
+      "questions_to_ask": [
+        "How early can we arrive to set up decorations and balloons?",
+        "Are candles, sparklers, and confetti permitted on the premises?",
+        "Is there a dedicated refrigerator or freezer space for the cake and ice?"
+      ],
+      "status": "to-do",
+      "notes": "Check AV connectivity for slideshows/playlists"
+    },
+    {
+      "id": "bday-cake-02",
+      "category": "Catering",
+      "vendor_type": "Custom Bakery & Caterer",
+      "questions_to_ask": [
+        "Can you accommodate our custom cake flavor and themed design?",
+        "Do you deliver and set up the cake at the venue, or is it pickup only?",
+        "Do you provide gluten-free, nut-free, or vegan cupcake options?"
+      ],
+      "status": "to-do",
+      "notes": "Confirm cake topper and candles"
+    },
+    {
+      "id": "bday-ent-03",
+      "category": "Entertainment",
+      "vendor_type": "Entertainer / Performer / DJ",
+      "questions_to_ask": [
+        "What age group is your performance or activity geared towards?",
+        "Do you supply all materials/props or does the host provide anything?",
+        "What space dimensions and electrical outlets do you require?"
+      ],
+      "status": "to-do",
+      "notes": "Check performer arrival time"
+    },
+    {
+      "id": "bday-photo-04",
+      "category": "Photography",
+      "vendor_type": "Photo Booth / Event Photographer",
+      "questions_to_ask": [
+        "Does the booth offer instant digital SMS delivery and physical strip prints?",
+        "Can you customize the print template with the birthday name and theme?",
+        "Is an on-site booth attendant included for the duration of the party?"
+      ],
+      "status": "to-do",
+      "notes": "Review backdrop options"
+    }
+  ],
+  "community": [
+    {
+      "id": "comm-perm-01",
+      "category": "Permits & Safety",
+      "vendor_type": "Municipal Authority & Security",
+      "questions_to_ask": [
+        "What special event permits (amplified sound, food handling, tenting) are required?",
+        "Are off-duty police officers or private security mandatory for our expected headcount?",
+        "What emergency medical services (EMS) or first aid coverage is required?"
+      ],
+      "status": "to-do",
+      "notes": "Submit permit applications 60 days ahead"
+    },
+    {
+      "id": "comm-food-02",
+      "category": "Food & Beverage",
+      "vendor_type": "Food Trucks & Concessionaires",
+      "questions_to_ask": [
+        "Do your food trucks operate self-powered or require electrical shore power?",
+        "Do you possess valid health department certificates and commercial insurance?",
+        "Can you provide a fast-service menu to minimize queue times?"
+      ],
+      "status": "to-do",
+      "notes": "Designate dedicated food truck staging zones"
+    },
+    {
+      "id": "comm-av-03",
+      "category": "Stage & Audio/Visual",
+      "vendor_type": "Stage, Sound & Lighting Contractor",
+      "questions_to_ask": [
+        "Does the PA system adequately cover the full outdoor audience radius?",
+        "Do you provide a qualified on-site sound engineer throughout all performances?",
+        "What power generator capacity is included in the package?"
+      ],
+      "status": "to-do",
+      "notes": "Schedule morning sound check"
+    },
+    {
+      "id": "comm-san-04",
+      "category": "Sanitation & Logistics",
+      "vendor_type": "Restroom & Waste Management Provider",
+      "questions_to_ask": [
+        "How many ADA-compliant portable restrooms and handwash stations are recommended?",
+        "When will delivery and post-event removal take place?",
+        "Do you provide trash receptacles, recycling bins, and dumpster service?"
+      ],
+      "status": "to-do",
+      "notes": "Place near main entrances and away from food trucks"
+    }
+  ]
+}

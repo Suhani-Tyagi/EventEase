@@ -1,0 +1,137 @@
+{
+  "wedding": {
+    "min_cost_per_guest": 75.0,
+    "categories": [
+      {
+        "category": "Venue & Rentals",
+        "percentage": 25.0,
+        "description": "Ceremony space, reception hall, tables, chairs, and site fees"
+      },
+      {
+        "category": "Catering & Bar",
+        "percentage": 30.0,
+        "description": "Plated/buffet dinner, cocktail hour, beverages, wedding cake, and service staff"
+      },
+      {
+        "category": "Photography & Videography",
+        "percentage": 10.0,
+        "description": "Full-day coverage, album prints, and highlight film"
+      },
+      {
+        "category": "Decor & Florals",
+        "percentage": 10.0,
+        "description": "Bouquets, centerpieces, ceremony arch, and ambient lighting"
+      },
+      {
+        "category": "Entertainment & Music",
+        "percentage": 8.0,
+        "description": "DJ / live band, sound equipment, and MC services"
+      },
+      {
+        "category": "Attire & Beauty",
+        "percentage": 5.0,
+        "description": "Wedding gown/suit, alterations, hair, and makeup"
+      },
+      {
+        "category": "Stationery & Misc",
+        "percentage": 4.0,
+        "description": "Invitations, signage, favors, and marriage license"
+      },
+      {
+        "category": "Contingency Fund",
+        "percentage": 8.0,
+        "description": "Emergency reserve for unexpected costs or overtime"
+      }
+    ]
+  },
+  "birthday": {
+    "min_cost_per_guest": 30.0,
+    "categories": [
+      {
+        "category": "Venue & Rentals",
+        "percentage": 20.0,
+        "description": "Private room, lounge, outdoor pavilion, or shelter rental"
+      },
+      {
+        "category": "Catering & Cake",
+        "percentage": 35.0,
+        "description": "Heavy appetizers or buffet, custom birthday cake, and refreshments"
+      },
+      {
+        "category": "Entertainment & Activities",
+        "percentage": 15.0,
+        "description": "DJ, performer, games, or interactive experience"
+      },
+      {
+        "category": "Decor & Balloons",
+        "percentage": 12.0,
+        "description": "Themed backdrop, balloon garlands, table styling, and banners"
+      },
+      {
+        "category": "Photography",
+        "percentage": 5.0,
+        "description": "Event photographer or curated photo booth with props"
+      },
+      {
+        "category": "Party Favors & Prizes",
+        "percentage": 3.0,
+        "description": "Thank-you gift bags, personalized souvenirs, and game prizes"
+      },
+      {
+        "category": "Stationery & Invitations",
+        "percentage": 2.0,
+        "description": "Digital or printed invites, welcome posters"
+      },
+      {
+        "category": "Contingency Fund",
+        "percentage": 8.0,
+        "description": "Safety margin for extra headcounts or last-minute needs"
+      }
+    ]
+  },
+  "community": {
+    "min_cost_per_guest": 12.0,
+    "categories": [
+      {
+        "category": "Venue, Permits & Safety",
+        "percentage": 22.0,
+        "description": "Park/hall permits, security, portable restrooms, and waste management"
+      },
+      {
+        "category": "Food & Beverage",
+        "percentage": 30.0,
+        "description": "Community BBQ / buffet, food truck vouchers, water stations, and snacks"
+      },
+      {
+        "category": "Stage, Sound & AV",
+        "percentage": 14.0,
+        "description": "Microphones, PA sound system, stage rental, and technician"
+      },
+      {
+        "category": "Activities & Workshops",
+        "percentage": 12.0,
+        "description": "Interactive booths, lawn games, guest speakers, and craft supplies"
+      },
+      {
+        "category": "Marketing & Signage",
+        "percentage": 8.0,
+        "description": "Directional banners, flyers, social promotions, and badges"
+      },
+      {
+        "category": "Decor & Tables/Tents",
+        "percentage": 4.0,
+        "description": "Canopies, folding tables, tablecloths, and festive bunting"
+      },
+      {
+        "category": "Volunteer Supplies & Misc",
+        "percentage": 2.0,
+        "description": "Staff t-shirts, walkie-talkies, first-aid kit, and water"
+      },
+      {
+        "category": "Contingency Fund",
+        "percentage": 8.0,
+        "description": "Weather backup provisions and unforeseen community logistics"
+      }
+    ]
+  }
+}

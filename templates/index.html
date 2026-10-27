@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventEase - GenAI-Powered Celebration &amp; Event Planning Assistant</title>
+  <meta name="description" content="Organize weddings, birthdays, and community events with deterministic budgets, adaptive timelines, vendor checklists, and personalized GenAI ideas.">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Skip to content link for accessibility -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="app-header" role="banner">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-badge" aria-hidden="true">&#10024;</span>
+        <div class="brand-text">
+          <span class="brand-title">EventEase</span>
+          <span class="brand-tagline">Celebration &amp; Event Planning Assistant</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" class="btn btn-secondary btn-icon" type="button" aria-pressed="false" aria-label="Toggle high contrast dark theme">
+          <span id="theme-icon" aria-hidden="true">&#9790;</span>
+          <span id="theme-text">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Live Announcer Region for screen readers -->
+  <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="alert-region" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  <main id="main-content" class="app-main" role="main">
+    <div class="main-container">
+
+      <!-- Hero & Mission -->
+      <section class="hero-section" aria-labelledby="hero-heading">
+        <h1 id="hero-heading" class="hero-title">Plan Your Unforgettable Celebration with Confidence</h1>
+        <p class="hero-subtitle">
+          EventEase blends <strong>deterministic financial &amp; timeline algorithms</strong> with <strong>curated GenAI creativity</strong> to organize weddings, birthdays, and community events with complete transparency.
+        </p>
+
+        <!-- Presets Card -->
+        <div class="presets-card" role="region" aria-labelledby="presets-heading">
+          <div class="presets-header">
+            <span class="presets-icon" aria-hidden="true">&#9889;</span>
+            <h2 id="presets-heading" class="presets-title">One-Click Demonstration Scenarios</h2>
+          </div>
+          <p class="presets-desc" id="presets-desc">Load pre-configured demo cases to test instant calculations, milestone schedules, and AI ideas:</p>
+          <div class="presets-btn-group" role="group" aria-describedby="presets-desc">
+            <button type="button" class="preset-btn" id="preset-wedding" data-preset="wedding">
+              <span class="preset-icon" aria-hidden="true">&#128141;</span>
+              <span class="preset-label">Napa Vineyard Wedding</span>
+              <span class="preset-meta">120 guests &bull; $28,000</span>
+            </button>
+            <button type="button" class="preset-btn" id="preset-birthday" data-preset="birthday">
+              <span class="preset-icon" aria-hidden="true">&#127881;</span>
+              <span class="preset-label">30th Rooftop Glow Party</span>
+              <span class="preset-meta">40 guests &bull; $3,500</span>
+            </button>
+            <button type="button" class="preset-btn" id="preset-community" data-preset="community">
+              <span class="preset-icon" aria-hidden="true">&#127793;</span>
+              <span class="preset-label">Eco-Arts &amp; Food Festival</span>
+              <span class="preset-meta">500 guests &bull; $9,500</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Multi-step Intake Form -->
+      <section class="form-section" aria-labelledby="form-heading">
+        <div class="card form-card">
+          <div class="form-header">
+            <h2 id="form-heading" class="form-title">Event Intake &amp; Requirements</h2>
+            <div class="step-indicator" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3" aria-label="Intake form progress">
+              <span class="step-pill active" id="pill-step-1">1. Basics</span>
+              <span class="step-divider" aria-hidden="true">&rarr;</span>
+              <span class="step-pill" id="pill-step-2">2. Budget &amp; Guests</span>
+              <span class="step-divider" aria-hidden="true">&rarr;</span>
+              <span class="step-pill" id="pill-step-3">3. Style &amp; Notes</span>
+            </div>
+          </div>
+
+          <form id="event-form" novalidate>
+            <!-- Step 1: Basics -->
+            <fieldset class="form-step active" id="step-1" aria-labelledby="step-1-legend">
+              <legend id="step-1-legend" class="step-legend">Step 1: Event Fundamentals</legend>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="event-type" class="form-label">Event Type <span class="required" aria-hidden="true">*</span></label>
+                  <select id="event-type" name="event_type" class="form-control" required aria-describedby="event-type-hint event-type-error">
+                    <option value="wedding">Wedding Celebration</option>
+                    <option value="birthday">Birthday Party</option>
+                    <option value="community">Community / Civic Festival</option>
+                  </select>
+                  <p id="event-type-hint" class="form-hint">Determines category allocation weights and vendor checklists.</p>
+                  <p id="event-type-error" class="form-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="form-group">
+                  <label for="event-date" class="form-label">Event Date <span class="required" aria-hidden="true">*</span></label>
+                  <input type="date" id="event-date" name="date" class="form-control" required aria-describedby="event-date-hint event-date-error">
+                  <p id="event-date-hint" class="form-hint">Must be scheduled in the future for planning.</p>
+                  <p id="event-date-error" class="form-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="form-group form-col-span-2">
+                  <label for="event-city" class="form-label">City / Region <span class="required" aria-hidden="true">*</span></label>
+                  <input type="text" id="event-city" name="city" class="form-control" placeholder="e.g., Seattle, WA or London, UK" required minlength="2" maxlength="100" aria-describedby="event-city-hint event-city-error">
+                  <p id="event-city-hint" class="form-hint">Helps tailor vendor questions and weather considerations.</p>
+                  <p id="event-city-error" class="form-error" role="alert" aria-live="polite"></p>
+                </div>
+              </div>
+
+              <div class="step-actions">
+                <div></div>
+                <button type="button" class="btn btn-primary" id="btn-to-step-2">Continue to Step 2 &rarr;</button>
+              </div>
+            </fieldset>
+
+            <!-- Step 2: Budget & Headcount -->
+            <fieldset class="form-step" id="step-2" aria-labelledby="step-2-legend">
+              <legend id="step-2-legend" class="step-legend">Step 2: Headcount &amp; Budget</legend>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="guest-count" class="form-label">Expected Guest Count <span class="required" aria-hidden="true">*</span></label>
+                  <input type="number" id="guest-count" name="guest_count" class="form-control" min="1" max="10000" step="1" required placeholder="e.g., 100" aria-describedby="guest-count-hint guest-count-error">
+                  <p id="guest-count-hint" class="form-hint">From intimate gatherings (1) to civic crowds (10,000).</p>
+                  <p id="guest-count-error" class="form-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="form-group">
+                  <label for="currency" class="form-label">Currency Code <span class="required" aria-hidden="true">*</span></label>
+                  <select id="currency" name="currency" class="form-control" required aria-describedby="currency-hint currency-error">
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (&euro;)</option>
+                    <option value="GBP">GBP (&pound;)</option>
+                    <option value="CAD">CAD (C$)</option>
+                    <option value="AUD">AUD (A$)</option>
+                    <option value="INR">INR (&#8377;)</option>
+                  </select>
+                  <p id="currency-hint" class="form-hint">3-letter ISO currency identifier.</p>
+                  <p id="currency-error" class="form-error" role="alert" aria-live="polite"></p>
+                </div>
+
+                <div class="form-group form-col-span-2">
+                  <label for="total-budget" class="form-label">Total Allocated Budget <span class="required" aria-hidden="true">*</span></label>
+                  <input type="number" id="total-budget" name="total_budget" class="form-control" min="1" max="50000000" step="0.01" required placeholder="e.g., 15000" aria-describedby="total-budget-hint total-budget-error">
+                  <p id="total-budget-hint" class="form-hint">Total funds available across all venue, catering, and vendor categories.</p>
+                  <p id="total-budget-error" class="form-error" role="alert" aria-live="polite"></p>
+                </div>
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn btn-secondary" id="btn-back-to-step-1">&larr; Back to Step 1</button>
+                <button type="button" class="btn btn-primary" id="btn-to-step-3">Continue to Step 3 &rarr;</button>
+              </div>
+            </fieldset>
+
+            <!-- Step 3: Style & Notes -->
+            <fieldset class="form-step" id="step-3" aria-labelledby="step-3-legend">
+              <legend id="step-3-legend" class="step-legend">Step 3: Theme, Dietary &amp; Personalization</legend>
+
+              <div class="form-grid">
+                <div class="form-group form-col-span-2">
+                  <label for="event-theme" class="form-label">Theme or Aesthetic Style (Optional)</label>
+                  <input type="text" id="event-theme" name="theme" class="form-control" maxlength="120" placeholder="e.g., Midnight Garden, Rustic Chic, Retro 80s, Bohemian Sunset" aria-describedby="event-theme-hint">
+                  <p id="event-theme-hint" class="form-hint">Guides the GenAI model in crafting tailored decor and mood concepts.</p>
+                </div>
+
+                <div class="form-group form-col-span-2">
+                  <label for="cultural-dietary" class="form-label">Cultural Traditions or Dietary Requirements (Optional)</label>
+                  <input type="text" id="cultural-dietary" name="cultural_dietary_preferences" class="form-control" maxlength="200" placeholder="e.g., Vegetarian &amp; Halal options, traditional tea ceremony, gluten-free bakery" aria-describedby="cultural-dietary-hint">
+                  <p id="cultural-dietary-hint" class="form-hint">Ensures menu and activity suggestions respect attendee needs.</p>
+                </div>
+
+                <div class="form-group form-col-span-2">
+                  <label for="special-notes" class="form-label">Special Notes or Constraints (Optional)</label>
+                  <textarea id="special-notes" name="special_notes" rows="3" class="form-control" maxlength="500" placeholder="e.g., Outdoor park with acoustic restrictions after 9 PM, DIY photobooth" aria-describedby="special-notes-hint"></textarea>
+                  <p id="special-notes-hint" class="form-hint">Any specific venue restrictions or requests (max 500 characters).</p>
+                </div>
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn btn-secondary" id="btn-back-to-step-2">&larr; Back to Step 2</button>
+                <button type="submit" class="btn btn-success btn-large" id="btn-generate-plan">
+                  <span id="btn-generate-spinner" class="spinner hidden" aria-hidden="true"></span>
+                  <span id="btn-generate-text">&#10024; Generate Full Celebration Plan</span>
+                </button>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+      </section>
+
+      <!-- Global Loading State -->
+      <section id="loading-indicator" class="loading-container hidden" aria-labelledby="loading-text">
+        <div class="spinner-large" aria-hidden="true"></div>
+        <p id="loading-text" class="loading-label">Deriving budget metrics, backward-planning milestones, and generating creative ideas...</p>
+      </section>
+
+      <!-- Results Section -->
+      <section id="results-container" class="results-container hidden" aria-label="Generated Planning Deliverables">
+
+        <!-- Deliverables Overview Header -->
+        <div class="results-action-bar">
+          <div>
+            <h2 class="results-title">Your Celebration Master Plan</h2>
+            <p class="results-subtitle" id="results-meta-text">Generated based on your event specifications</p>
+          </div>
+          <div class="export-actions">
+            <button type="button" class="btn btn-secondary" id="btn-export-json">
+              <span aria-hidden="true">&#128190;</span> Download JSON
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-print-view">
+              <span aria-hidden="true">&#128424;</span> Print / PDF Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Fallback Mode Notice -->
+        <div id="fallback-notice-banner" class="alert-banner warning-banner hidden" role="status">
+          <span class="alert-icon" aria-hidden="true">&#9888;</span>
+          <div class="alert-content">
+            <strong class="alert-title">Curated Offline Ideas Active</strong>
+            <p id="fallback-reason-text" class="alert-message">Template-based curated ideas are being displayed.</p>
+          </div>
+        </div>
+
+        <!-- Realistic Budget Warning Banner -->
+        <div id="budget-warning-banner" class="alert-banner caution-banner hidden" role="alert">
+          <span class="alert-icon" aria-hidden="true">&#9888;</span>
+          <div class="alert-content">
+            <strong class="alert-title">Budget Benchmark Warning</strong>
+            <p id="budget-warning-text" class="alert-message"></p>
+          </div>
+        </div>
+
+        <!-- 4 Core Deliverables Grid -->
+        <div class="deliverables-grid">
+
+          <!-- Deliverable 1: Budget Planner -->
+          <div class="card deliverable-card" id="deliverable-budget" role="region" aria-labelledby="budget-heading">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon" aria-hidden="true">&#128176;</span>
+                <h3 id="budget-heading" class="card-title">1. Budget Allocation</h3>
+              </div>
+              <span class="badge badge-accent" id="cost-per-guest-badge">Per-Guest: $0.00</span>
+            </div>
+            <div class="card-body">
+              <p class="card-desc" id="budget-explanation">Deterministic category percentage allocation with dedicated contingency reserve.</p>
+
+              <div class="table-responsive">
+                <table class="data-table" aria-label="Budget Breakdown by Category">
+                  <thead>
+                    <tr>
+                      <th scope="col">Category</th>
+                      <th scope="col" class="text-right">Allocation</th>
+                      <th scope="col" class="text-right">Amount</th>
+                      <th scope="col">Scope &amp; Description</th>
+                    </tr>
+                  </thead>
+                  <tbody id="budget-table-body">
+                    <!-- Dynamic Rows Rendered by JS -->
+                  </tbody>
+                  <tfoot>
+                    <tr class="table-total-row">
+                      <th scope="row">Total Projected Budget</th>
+                      <td class="text-right">100.0%</td>
+                      <td class="text-right" id="budget-total-amount">$0.00</td>
+                      <td>Balanced Allocation</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deliverable 2: Timeline Generator -->
+          <div class="card deliverable-card" id="deliverable-timeline" role="region" aria-labelledby="timeline-heading">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon" aria-hidden="true">&#128197;</span>
+                <h3 id="timeline-heading" class="card-title">2. Milestone Timeline</h3>
+              </div>
+              <span class="badge" id="timeline-days-badge">0 Days Remaining</span>
+            </div>
+            <div class="card-body">
+              <div id="timeline-advisory-box" class="advisory-box hidden" role="note">
+                <span class="advisory-icon" aria-hidden="true">&#9432;</span>
+                <span id="timeline-advisory-text"></span>
+              </div>
+              <ol class="timeline-stepper" id="timeline-stepper" aria-label="Milestones Leading to Event Day">
+                <!-- Dynamic Milestones Rendered by JS -->
+              </ol>
+            </div>
+          </div>
+
+          <!-- Deliverable 3: Vendor Checklist -->
+          <div class="card deliverable-card" id="deliverable-checklist" role="region" aria-labelledby="checklist-heading">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon" aria-hidden="true">&#9745;</span>
+                <h3 id="checklist-heading" class="card-title">3. Vendor Screening Checklist</h3>
+              </div>
+              <span class="badge badge-neutral" id="checklist-summary-badge">0 / 0 Booked</span>
+            </div>
+            <div class="card-body">
+              <p class="card-desc">Essential screening questions to interview each vendor before signing contracts:</p>
+              <div class="checklist-container" id="checklist-container" role="list">
+                <!-- Dynamic Checklist Items Rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Deliverable 4: Personalized Ideas (GenAI) -->
+          <div class="card deliverable-card" id="deliverable-ideas" role="region" aria-labelledby="ideas-heading">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon" aria-hidden="true">&#128161;</span>
+                <h3 id="ideas-heading" class="card-title">4. Personalized Inspiration &amp; Cost Savings</h3>
+              </div>
+              <span class="badge badge-ai" id="ideas-ai-badge">&#10024; AI Suggestions</span>
+            </div>
+            <div class="card-body">
+              <div class="ideas-tabs" role="tablist" aria-label="Personalized Ideas Categories">
+                <button type="button" role="tab" class="tab-btn active" id="tab-themes" aria-selected="true" aria-controls="panel-themes">Themes</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-decor" aria-selected="false" aria-controls="panel-decor">Decor</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-menu" aria-selected="false" aria-controls="panel-menu">Menu &amp; Bar</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-activities" aria-selected="false" aria-controls="panel-activities">Activities</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-tips" aria-selected="false" aria-controls="panel-tips">Savings Tips</button>
+              </div>
+
+              <!-- Tab Panels -->
+              <div id="panel-themes" role="tabpanel" class="tab-panel active" aria-labelledby="tab-themes">
+                <ul class="ideas-list" id="ideas-list-themes"></ul>
+              </div>
+              <div id="panel-decor" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-decor">
+                <ul class="ideas-list" id="ideas-list-decor"></ul>
+              </div>
+              <div id="panel-menu" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-menu">
+                <ul class="ideas-list" id="ideas-list-menu"></ul>
+              </div>
+              <div id="panel-activities" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-activities">
+                <ul class="ideas-list" id="ideas-list-activities"></ul>
+              </div>
+              <div id="panel-tips" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-tips">
+                <ul class="ideas-list" id="ideas-list-tips"></ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="app-footer" role="contentinfo">
+    <div class="footer-container">
+      <p class="footer-text">
+        <strong>EventEase</strong> &bull; Celebration &amp; Event Planning Assistant &bull; Built with FastAPI, Pydantic v2, and Semantic HTML5.
+      </p>
+      <p class="footer-links">
+        <a href="/docs" target="_blank" rel="noopener">OpenAPI Documentation</a> &bull;
+        <a href="#hero-heading">Back to Top</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Main ES Module Script (No inline scripts to comply with strict CSP) -->
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

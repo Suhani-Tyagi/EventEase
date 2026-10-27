@@ -1,0 +1,95 @@
+{
+  "wedding": {
+    "themes": [
+      "Timeless Elegance: Warm whites, lush greenery, gold accents, and candlelit ambiance",
+      "Modern Botanical Garden: Terracotta planters, suspended greenery, and natural wood textures",
+      "Sunset Bohemian Romance: Warm amber lighting, pampas grass, macrame details, and velvet lounges"
+    ],
+    "decor": [
+      "Dramatic fairy-light canopy draped over dining tables with Edison filament bulbs",
+      "Monochromatic floral arrangements mixing baby's breath, white roses, and Italian ruscus",
+      "Custom acrylic welcome signage backed with hand-painted brushstroke borders",
+      "Minimalist brass taper candleholders with smoke-tinted hurricanes"
+    ],
+    "menu": [
+      "Passed Hors D'oeuvres: Truffle arancini, smoked salmon crostini, and caprese skewers",
+      "Dual Entree Plated Dinner: Rosemary-garlic beef tenderloin and lemon-herb pan-seared sea bass",
+      "Late-Night Snack Bar: Gourmet flatbread sliders and artisan churro dipping station",
+      "Signature Cocktails: 'Blushing Bride' (Elderflower Gin Fizz) and 'Groom's Mule' (Bourbon & Ginger)"
+    ],
+    "activities": [
+      "Audio Guestbook: Retro rotary phone for guests to record heartfelt voice messages",
+      "Live Painter: Artist painting the ceremony and first dance in real time",
+      "Interactive Photo Lounge: Polaroid memory book with metallic pens and tape",
+      "Sparkler or Cold-Spark send-off farewell tunnel"
+    ],
+    "budget_saving_tips": [
+      "Repurpose ceremony flowers: Move ceremony arch and aisle bouquets to the sweetheart table and bar",
+      "Limit open bar offerings to 2 signature cocktails plus curated wine and beer, bypassing expensive top-shelf spirits",
+      "Choose in-season local blooms over imported florals to reduce florist costs by 20-30%",
+      "Schedule dinner service as family-style or upscale buffet rather than multi-course plated dining"
+    ]
+  },
+  "birthday": {
+    "themes": [
+      "Retro Disco Glow: Neon signage, iridescent fringe, mirror balls, and vibrant 80s/90s playlist",
+      "Enchanted Midnight Garden: Fairy lights, deep jewel tones, moss accents, and vintage glassware",
+      "Tropical Oasis Fiesta: Palm leaf patterns, bamboo textures, citrus centerpieces, and vibrant colors"
+    ],
+    "decor": [
+      "Custom LED neon 'Happy Birthday' sign mounted on a lush artificial greenery photo wall",
+      "Organic balloon garland arch framing the cake table with chrome metallic accents",
+      "Table runners layered with eucalyptus, geometric candle lanterns, and personalized place cards",
+      "Themed cocktail napkins and customized frosted cups with milestone celebratory branding"
+    ],
+    "menu": [
+      "Gourmet Slider & Taco Bar: Pulled pork, crispy chicken, and jackfruit carnitas with artisan toppings",
+      "Interactive Grazing Table: Imported cheeses, cured meats, artisan crackers, berries, and fig jam",
+      "Showstopper Cake: Tiered drip cake with metallic leaf accents and matching mini macarons",
+      "Mocktail & Cocktail Station: Blackberry basil smash and passionfruit sparkling spritz"
+    ],
+    "activities": [
+      "Milestone Trivia Game: Fun interactive trivia quizzing guests on the birthday honoree's life and adventures",
+      "Digital Photo Booth with custom animated GIF overlays and immediate SMS delivery",
+      "Live DJ or Curated Collaborative Spotify Jukebox where guests can queue favorite party tracks",
+      "Karaoke Hour with wireless mics and lyric monitor"
+    ],
+    "budget_saving_tips": [
+      "Create high-impact DIY balloon arches using an electric balloon pump instead of hiring commercial decorators",
+      "Host during non-peak afternoon hours (2 PM - 5 PM) and serve gourmet finger foods instead of full dinner",
+      "Design digital invitation suites using interactive mobile RSVP links to save printing and postage fees",
+      "Batch signature party punch in decorative beverage dispensers rather than staffing a full bartender"
+    ]
+  },
+  "community": {
+    "themes": [
+      "Community Roots & Harvest Festival: Celebrating local artisans, farmers, music, and homegrown culture",
+      "Eco-Green Tomorrow: Sustainability fair with interactive recycling workshops and solar demos",
+      "Cultural Mosaic & Unity Gala: Celebrating multi-cultural food, dance, music, and storytelling"
+    ],
+    "decor": [
+      "Weather-resistant colorful pennant bunting strung between shade canopies and perimeter fences",
+      "High-visibility directional signage and schedule towers made from recycled wooden pallets",
+      "Picnic table styling with cheerful checkered tablecloths and potted native herb centerpieces",
+      "Solar-powered festoon string lights illuminating walkways and gathering plazas into the evening"
+    ],
+    "menu": [
+      "Local Food Truck Rally: Curated vendors offering international street eats, tacos, dumplings, and BBQ",
+      "Hydration & Refreshment Stations: Free chilled infused water dispensers (cucumber-mint and citrus)",
+      "Community Bake Sale & Coffee Tent: Locally roasted drip coffee, fresh donuts, and pastries",
+      "Dietary Inclusive Options: Clearly labeled nut-free, halal, kosher, and vegan meal boxes"
+    ],
+    "activities": [
+      "Main Stage Community Showcase: Local high school bands, acoustic musicians, and cultural dance troupes",
+      "Interactive Maker & Kids Zone: Face painting, giant lawn Jenga, cornhole tournaments, and craft workshops",
+      "Community Mural Wall: Large canvas where all attendees paint a section of a commemorative neighborhood mural",
+      "Raffle & Silent Auction featuring donated gift baskets from neighborhood small businesses"
+    ],
+    "budget_saving_tips": [
+      "Partner with local municipal parks or community centers to waive or reduce commercial venue rental fees",
+      "Recruit local high school and university volunteer clubs for event setup and cleanup in exchange for service hours",
+      "Invite independent food trucks who pay a modest vendor pitch fee to participate, turning food service into revenue",
+      "Seek co-sponsorship from local businesses for AV equipment and printing in exchange for prominent banner logo placement"
+    ]
+  }
+}
