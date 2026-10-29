@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Suhani-Tyagi/EventEase/actions/workflows/ci.yml/badge.svg)](https://github.com/Suhani-Tyagi/EventEase/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Coverage](https://img.shields.io/badge/coverage-94.63%25-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-94.77%25-brightgreen.svg)]()
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Type Checked: mypy](https://img.shields.io/badge/mypy-strict-blue.svg)](http://mypy-lang.org/)
 [![Accessibility: WCAG 2.1 AA](https://img.shields.io/badge/accessibility-WCAG%202.1%20AA-green.svg)](docs/ACCESSIBILITY.md)
@@ -69,19 +69,28 @@ Planning a milestone celebration—whether an intimate wedding, a birthday party
   3. **Vendors Booked**: Booked vs in-progress counts and booking progress bar.
   4. **Event Countdown**: Days remaining and next upcoming deadline reminder.
 
-### 6. LocalStorage Persistence
-- The current celebration plan, customized budget allocations, completed milestones, vendor statuses, contacts, and notes are automatically saved to `localStorage`.
-- On return or page refresh, a saved plan notification banner allows users to restore their ongoing plan.
+### 6. LocalStorage Persistence & Plan Library
+- **Active Plan Persistence**: The current celebration plan, customized budget allocations, completed milestones, vendor statuses, contacts, notes, and vendor quotes are automatically saved to `localStorage`.
+- **Multi-Plan Library**: Users can name, save, reopen, duplicate, and remove multiple celebration plans locally.
+  - Features confirmation modals for safe deletion and "Clear All Plans".
+  - Gracefully handles browser storage quotas (`QuotaExceededError`) with user alerts.
+- **Privacy Disclosure**: All plans, notes, and quotes are stored unencrypted in the local browser on that device only. They are not stored on any remote server and are readable by scripts executing on the same origin.
 - A modal-guarded "Start New Plan" flow resets saved state safely without accidental data loss.
 
-### 7. Multi-Format Exports
+### 7. Vendor Quote Comparison View
+- Side-by-side comparison of user-entered vendor quotes (base price, additional fees, total estimated cost, included services, payment terms, and status).
+- **Truthful Labeling**: All quote amounts are strictly labeled as **user-provided records** and are never presented as market benchmarks, automated estimates, or algorithmic pricing.
+- Interactive category filtering pills and one-click preferred quote selection.
+
+### 8. Multi-Format Exports with Security & Standards Compliance
 - **Copy Summary**: Generates a clean text summary calculating contingency from actual allocations (fixing any undefined field issues).
 - **JSON Export**: Downloads the complete state as an indented JSON file.
-- **CSV Spreadsheet**: Formats event details, budget allocations, milestones, and vendor checklists into an RFC 4180 compliant CSV file.
-- **.ICS Calendar Export**: Exports all milestone deadlines and the celebration day into standard RFC 5545 iCalendar format for Google Calendar, Apple Calendar, or Outlook.
+- **CSV Spreadsheet (Formula Injection Defense)**: Formats event details, budget allocations, milestones, vendor checklists, and quote comparisons into an RFC 4180 compliant CSV file. All cells starting with formula-triggering characters (`=`, `+`, `-`, `@`, `\t`, `\r`, `|`, `%`) are safely prefixed with a single quote (`'`) to ensure spreadsheet applications open them strictly as literal text.
+- **.ICS Calendar Export (RFC 5545 Compliant)**: Exports all milestone deadlines and celebration day into standard RFC 5545 iCalendar format. Escapes special characters (`,`, `;`, `\`, line breaks), strictly folds lines at $\le$ 75 octets via `\r\n `, sets exclusive all-day event end dates (`DTEND = DTSTART + 1 day`), and generates stable, unique UIDs (`@eventease.app`).
+- **Export Privacy Notice**: Highlights to users when downloaded exports contain private vendor notes, contact details, or quotes.
 - **Print / PDF View**: Formatted with a clean print stylesheet (`@media print`) that removes web navigation for physical printing or PDF generation.
 
-### 8. Accessible UI & Mascot Companions
+### 9. Accessible UI & Mascot Companions
 - **Lumi Companion Widget**: Floating celebration assistant that never obscures content or controls; includes a collapse/minimize toggle.
 - **Reduced Motion**: Full support for `prefers-reduced-motion: reduce` in CSS, and confetti particle generation is suppressed in JavaScript.
 - **WAI-ARIA Tabs**: Creative ideas tabs support full keyboard navigation (`ArrowLeft`, `ArrowRight`, `Home`, `End`).
@@ -209,6 +218,9 @@ docker run -p 8000:8000 -e GEMINI_API_KEY=your_api_key eventease:latest
 | `PORT` | `int` | `8000` | Server listening port. |
 | `CORS_ALLOWED_ORIGINS` | `string` | `http://localhost:8000,http://127.0.0.1:8000` | Comma-separated CORS origin allowlist. |
 | `RATE_LIMIT_PER_MINUTE` | `int` | `20` | Max requests per IP per minute on AI endpoints. |
+| `REDIS_URL` | `string` | `None` | Optional Redis connection URI (e.g. `redis://localhost:6379`) for shared rate limiting across serverless instances. If omitted or unreachable, falls back to in-memory tracking. |
+| `TRUSTED_PROXIES` | `string` | `127.0.0.1,::1` | Comma-separated trusted reverse proxy IP addresses or CIDR ranges. Forwarded IP headers (`X-Forwarded-For`, `X-Real-IP`) are only parsed if request peer host matches. |
+| `TRUST_ALL_PROXIES` | `bool` | `False` | When True, trusts forwarded headers from any peer IP (useful for local development or testing). Defaults to False. |
 | `MAX_REQUEST_BODY_BYTES` | `int` | `1048576` | Max allowable request body size (1 MB default). |
 | `GEMINI_MODEL` | `string` | `gemini-2.5-flash` | Gemini model variant. |
 | `LLM_TIMEOUT_SECONDS` | `float` | `10.0` | Timeout threshold for LLM generation before falling back. |
@@ -239,10 +251,10 @@ EventEase enforces strict linting, strict static typing, and automated testing a
 ### Running Quality Checks
 ```bash
 # 1. Run Ruff Linter
-ruff check app tests api
+ruff check app tests
 
 # 2. Run MyPy Strict Type Checker
-mypy app api
+mypy app tests
 
 # 3. Run Pytest Suite with Coverage Enforcement
 pytest
@@ -252,10 +264,10 @@ npm run test:browser
 ```
 
 ### Verified Test Results
-- **Backend Tests**: 79 tests passing with **94.63% statement coverage** across `app`:
+- **Backend Tests**: 83 tests passing with **94.77% statement coverage** across `app` under Python 3.11:
   - `app/api/routes.py`: 94%
   - `app/core/config.py`: 100%
-  - `app/core/security.py`: 100%
+  - `app/core/security.py`: 97%
   - `app/main.py`: 91%
   - `app/schemas.py`: 100%
   - `app/services/budget.py`: 91%
@@ -263,7 +275,7 @@ npm run test:browser
   - `app/services/ideas.py`: 93%
   - `app/services/llm_client.py`: 95%
   - `app/services/timeline.py`: 94%
-- **Frontend DOM Integration Tests**: 50 tests passing (0 failures), covering form intake, preset loading, editable budget balancing, milestone completion, vendor status filtering, notes and contacts persistence, CSV and .ICS export formatting, and accessible WAI-ARIA tab navigation.
+- **Frontend DOM Integration Tests**: 87 tests passing (0 failures), covering form intake, preset loading, editable budget balancing, milestone completion, vendor status filtering, notes and contacts persistence, plan library management (naming, duplicating, deleting, QuotaExceededError handling), vendor quote comparison, CSV formula injection sanitization, RFC 5545 .ICS export compliance, and accessible WAI-ARIA tab navigation.
 
 ---
 
@@ -281,17 +293,23 @@ npm run test:browser
 4. **Resilient Dual-Tier Architecture**:
    - Curated offline fallback templates activate immediately on missing API keys or request timeouts.
    - A planning assistant must remain dependable under poor connectivity or external API outages.
+5. **Truthful Data Transparency**:
+   - Vendor quote amounts are strictly marked as user-entered records; no synthetic benchmarks or artificial market estimates are manufactured.
+   - AI status accurately indicates whether live Gemini responses or offline fallback templates are active.
 
 ---
 
 ## 9. Security & Threat Model
 For comprehensive details, review [`SECURITY.md`](SECURITY.md). Key verified defenses include:
-- Prompt-injection defense using delimiter isolation (`<<<EVENT_INTAKE_DATA_START>>>`) and control-character stripping.
-- Public serverless error sanitization (`api/index.py`) returning generic 500 responses without tracebacks.
-- Rate limiting wired into configuration with reverse proxy IP resolution (`X-Forwarded-For`, `X-Real-IP`).
-- Output encoding via `textContent` in the DOM.
-- Strict Content Security Policy (`script-src 'self'`) disallowing inline scripts.
-- Non-root Docker execution (`appuser:10001`).
+- **Prompt-Injection Defense**: Delimiter isolation (`<<<EVENT_INTAKE_DATA_START>>>`), control-character stripping, and Unicode NFKC normalization.
+- **Serverless Error Sanitization**: Public serverless error sanitization (`api/index.py`) catches unhandled exceptions, logging tracebacks privately and returning generic 500 responses without leaking internals.
+- **Reverse Proxy Header Trust**: Client IP resolution only trusts `X-Forwarded-For` and `X-Real-IP` when requests originate from verified upstream proxies configured via `TRUSTED_PROXIES`.
+- **Serverless Rate Limiting Transparency**: Supports a centralized Redis store via `REDIS_URL`. In environments without a shared store, rate limiting operates on in-memory counters per serverless container instance rather than enforcing global IP-wide limits across concurrent containers.
+- **CSV Formula Injection Defense**: Sanitizes all exported CSV cells starting with `=, +, -, @, \t, \r, |, %` by prefixing a single quote (`'`), ensuring spreadsheet software renders them strictly as literal text.
+- **RFC 5545 iCalendar Compliance**: Escapes special characters, uses exclusive all-day event end dates (`DTEND = DTSTART + 1 day`), and folds lines exceeding 75 octets via `\r\n `.
+- **Local Storage Transparency**: All saved plans, vendor notes, contacts, and quote records are stored unencrypted in browser `localStorage` solely on the user's local device. They are accessible to any script running on the same origin and are never synced to a remote database.
+- **Export Privacy Notice**: Prominently warns users before downloading files containing private vendor notes, contact numbers, or quotes.
+- **Strict Content Security Policy & Headers**: `script-src 'self'`, `frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, and non-root Docker execution (`appuser:10001`).
 
 ---
 

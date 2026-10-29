@@ -28,6 +28,12 @@ class Settings(BaseSettings):
         alias="CORS_ALLOWED_ORIGINS",
     )
     rate_limit_per_minute: int = Field(default=20, alias="RATE_LIMIT_PER_MINUTE")
+    redis_url: str | None = Field(default=None, alias="REDIS_URL")
+    trusted_proxies: str = Field(
+        default="127.0.0.1,::1,testclient,localhost",
+        alias="TRUSTED_PROXIES",
+    )
+    trust_all_proxies: bool = Field(default=False, alias="TRUST_ALL_PROXIES")
     max_request_body_bytes: int = Field(
         default=1_048_576, alias="MAX_REQUEST_BODY_BYTES"
     )

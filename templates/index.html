@@ -34,6 +34,8 @@
         <a href="#presets-heading" class="nav-link">Demonstrations</a>
         <a href="#why-eventease" class="nav-link">Why EventEase</a>
         <a href="#form-heading" class="nav-link">Event Planner</a>
+        <a href="#plan-library-section" class="nav-link">Plan Library</a>
+        <a href="#deliverable-quote-comparison" class="nav-link">Vendor Quotes</a>
         <a href="/docs" target="_blank" rel="noopener" class="nav-link nav-link-external">API Docs <span aria-hidden="true">&nearr;</span></a>
       </nav>
 
@@ -366,18 +368,54 @@
 
       <!-- Multi-step Intake Form -->
       <section class="form-section" aria-labelledby="form-heading">
+
+        <!-- Plan Library Section (Multiple Local Plans) -->
+        <div id="plan-library-section" class="card plan-library-card" role="region" aria-labelledby="library-heading">
+          <div class="library-header">
+            <div class="library-title-group">
+              <span class="library-icon" aria-hidden="true">&#128218;</span>
+              <div>
+                <h2 id="library-heading" class="library-title">Celebration Plan Library</h2>
+                <p class="library-desc">Save, name, reopen, duplicate, or delete multiple event plans on this device.</p>
+              </div>
+            </div>
+            <div class="library-actions-header">
+              <span class="badge badge-accent" id="lib-count-badge">0 Saved Plans</span>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-save-current-to-library" title="Save active plan into your library">
+                <span aria-hidden="true">&#128190;</span> Save Active Plan
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-clear-all-plans" title="Permanently delete all plans stored in this browser">
+                Clear All Plans
+              </button>
+            </div>
+          </div>
+
+          <!-- Explicit Storage Disclosure Notice -->
+          <div class="storage-disclosure-notice" role="note">
+            <span class="disclosure-icon" aria-hidden="true">&#9888;</span>
+            <p class="disclosure-text">
+              <strong>Device Local Storage Disclosure:</strong> Plans, quotes, vendor notes, and contacts are stored unencrypted in this browser&rsquo;s <code>localStorage</code> on this device only. They are not transmitted to any remote server and can be read by scripts on this site.
+            </p>
+          </div>
+
+          <div class="plan-library-grid" id="plan-library-grid" role="list">
+            <!-- Dynamic plan library cards -->
+          </div>
+          <p class="empty-library-msg" id="empty-library-msg">No saved plans in your library yet. Configure your requirements and click &ldquo;Save Active Plan&rdquo; to store it here.</p>
+        </div>
+
         <!-- Saved Plan Notification Banner -->
         <div id="saved-plan-banner" class="saved-plan-banner hidden" role="region" aria-label="Saved Celebration Plan Banner">
           <div class="saved-banner-content">
             <span class="saved-banner-icon" aria-hidden="true">&#128190;</span>
             <div class="saved-banner-text">
-              <strong>Saved Plan Found:</strong>
+              <strong>Ongoing Plan Found in Local Storage:</strong>
               <span id="saved-plan-timestamp">You have an ongoing celebration plan saved in this browser.</span>
             </div>
           </div>
           <div class="saved-banner-actions">
             <button type="button" class="btn btn-sm btn-primary" id="btn-restore-plan">Restore Plan</button>
-            <button type="button" class="btn btn-sm btn-secondary" id="btn-discard-plan">Discard &amp; Start Fresh</button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-discard-plan">Discard Active</button>
           </div>
         </div>
 
@@ -537,7 +575,7 @@
 
         <!-- Deliverables Overview Header -->
         <div class="results-action-bar">
-          <div>
+          <div class="results-action-bar-info">
             <div class="results-header-tag">
               <span class="badge badge-accent">Celebration Plan</span>
               <span class="save-indicator" id="save-indicator" title="Your edits, vendor statuses, and checklist are saved in your browser">
@@ -545,31 +583,41 @@
                 <span id="save-status-text">Saved locally</span>
               </span>
             </div>
-            <h2 class="results-title">Your Celebration Master Plan</h2>
+            <div class="active-plan-title-wrapper">
+              <input type="text" id="active-plan-name-input" class="active-plan-name-input" placeholder="Name this celebration plan..." aria-label="Active Celebration Plan Name" maxlength="80">
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-save-plan-name" title="Save this named plan to your local library">
+                <span aria-hidden="true">&#128190;</span> Save to Library
+              </button>
+            </div>
             <p class="results-subtitle" id="results-meta-text">Generated based on your event specifications</p>
           </div>
-          <div class="export-actions">
-            <button type="button" class="btn btn-secondary" id="btn-copy-summary" title="Copy formatted text summary of entire plan">
-              <span aria-hidden="true">&#128203;</span> Copy Summary
-            </button>
-            <button type="button" class="btn btn-secondary" id="btn-export-json" title="Download JSON plan">
-              <span aria-hidden="true">&#128190;</span> JSON
-            </button>
-            <button type="button" class="btn btn-secondary" id="btn-export-csv" title="Download CSV spreadsheet">
-              <span aria-hidden="true">&#128202;</span> CSV
-            </button>
-            <button type="button" class="btn btn-secondary" id="btn-export-ics" title="Export milestone deadlines to .ics calendar">
-              <span aria-hidden="true">&#128197;</span> .ICS Calendar
-            </button>
-            <button type="button" class="btn btn-secondary" id="btn-print-view" title="Print or save as PDF">
-              <span aria-hidden="true">&#128424;</span> Print / PDF
-            </button>
-            <button type="button" class="btn btn-secondary btn-new-plan" id="btn-start-new-plan" title="Reset and plan another celebration">
-              <span aria-hidden="true">&#10010;</span> New Plan
-            </button>
-            <button type="button" class="btn btn-accent btn-celebrate" id="btn-celebrate" title="Celebrate plan completion">
-              <span aria-hidden="true">&#127881;</span> Celebrate!
-            </button>
+          <div class="export-actions-wrapper">
+            <div class="export-actions">
+              <button type="button" class="btn btn-secondary" id="btn-copy-summary" title="Copy formatted text summary of entire plan">
+                <span aria-hidden="true">&#128203;</span> Copy Summary
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-export-json" title="Download JSON plan">
+                <span aria-hidden="true">&#128190;</span> JSON
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-export-csv" title="Download CSV spreadsheet">
+                <span aria-hidden="true">&#128202;</span> CSV
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-export-ics" title="Export milestone deadlines to .ics calendar">
+                <span aria-hidden="true">&#128197;</span> .ICS Calendar
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-print-view" title="Print or save as PDF">
+                <span aria-hidden="true">&#128424;</span> Print / PDF
+              </button>
+              <button type="button" class="btn btn-secondary btn-new-plan" id="btn-start-new-plan" title="Reset and plan another celebration">
+                <span aria-hidden="true">&#10010;</span> New Plan
+              </button>
+              <button type="button" class="btn btn-accent btn-celebrate" id="btn-celebrate" title="Celebrate plan completion">
+                <span aria-hidden="true">&#127881;</span> Celebrate!
+              </button>
+            </div>
+            <p class="export-privacy-notice">
+              <span aria-hidden="true">&#9888;</span> <strong>Export Notice:</strong> CSV &amp; JSON exports contain unencrypted vendor contact details, private notes, and quote records stored on this device.
+            </p>
           </div>
         </div>
 
@@ -1027,6 +1075,96 @@
             </div>
           </div>
 
+          <!-- Deliverable 5: Vendor Quote Comparison (User Records) -->
+          <div class="card deliverable-card deliverable-card-full" id="deliverable-quote-comparison" role="region" aria-labelledby="quotes-heading">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon" aria-hidden="true">&#128202;</span>
+                <div>
+                  <h3 id="quotes-heading" class="card-title">5. Vendor Quote Comparison</h3>
+                  <span class="card-subtitle">Side-by-side comparison of received quotes, fees, and payment terms</span>
+                </div>
+              </div>
+              <span class="badge badge-neutral" id="quote-count-badge">0 Quotes Logged</span>
+            </div>
+            <div class="card-body">
+              <!-- Honest User Data Labeling Notice -->
+              <div class="storage-disclosure-notice" role="note">
+                <span class="disclosure-icon" aria-hidden="true">&#9432;</span>
+                <p class="disclosure-text">
+                  <strong>User-Provided Records:</strong> All quotes, extra fees, and payment terms entered here are your private records stored in this browser on this device only. They are not market rates or price benchmarks.
+                </p>
+              </div>
+
+              <!-- Quote Entry Form -->
+              <form id="quote-entry-form" class="quote-entry-form" novalidate>
+                <div class="quote-form-grid">
+                  <div class="form-group">
+                    <label for="quote-category" class="form-label">Vendor Category <span class="required">*</span></label>
+                    <select id="quote-category" class="form-select" required>
+                      <option value="">Select category...</option>
+                      <option value="Venue & Logistics">Venue &amp; Logistics</option>
+                      <option value="Catering & Bar">Catering &amp; Bar</option>
+                      <option value="Photography & Video">Photography &amp; Video</option>
+                      <option value="Music & Entertainment">Music &amp; Entertainment</option>
+                      <option value="Decor & Florals">Decor &amp; Florals</option>
+                      <option value="Planning & Coordination">Planning &amp; Coordination</option>
+                      <option value="Attire & Beauty">Attire &amp; Beauty</option>
+                      <option value="Other">Other Services</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="quote-vendor-name" class="form-label">Vendor / Company Name <span class="required">*</span></label>
+                    <input type="text" id="quote-vendor-name" class="form-input" placeholder="e.g. Skyline Event Sound" required maxlength="100">
+                  </div>
+                  <div class="form-group">
+                    <label for="quote-base-amount" class="form-label">Base Quote Amount ($) <span class="required">*</span></label>
+                    <input type="number" id="quote-base-amount" class="form-input" placeholder="e.g. 2400" min="0" max="10000000" step="0.01" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="quote-extra-fees" class="form-label">Extra Fees / Taxes / Gratuity ($)</label>
+                    <input type="number" id="quote-extra-fees" class="form-input" placeholder="e.g. 350" min="0" max="10000000" step="0.01" value="0">
+                  </div>
+                  <div class="form-group form-group-full">
+                    <label for="quote-included-services" class="form-label">Included Services &amp; Scope</label>
+                    <input type="text" id="quote-included-services" class="form-input" placeholder="e.g. 6 hours live DJ, 2 wireless mics, stage uplighting package" maxlength="300">
+                  </div>
+                  <div class="form-group">
+                    <label for="quote-payment-terms" class="form-label">Payment Terms</label>
+                    <input type="text" id="quote-payment-terms" class="form-input" placeholder="e.g. 50% deposit on contract, balance 14 days prior" maxlength="150">
+                  </div>
+                  <div class="form-group">
+                    <label for="quote-status" class="form-label">Selection Status</label>
+                    <select id="quote-status" class="form-select">
+                      <option value="Under Review">Under Review</option>
+                      <option value="Preferred">Preferred Candidate</option>
+                      <option value="Selected">Selected / Booked</option>
+                      <option value="Declined">Declined</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="quote-form-actions">
+                  <button type="submit" class="btn btn-sm btn-primary" id="btn-add-quote">
+                    <span aria-hidden="true">&#43;</span> Add Vendor Quote
+                  </button>
+                  <button type="reset" class="btn btn-sm btn-secondary" id="btn-reset-quote-form">Clear Form</button>
+                </div>
+              </form>
+
+              <!-- Quote Filter Toolbar -->
+              <div class="quote-filter-bar" id="quote-filter-bar" role="group" aria-label="Filter vendor quotes by category">
+                <span class="filter-label">Filter Quotes:</span>
+                <button type="button" class="filter-pill active" data-quote-filter="all" aria-pressed="true">All (<span id="quote-count-all">0</span>)</button>
+              </div>
+
+              <!-- Quotes Cards Comparison Grid -->
+              <div class="quote-cards-grid" id="quote-cards-grid" role="list">
+                <!-- Dynamic Quote Cards Rendered by JS -->
+              </div>
+              <p class="empty-quotes-msg" id="empty-quotes-msg">No vendor quotes added yet. Log proposals received from vendors above to compare total costs, fees, and included deliverables side-by-side.</p>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -1118,7 +1256,7 @@
   <dialog id="confirm-modal" class="confirm-modal" aria-labelledby="modal-title">
     <div class="modal-box">
       <h3 id="modal-title" class="modal-title">Start a New Celebration Plan?</h3>
-      <p class="modal-desc">
+      <p id="modal-desc" class="modal-desc">
         Starting a new plan will reset your current progress, edited budget allocations, completed milestones, and vendor notes. Are you sure you want to proceed?
       </p>
       <div class="modal-actions">

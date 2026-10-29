@@ -39,7 +39,9 @@ EventEase is engineered to deliver an inclusive celebration planning experience 
     - Arrow navigation: `ArrowRight` and `ArrowDown` move to the next tab with wrap-around; `ArrowLeft` and `ArrowUp` move to the previous tab.
     - Quick jump keys: `Home` focuses the first tab, and `End` focuses the last tab.
 - **Confirmation Dialog Modal**:
-  - The "Start New Plan" reset modal uses native `<dialog id="confirm-modal">` with focus trapped inside the dialog when open and dismissible via the `Escape` key or "Keep Current Plan" button.
+  - The confirmation modal uses native `<dialog id="confirm-modal">` with `aria-labelledby="modal-title"` and `aria-describedby="modal-desc"`. Focus is trapped inside the dialog when open and dismissible via the `Escape` key or "Cancel / Keep Current Plan" button. Used across "Start New Plan", "Delete Plan", and "Clear All Plans" workflows.
+- **Plan Library & Vendor Quote Accessibility**:
+  - All library actions (save, rename, reopen, duplicate, delete) and quote comparison inputs (quote, fees, terms, notes, services) are keyboard operable, provide clear textual labels, and announce state changes via the live region.
 - **Visible Focus Indicator**:
   - High-visibility focus ring configured globally:
     ```css
@@ -77,3 +79,12 @@ EventEase is engineered to deliver an inclusive celebration planning experience 
   - Landmarks: `<header role="banner">`, `<main role="main">`, `<footer role="contentinfo">`.
   - Exactly one `<h1>` per page with strictly ordered `<h2>` and `<h3>` section headers.
   - The budget allocation table includes `<th scope="col">` for column headers and `<th scope="row">` for summary rows.
+
+---
+
+## 5. Automated Verification & Regression Testing
+Every pull request and commit to `main` executes 87 automated browser-level DOM integration checks (`npm run test:browser`) in GitHub Actions, verifying:
+- WAI-ARIA tab state management (`tabindex`, `aria-selected`, and arrow-key focus shifting).
+- Keyboard activation of milestone checkmarks and modal dialogs.
+- Clear error alerts and screen-reader status announcements.
+- Form accessibility and focus restoration upon plan loading and clearing.

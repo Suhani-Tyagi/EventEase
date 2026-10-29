@@ -73,7 +73,7 @@ class GeminiClient:
                 )
                 if attempt < self.max_retries:
                     # Exponential backoff: 0.5s, 1.0s
-                    await asyncio.sleep(0.5 * (2 ** attempt))
+                    await asyncio.sleep(0.5 * (2**attempt))
 
         msg = f"Gemini API failed after {self.max_retries + 1} attempts"
         raise RuntimeError(msg) from last_error

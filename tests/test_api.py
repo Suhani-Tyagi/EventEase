@@ -104,9 +104,9 @@ async def test_api_validation_error_format(async_client: AsyncClient) -> None:
     invalid_payload = {
         "event_type": "invalid_type",
         "date": "2020-01-01",  # Past date
-        "guest_count": -5,      # Negative count
-        "total_budget": -100,   # Negative budget
-        "city": "X",            # Too short
+        "guest_count": -5,  # Negative count
+        "total_budget": -100,  # Negative budget
+        "city": "X",  # Too short
     }
     response = await async_client.post("/api/budget", json=invalid_payload)
     assert response.status_code == 422

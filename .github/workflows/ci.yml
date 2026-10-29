@@ -20,10 +20,19 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Node dependencies
+        run: npm ci
 
       - name: Run Ruff Lint
         run: ruff check app tests
@@ -33,3 +42,6 @@ jobs:
 
       - name: Run Pytest with Coverage
         run: pytest
+
+      - name: Run Browser DOM Integration Tests
+        run: npm run test:browser

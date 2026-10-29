@@ -7,17 +7,22 @@
 const state = {
   currentStep: 1,
   currentPlan: null,
+  activePlanId: null,
+  activePlanName: "",
   checklistStatusMap: {},
   vendorNotes: {},
   vendorContacts: {},
   completedMilestones: new Set(),
   budgetAllocations: [],
+  vendorQuotes: [],
+  activeQuoteFilter: "all",
   currentTipIndex: 0,
   activeVendorFilter: "all",
   aiStatus: { configured: false, mode: "offline_fallback" },
 };
 
 const STORAGE_KEY = "eventease_saved_plan_v1";
+const LIBRARY_STORAGE_KEY = "eventease_plan_library_v1";
 
 // Curated Planning Tips for Lumi
 const planningTips = [
@@ -37,6 +42,13 @@ const elements = {
   themeText: document.getElementById("theme-text"),
   liveRegion: document.getElementById("live-region"),
   alertRegion: document.getElementById("alert-region"),
+
+  // Plan Library Section
+  libCountBadge: document.getElementById("lib-count-badge"),
+  btnSaveCurrentToLibrary: document.getElementById("btn-save-current-to-library"),
+  btnClearAllPlans: document.getElementById("btn-clear-all-plans"),
+  planLibraryGrid: document.getElementById("plan-library-grid"),
+  emptyLibraryMsg: document.getElementById("empty-library-msg"),
 
   // AI Engine Status Indicator in Header
   aiEnginePill: document.getElementById("ai-engine-pill"),
@@ -100,10 +112,12 @@ const elements = {
   lumiWidgetBtn: document.getElementById("lumi-widget-btn"),
   lumiMinimizeBtn: document.getElementById("lumi-minimize-btn"),
 
-  // Results Section
+  // Results Section & Plan Header
   loadingIndicator: document.getElementById("loading-indicator"),
   resultsContainer: document.getElementById("results-container"),
   resultsMetaText: document.getElementById("results-meta-text"),
+  activePlanNameInput: document.getElementById("active-plan-name-input"),
+  btnSavePlanName: document.getElementById("btn-save-plan-name"),
   saveIndicator: document.getElementById("save-indicator"),
   saveStatusText: document.getElementById("save-status-text"),
   fallbackNoticeBanner: document.getElementById("fallback-notice-banner"),
@@ -176,6 +190,23 @@ const elements = {
   ideasListActivities: document.getElementById("ideas-list-activities"),
   ideasListTips: document.getElementById("ideas-list-tips"),
 
+  // Deliverable 5: Vendor Quotes
+  quoteCountBadge: document.getElementById("quote-count-badge"),
+  quoteEntryForm: document.getElementById("quote-entry-form"),
+  quoteCategory: document.getElementById("quote-category"),
+  quoteVendorName: document.getElementById("quote-vendor-name"),
+  quoteBaseAmount: document.getElementById("quote-base-amount"),
+  quoteExtraFees: document.getElementById("quote-extra-fees"),
+  quoteIncludedServices: document.getElementById("quote-included-services"),
+  quotePaymentTerms: document.getElementById("quote-payment-terms"),
+  quoteStatus: document.getElementById("quote-status"),
+  btnAddQuote: document.getElementById("btn-add-quote"),
+  btnResetQuoteForm: document.getElementById("btn-reset-quote-form"),
+  quoteFilterBar: document.getElementById("quote-filter-bar"),
+  quoteCardsGrid: document.getElementById("quote-cards-grid"),
+  emptyQuotesMsg: document.getElementById("empty-quotes-msg"),
+  quoteCountAll: document.getElementById("quote-count-all"),
+
   // Export Buttons & Actions
   btnCopySummary: document.getElementById("btn-copy-summary"),
   btnExportJson: document.getElementById("btn-export-json"),
@@ -189,6 +220,8 @@ const elements = {
 
   // Confirm Reset Modal
   confirmModal: document.getElementById("confirm-modal"),
+  modalTitle: document.getElementById("modal-title"),
+  modalDesc: document.getElementById("modal-desc"),
   btnModalCancel: document.getElementById("btn-modal-cancel"),
   btnModalConfirm: document.getElementById("btn-modal-confirm"),
 };
@@ -704,6 +737,308 @@ async function loadPresets() {
   }
 }
 
+let pendingModalAction = null;
+
+function showConfirmationModal({ title, message, confirmText = "Confirm", onConfirm }) {
+  if (elements.modalTitle) elements.modalTitle.textContent = title;
+  if (elements.modalDesc) elements.modalDesc.textContent = message;
+  if (elements.btnModalConfirm) elements.btnModalConfirm.textContent = confirmText;
+  pendingModalAction = onConfirm;
+
+  if (elements.confirmModal) {
+    if (typeof elements.confirmModal.showModal === "function") {
+      elements.confirmModal.showModal();
+    } else {
+      elements.confirmModal.setAttribute("open", "true");
+    }
+  }
+}
+
+/**
+ * Plan Library (Multiple Local Plans) Management
+ */
+function getPlanLibrary() {
+  try {
+    const raw = localStorage.getItem(LIBRARY_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn("Error reading plan library:", e);
+    return [];
+  }
+}
+
+function savePlanLibrary(list) {
+  try {
+    localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(list));
+    renderPlanLibrary();
+    return true;
+  } catch (err) {
+    if (err && (err.name === "QuotaExceededError" || err.code === 22)) {
+      showToast("Browser storage quota exceeded! Please remove some older plans. ⚠️");
+      announceLive("Browser storage quota exceeded. Please remove some older plans.", true);
+    } else {
+      showToast("Failed to save to local plan library.");
+    }
+    return false;
+  }
+}
+
+function saveCurrentPlanToLibrary(customName) {
+  if (!state.currentPlan) {
+    showToast("Please generate or restore a plan first! ✨");
+    return;
+  }
+
+  const p = state.currentPlan;
+  const name = (
+    customName ||
+    elements.activePlanNameInput?.value ||
+    state.activePlanName ||
+    `${p.intake.event_type.toUpperCase()} in ${p.intake.city}`
+  ).trim();
+
+  state.activePlanName = name;
+  if (elements.activePlanNameInput) {
+    elements.activePlanNameInput.value = name;
+  }
+
+  const planId = state.activePlanId || `plan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  state.activePlanId = planId;
+
+  const library = getPlanLibrary();
+  const existingIdx = library.findIndex((item) => item.id === planId);
+
+  const payload = {
+    version: 1,
+    id: planId,
+    name: name,
+    savedAt: new Date().toISOString(),
+    intake: {
+      eventType: elements.eventType?.value,
+      date: elements.eventDate?.value,
+      city: elements.eventCity?.value,
+      guestCount: elements.guestCount?.value,
+      totalBudget: elements.totalBudget?.value,
+      currency: elements.currency?.value,
+      theme: elements.eventTheme?.value,
+      culturalDietary: elements.culturalDietary?.value,
+      specialNotes: elements.specialNotes?.value,
+    },
+    plan: state.currentPlan,
+    checklistStatusMap: state.checklistStatusMap,
+    vendorNotes: state.vendorNotes,
+    vendorContacts: state.vendorContacts,
+    completedMilestones: Array.from(state.completedMilestones),
+    budgetAllocations: state.budgetAllocations,
+    vendorQuotes: state.vendorQuotes,
+  };
+
+  if (existingIdx >= 0) {
+    library[existingIdx] = payload;
+  } else {
+    library.unshift(payload);
+  }
+
+  const saved = savePlanLibrary(library);
+  if (saved) {
+    savePlanLocally();
+    showToast(`Plan "${name}" saved to library! 📚✨`);
+    announceLive(`Plan saved to local library as ${name}`);
+  }
+}
+
+function openPlanFromLibrary(planId) {
+  const library = getPlanLibrary();
+  const target = library.find((item) => item.id === planId);
+  if (!target) return;
+
+  restoreSavedPlan(target);
+  showToast(`Opened "${target.name}"! 📖`);
+}
+
+function deepClone(obj) {
+  if (typeof structuredClone === "function") {
+    return structuredClone(obj);
+  }
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function duplicatePlanInLibrary(planId) {
+  const library = getPlanLibrary();
+  const target = library.find((item) => item.id === planId);
+  if (!target) return;
+
+  const copy = deepClone(target);
+  copy.id = `plan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  copy.name = `${target.name} (Copy)`;
+  copy.savedAt = new Date().toISOString();
+
+  library.unshift(copy);
+  const saved = savePlanLibrary(library);
+  if (saved) {
+    showToast(`Duplicated "${target.name}"! 📋`);
+  }
+}
+
+function deletePlanFromLibrary(planId) {
+  const library = getPlanLibrary();
+  const target = library.find((item) => item.id === planId);
+  const targetName = target ? target.name : "this plan";
+
+  showConfirmationModal({
+    title: "Delete Plan from Library?",
+    message: `Are you sure you want to permanently delete "${targetName}" from this browser's local storage? This cannot be undone.`,
+    confirmText: "Yes, Delete Plan",
+    onConfirm: () => {
+      const updated = library.filter((item) => item.id !== planId);
+      savePlanLibrary(updated);
+      if (state.activePlanId === planId) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      showToast(`Deleted "${targetName}". 🗑️`);
+      announceLive("Plan deleted from library.");
+    },
+  });
+}
+
+function clearAllPlans() {
+  showConfirmationModal({
+    title: "Clear All Saved Plans?",
+    message: "This will permanently remove all saved celebration plans, custom budget allocations, vendor contacts, private notes, and quote comparisons stored in this browser on this device. This cannot be undone.",
+    confirmText: "Yes, Clear All Plans",
+    onConfirm: () => {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LIBRARY_STORAGE_KEY);
+
+      state.currentPlan = null;
+      state.activePlanId = null;
+      state.activePlanName = "";
+      state.checklistStatusMap = {};
+      state.vendorNotes = {};
+      state.vendorContacts = {};
+      state.completedMilestones.clear();
+      state.budgetAllocations = [];
+      state.vendorQuotes = [];
+
+      if (elements.activePlanNameInput) elements.activePlanNameInput.value = "";
+      elements.resultsContainer?.classList.add("hidden");
+      elements.savedPlanBanner?.classList.add("hidden");
+
+      renderPlanLibrary();
+      renderVendorQuotes();
+      showToast("All local plans and records have been cleared.");
+      announceLive("All local plans and records cleared.");
+    },
+  });
+}
+
+function renderPlanLibrary() {
+  if (!elements.planLibraryGrid) return;
+  const library = getPlanLibrary();
+
+  if (elements.libCountBadge) {
+    elements.libCountBadge.textContent = `${library.length} Saved Plan${library.length === 1 ? "" : "s"}`;
+  }
+
+  elements.planLibraryGrid.textContent = "";
+
+  if (library.length === 0) {
+    elements.emptyLibraryMsg?.classList.remove("hidden");
+    return;
+  }
+
+  elements.emptyLibraryMsg?.classList.add("hidden");
+
+  library.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "plan-item-card";
+    if (state.activePlanId && state.activePlanId === item.id) {
+      card.classList.add("active-plan-card");
+    }
+
+    const topDiv = document.createElement("div");
+    topDiv.className = "plan-card-top";
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "plan-card-name";
+    titleEl.textContent = item.name || "Untitled Plan";
+    topDiv.appendChild(titleEl);
+
+    if (state.activePlanId && state.activePlanId === item.id) {
+      const activeBadge = document.createElement("span");
+      activeBadge.className = "badge badge-accent";
+      activeBadge.textContent = "Active";
+      topDiv.appendChild(activeBadge);
+    }
+    card.appendChild(topDiv);
+
+    const metaDiv = document.createElement("div");
+    metaDiv.className = "plan-card-meta";
+    const dateFormatted = new Date(item.savedAt).toLocaleDateString();
+    const city = item.intake?.city || item.plan?.intake?.city || "";
+    const eventType = (item.intake?.eventType || item.plan?.intake?.event_type || "").toUpperCase();
+    const targetDate = item.intake?.date || item.plan?.intake?.date || "";
+    metaDiv.textContent = `${eventType} in ${city} • Date: ${targetDate} • Saved: ${dateFormatted}`;
+    card.appendChild(metaDiv);
+
+    const statsDiv = document.createElement("div");
+    statsDiv.className = "plan-card-stats";
+    const budgetVal = item.intake?.totalBudget || item.plan?.budget?.total_budget || 0;
+    const curr = item.intake?.currency || item.plan?.budget?.currency || "USD";
+    const guests = item.intake?.guestCount || item.plan?.intake?.guest_count || 0;
+    const completedM = item.completedMilestones ? item.completedMilestones.length : 0;
+    const quotesCount = item.vendorQuotes ? item.vendorQuotes.length : 0;
+    statsDiv.textContent = `${formatCurrency(Number(budgetVal), curr)} • ${guests} guests • ${completedM} milestones done • ${quotesCount} quotes`;
+    card.appendChild(statsDiv);
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "plan-card-actions";
+
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.className = "btn btn-sm btn-primary";
+    openBtn.textContent = "Open";
+    openBtn.addEventListener("click", () => openPlanFromLibrary(item.id));
+    actionsDiv.appendChild(openBtn);
+
+    const dupBtn = document.createElement("button");
+    dupBtn.type = "button";
+    dupBtn.className = "btn btn-sm btn-secondary";
+    dupBtn.textContent = "Duplicate";
+    dupBtn.addEventListener("click", () => duplicatePlanInLibrary(item.id));
+    actionsDiv.appendChild(dupBtn);
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "btn btn-sm btn-secondary btn-danger";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", () => deletePlanFromLibrary(item.id));
+    actionsDiv.appendChild(delBtn);
+
+    card.appendChild(actionsDiv);
+    elements.planLibraryGrid.appendChild(card);
+  });
+}
+
+function setupPlanLibrary() {
+  elements.btnSaveCurrentToLibrary?.addEventListener("click", () => {
+    saveCurrentPlanToLibrary();
+  });
+
+  elements.btnSavePlanName?.addEventListener("click", () => {
+    saveCurrentPlanToLibrary();
+  });
+
+  elements.activePlanNameInput?.addEventListener("input", (e) => {
+    state.activePlanName = e.target.value;
+    savePlanLocally();
+  });
+
+  elements.btnClearAllPlans?.addEventListener("click", () => {
+    clearAllPlans();
+  });
+}
+
 /**
  * LocalStorage Auto-Save & Plan Restoration
  */
@@ -713,6 +1048,8 @@ function savePlanLocally() {
   try {
     const payload = {
       version: 1,
+      id: state.activePlanId,
+      name: state.activePlanName,
       savedAt: new Date().toISOString(),
       intake: {
         eventType: elements.eventType?.value,
@@ -731,6 +1068,7 @@ function savePlanLocally() {
       vendorContacts: state.vendorContacts,
       completedMilestones: Array.from(state.completedMilestones),
       budgetAllocations: state.budgetAllocations,
+      vendorQuotes: state.vendorQuotes,
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -741,7 +1079,11 @@ function savePlanLocally() {
       elements.saveIndicator.classList.remove("saving");
     }
   } catch (err) {
-    console.warn("Could not save plan to localStorage:", err);
+    if (err && (err.name === "QuotaExceededError" || err.code === 22)) {
+      showToast("Storage quota exceeded! Delete older plans to free space. ⚠️");
+    } else {
+      console.warn("Could not save plan to localStorage:", err);
+    }
   }
 }
 
@@ -794,20 +1136,28 @@ function restoreSavedPlan(data) {
   }
 
   state.currentPlan = data.plan;
+  state.activePlanId = data.id || null;
+  state.activePlanName = data.name || (data.plan ? `${data.plan.intake.event_type.toUpperCase()} in ${data.plan.intake.city}` : "");
+  if (elements.activePlanNameInput) {
+    elements.activePlanNameInput.value = state.activePlanName;
+  }
+
   state.checklistStatusMap = data.checklistStatusMap || {};
   state.vendorNotes = data.vendorNotes || {};
   state.vendorContacts = data.vendorContacts || {};
   state.completedMilestones = new Set(data.completedMilestones || []);
   state.budgetAllocations = data.budgetAllocations || [];
+  state.vendorQuotes = data.vendorQuotes || [];
 
   updateLiveEstimate();
   renderMasterPlan(data.plan);
+  renderPlanLibrary();
 
   elements.resultsContainer.classList.remove("hidden");
   elements.savedPlanBanner?.classList.add("hidden");
   elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  showToast("Saved celebration plan restored! 📋✨");
+  showToast(`Plan restored! 📋✨`);
   announceLive("Saved celebration plan restored successfully.");
 }
 
@@ -823,16 +1173,38 @@ function discardSavedPlan() {
  */
 function setupNewPlanModal() {
   elements.btnStartNewPlan?.addEventListener("click", () => {
-    if (elements.confirmModal) {
-      if (typeof elements.confirmModal.showModal === "function") {
-        elements.confirmModal.showModal();
-      } else {
-        elements.confirmModal.setAttribute("open", "true");
-      }
-    }
+    showConfirmationModal({
+      title: "Start a New Celebration Plan?",
+      message: "Starting a new plan will reset your current progress, edited budget allocations, completed milestones, and vendor notes. Are you sure you want to proceed?",
+      confirmText: "Yes, Start New Plan",
+      onConfirm: () => {
+        localStorage.removeItem(STORAGE_KEY);
+        state.currentPlan = null;
+        state.activePlanId = null;
+        state.activePlanName = "";
+        state.checklistStatusMap = {};
+        state.vendorNotes = {};
+        state.vendorContacts = {};
+        state.completedMilestones.clear();
+        state.budgetAllocations = [];
+        state.vendorQuotes = [];
+
+        if (elements.activePlanNameInput) elements.activePlanNameInput.value = "";
+        elements.resultsContainer?.classList.add("hidden");
+        elements.savedPlanBanner?.classList.add("hidden");
+        setStep(1);
+        renderPlanLibrary();
+        renderVendorQuotes();
+        elements.eventForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        showToast("Ready for a new celebration plan! ✨");
+        announceLive("Reset completed. Started a new celebration plan.");
+      },
+    });
   });
 
   elements.btnModalCancel?.addEventListener("click", () => {
+    pendingModalAction = null;
     if (elements.confirmModal) {
       if (typeof elements.confirmModal.close === "function") {
         elements.confirmModal.close();
@@ -843,6 +1215,9 @@ function setupNewPlanModal() {
   });
 
   elements.btnModalConfirm?.addEventListener("click", () => {
+    const action = pendingModalAction;
+    pendingModalAction = null;
+
     if (elements.confirmModal) {
       if (typeof elements.confirmModal.close === "function") {
         elements.confirmModal.close();
@@ -851,21 +1226,9 @@ function setupNewPlanModal() {
       }
     }
 
-    localStorage.removeItem(STORAGE_KEY);
-    state.currentPlan = null;
-    state.checklistStatusMap = {};
-    state.vendorNotes = {};
-    state.vendorContacts = {};
-    state.completedMilestones.clear();
-    state.budgetAllocations = [];
-
-    elements.resultsContainer?.classList.add("hidden");
-    elements.savedPlanBanner?.classList.add("hidden");
-    setStep(1);
-    elements.eventForm?.scrollIntoView({ behavior: "smooth", block: "start" });
-
-    showToast("Ready for a new celebration plan! ✨");
-    announceLive("Reset completed. Started a new celebration plan.");
+    if (typeof action === "function") {
+      action();
+    }
   });
 }
 
@@ -923,14 +1286,22 @@ async function handlePlanSubmit(e) {
 
     const plan = await response.json();
     state.currentPlan = plan;
+    state.activePlanId = `plan_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const defaultName = `${plan.intake.event_type.toUpperCase()} in ${plan.intake.city}`;
+    state.activePlanName = defaultName;
+    if (elements.activePlanNameInput) {
+      elements.activePlanNameInput.value = defaultName;
+    }
     state.checklistStatusMap = {};
     state.vendorNotes = {};
     state.vendorContacts = {};
     state.completedMilestones.clear();
     state.budgetAllocations = plan.budget.items.map((i) => ({ ...i }));
+    state.vendorQuotes = [];
 
     renderMasterPlan(plan);
     savePlanLocally();
+    saveCurrentPlanToLibrary(defaultName);
 
     elements.resultsContainer.classList.remove("hidden");
     elements.savedPlanBanner?.classList.add("hidden");
@@ -943,7 +1314,7 @@ async function handlePlanSubmit(e) {
 
     if (elements.lumiHeroText) {
       elements.lumiHeroText.textContent =
-        "Woohoo! Your celebration blueprint is complete! Check out all 4 deliverables below! 🥳🎉";
+        "Woohoo! Your celebration blueprint is complete! Check out all 5 deliverables below! 🥳🎉";
     }
     if (elements.lumiWidgetText) {
       elements.lumiWidgetText.textContent = "Your master plan is ready! Look at those balanced books! 🌟";
@@ -996,8 +1367,14 @@ function renderMasterPlan(plan) {
   // 4. Render Ideas
   renderIdeas(plan.ideas);
 
-  // 5. Update Compact Dashboard Metrics
+  // 5. Render Vendor Quotes
+  renderVendorQuotes();
+
+  // 6. Update Compact Dashboard Metrics
   updateDashboard();
+
+  // 7. Render Library State
+  renderPlanLibrary();
 }
 
 /**
@@ -1557,6 +1934,239 @@ function renderIdeas(ideas) {
 }
 
 /**
+ * Deliverable 5: Vendor Quote Comparison (User Records)
+ */
+function renderVendorQuotes() {
+  if (!elements.quoteCardsGrid) return;
+
+  const quotes = state.vendorQuotes || [];
+  if (elements.quoteCountBadge) {
+    elements.quoteCountBadge.textContent = `${quotes.length} Quote${quotes.length === 1 ? "" : "s"} Logged`;
+  }
+  if (elements.quoteCountAll) {
+    elements.quoteCountAll.textContent = String(quotes.length);
+  }
+
+  // Populate dynamic category filter buttons
+  updateQuoteFilterBar();
+
+  // Filter quotes
+  const filtered = state.activeQuoteFilter === "all"
+    ? quotes
+    : quotes.filter((q) => q.category === state.activeQuoteFilter);
+
+  elements.quoteCardsGrid.textContent = "";
+
+  if (filtered.length === 0) {
+    elements.emptyQuotesMsg?.classList.remove("hidden");
+    if (quotes.length > 0 && filtered.length === 0) {
+      if (elements.emptyQuotesMsg) {
+        elements.emptyQuotesMsg.textContent = `No quotes found for category "${state.activeQuoteFilter}".`;
+      }
+    } else if (elements.emptyQuotesMsg) {
+      elements.emptyQuotesMsg.textContent = "No vendor quotes added yet. Log proposals received from vendors above to compare total costs, fees, and included deliverables side-by-side.";
+    }
+    return;
+  }
+
+  elements.emptyQuotesMsg?.classList.add("hidden");
+
+  const curr = state.currentPlan?.budget?.currency || "USD";
+
+  filtered.forEach((q) => {
+    const card = document.createElement("div");
+    card.className = "quote-card";
+    if (q.status === "Selected") {
+      card.classList.add("selected-quote");
+    }
+
+    const header = document.createElement("div");
+    header.className = "quote-card-header";
+
+    const titleGroup = document.createElement("div");
+    const title = document.createElement("h4");
+    title.className = "quote-vendor-title";
+    title.textContent = q.vendorName;
+    const catTag = document.createElement("span");
+    catTag.className = "quote-category-tag";
+    catTag.textContent = q.category;
+    titleGroup.appendChild(title);
+    titleGroup.appendChild(catTag);
+    header.appendChild(titleGroup);
+
+    const statusBadge = document.createElement("span");
+    statusBadge.className = `badge ${q.status === "Selected" ? "badge-accent" : "badge-neutral"}`;
+    statusBadge.textContent = q.status;
+    header.appendChild(statusBadge);
+    card.appendChild(header);
+
+    // Total Cost banner
+    const banner = document.createElement("div");
+    banner.className = "quote-cost-banner";
+    const costLabel = document.createElement("span");
+    costLabel.className = "quote-cost-label";
+    costLabel.textContent = "Total Estimated Cost";
+    const costVal = document.createElement("span");
+    costVal.className = "quote-total-val";
+    costVal.textContent = formatCurrency(Number(q.totalAmount), curr);
+    banner.appendChild(costLabel);
+    banner.appendChild(costVal);
+    card.appendChild(banner);
+
+    // Details breakdown
+    const details = document.createElement("div");
+    details.className = "quote-breakdown-details";
+
+    const baseRow = document.createElement("div");
+    baseRow.className = "quote-detail-row";
+    baseRow.innerHTML = `<span class="quote-detail-label">Base Quote:</span> <strong>${formatCurrency(Number(q.baseAmount), curr)}</strong>`;
+    details.appendChild(baseRow);
+
+    const feeRow = document.createElement("div");
+    feeRow.className = "quote-detail-row";
+    feeRow.innerHTML = `<span class="quote-detail-label">Extra Fees &amp; Taxes:</span> <strong>${formatCurrency(Number(q.extraFees || 0), curr)}</strong>`;
+    details.appendChild(feeRow);
+
+    if (q.paymentTerms) {
+      const termsRow = document.createElement("div");
+      termsRow.className = "quote-detail-row";
+      const termsLabel = document.createElement("span");
+      termsLabel.className = "quote-detail-label";
+      termsLabel.textContent = "Payment Terms:";
+      const termsVal = document.createElement("span");
+      termsVal.textContent = q.paymentTerms;
+      termsRow.appendChild(termsLabel);
+      termsRow.appendChild(termsVal);
+      details.appendChild(termsRow);
+    }
+    card.appendChild(details);
+
+    if (q.includedServices) {
+      const scopeBox = document.createElement("div");
+      scopeBox.className = "quote-scope-box";
+      scopeBox.textContent = `Scope: ${q.includedServices}`;
+      card.appendChild(scopeBox);
+    }
+
+    // Footer actions
+    const footer = document.createElement("div");
+    footer.className = "quote-card-footer";
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.type = "button";
+    toggleBtn.className = `btn btn-sm ${q.status === "Selected" ? "btn-secondary" : "btn-primary"}`;
+    toggleBtn.textContent = q.status === "Selected" ? "Mark Under Review" : "Select Vendor";
+    toggleBtn.addEventListener("click", () => {
+      q.status = q.status === "Selected" ? "Under Review" : "Selected";
+      savePlanLocally();
+      renderVendorQuotes();
+      showToast(`Updated quote status for ${q.vendorName} to ${q.status}.`);
+    });
+    footer.appendChild(toggleBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn btn-sm btn-secondary";
+    deleteBtn.textContent = "Remove";
+    deleteBtn.addEventListener("click", () => {
+      state.vendorQuotes = state.vendorQuotes.filter((item) => item.id !== q.id);
+      savePlanLocally();
+      renderVendorQuotes();
+      showToast(`Removed quote for ${q.vendorName}.`);
+    });
+    footer.appendChild(deleteBtn);
+
+    card.appendChild(footer);
+    elements.quoteCardsGrid.appendChild(card);
+  });
+}
+
+function updateQuoteFilterBar() {
+  if (!elements.quoteFilterBar) return;
+
+  const categories = Array.from(new Set(state.vendorQuotes.map((q) => q.category))).filter(Boolean);
+
+  // Keep first pill (All)
+  const existingButtons = elements.quoteFilterBar.querySelectorAll(".filter-pill:not([data-quote-filter='all'])");
+  existingButtons.forEach((b) => b.remove());
+
+  categories.forEach((cat) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "filter-pill";
+    btn.dataset.quoteFilter = cat;
+    btn.setAttribute("aria-pressed", state.activeQuoteFilter === cat ? "true" : "false");
+    if (state.activeQuoteFilter === cat) btn.classList.add("active");
+    const count = state.vendorQuotes.filter((q) => q.category === cat).length;
+    btn.textContent = `${cat} (${count})`;
+    btn.addEventListener("click", () => {
+      elements.quoteFilterBar.querySelectorAll(".filter-pill").forEach((b) => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
+      state.activeQuoteFilter = cat;
+      renderVendorQuotes();
+    });
+    elements.quoteFilterBar.appendChild(btn);
+  });
+}
+
+function setupVendorQuoteForm() {
+  elements.quoteEntryForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const category = elements.quoteCategory?.value;
+    const vendorName = elements.quoteVendorName?.value?.trim();
+    const baseAmount = parseFloat(elements.quoteBaseAmount?.value);
+    const extraFees = parseFloat(elements.quoteExtraFees?.value) || 0;
+    const includedServices = elements.quoteIncludedServices?.value?.trim() || "";
+    const paymentTerms = elements.quotePaymentTerms?.value?.trim() || "";
+    const status = elements.quoteStatus?.value || "Under Review";
+
+    if (!category || !vendorName || isNaN(baseAmount) || baseAmount < 0) {
+      showToast("Please enter a valid vendor category, name, and base quote amount.");
+      return;
+    }
+
+    const totalAmount = Math.round((baseAmount + extraFees) * 100) / 100;
+
+    const newQuote = {
+      id: `quote_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      category,
+      vendorName,
+      baseAmount,
+      extraFees,
+      totalAmount,
+      includedServices,
+      paymentTerms,
+      status,
+      createdAt: new Date().toISOString(),
+    };
+
+    state.vendorQuotes.push(newQuote);
+    savePlanLocally();
+    renderVendorQuotes();
+    elements.quoteEntryForm.reset();
+    showToast(`Quote for "${vendorName}" added! 📊`);
+    announceLive(`Quote for ${vendorName} added to vendor comparison.`);
+  });
+
+  const allPill = elements.quoteFilterBar?.querySelector("[data-quote-filter='all']");
+  allPill?.addEventListener("click", () => {
+    elements.quoteFilterBar.querySelectorAll(".filter-pill").forEach((b) => {
+      b.classList.remove("active");
+      b.setAttribute("aria-pressed", "false");
+    });
+    allPill.classList.add("active");
+    allPill.setAttribute("aria-pressed", "true");
+    state.activeQuoteFilter = "all";
+    renderVendorQuotes();
+  });
+}
+
+/**
  * Accessible WAI-ARIA Ideas Tab Switching & Keyboard Navigation
  */
 function setupTabs() {
@@ -1718,9 +2328,10 @@ function setupExports() {
     const contingencyAmt = contingencyItem ? contingencyItem.amount : p.budget.total_budget * 0.08;
     const contingencyPct = contingencyItem ? contingencyItem.percentage : 8.0;
 
-    const summary = [
+    const summaryParts = [
       `🎉 EVENTEASE CELEBRATION MASTER PLAN`,
       `---------------------------------------`,
+      `Plan Name: ${state.activePlanName || `${p.intake.event_type.toUpperCase()} in ${p.intake.city}`}`,
       `Event: ${p.intake.event_type.toUpperCase()} in ${p.intake.city}`,
       `Date: ${p.intake.date} (${p.timeline.days_remaining} days remaining)`,
       `Attendees: ${p.intake.guest_count} guests`,
@@ -1744,6 +2355,19 @@ function setupExports() {
         const contact = state.vendorContacts[t.id] ? ` | Contact: ${state.vendorContacts[t.id]}` : "";
         return `• [${st.toUpperCase()}] ${t.category} - ${t.vendor_type}${contact}`;
       }),
+    ];
+
+    if (state.vendorQuotes && state.vendorQuotes.length > 0) {
+      summaryParts.push(``);
+      summaryParts.push(`VENDOR QUOTES (USER RECORDS):`);
+      state.vendorQuotes.forEach((q) => {
+        summaryParts.push(
+          `• [${q.status.toUpperCase()}] ${q.category} - ${q.vendorName}: Total ${formatCurrency(Number(q.totalAmount), p.budget.currency)} (Base: ${formatCurrency(Number(q.baseAmount), p.budget.currency)} + Fees: ${formatCurrency(Number(q.extraFees || 0), p.budget.currency)}) | Terms: ${q.paymentTerms || "N/A"}`
+        );
+      });
+    }
+
+    summaryParts.push(
       ``,
       `TOP THEMES:`,
       ...p.ideas.themes.slice(0, 3).map((t) => `• ${t}`),
@@ -1751,17 +2375,18 @@ function setupExports() {
       `SAVINGS HACKS:`,
       ...p.ideas.budget_saving_tips.slice(0, 3).map((s) => `• ${s}`),
       `---------------------------------------`,
-      `Generated by EventEase Algorithmic Core`,
-    ].join("\n");
+      `Generated by EventEase Algorithmic Core`
+    );
 
-    copyToClipboard(summary, "Full celebration summary copied to clipboard! 📋✨");
+    copyToClipboard(summaryParts.join("\n"), "Full celebration summary copied to clipboard! 📋✨");
   });
 
   // 2. Download JSON
   elements.btnExportJson?.addEventListener("click", () => {
     if (!state.currentPlan) return;
 
-    const exportData = structuredClone(state.currentPlan);
+    const exportData = deepClone(state.currentPlan);
+    exportData.plan_name = state.activePlanName || `${exportData.intake.event_type} in ${exportData.intake.city}`;
     exportData.budget.items = state.budgetAllocations.length ? state.budgetAllocations : exportData.budget.items;
 
     exportData.checklist.tasks.forEach((t) => {
@@ -1774,6 +2399,7 @@ function setupExports() {
       m.completed = state.completedMilestones.has(`milestone-${idx}`);
     });
 
+    exportData.vendor_quotes = state.vendorQuotes || [];
     exportData.exported_at = new Date().toISOString();
 
     const jsonString = JSON.stringify(exportData, null, 2);
@@ -1787,15 +2413,32 @@ function setupExports() {
     announceLive("Event plan JSON download started.");
   });
 
-  // 3. Download CSV Spreadsheet
+  // 3. Download CSV Spreadsheet (Protected against Formula Injection)
   elements.btnExportCsv?.addEventListener("click", () => {
     if (!state.currentPlan) return;
     const p = state.currentPlan;
     const items = state.budgetAllocations.length ? state.budgetAllocations : p.budget.items;
 
-    const escapeCsv = (val) => {
-      const str = String(val ?? "");
-      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    const sanitizeCsvCell = (val) => {
+      if (val === null || val === undefined) return "";
+      let str = String(val);
+      const trimmed = str.trimStart();
+      if (trimmed.length > 0) {
+        const firstChar = trimmed[0];
+        if (
+          firstChar === "=" ||
+          firstChar === "+" ||
+          firstChar === "-" ||
+          firstChar === "@" ||
+          firstChar === "\t" ||
+          firstChar === "\r" ||
+          firstChar === "|" ||
+          firstChar === "%"
+        ) {
+          str = `'${str}`;
+        }
+      }
+      if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
         return `"${str.replace(/"/g, '""')}"`;
       }
       return str;
@@ -1803,6 +2446,7 @@ function setupExports() {
 
     const csvLines = [
       ["EVENT CELEBRATION PLAN", p.intake.event_type.toUpperCase()],
+      ["Plan Name", state.activePlanName || `${p.intake.event_type.toUpperCase()} in ${p.intake.city}`],
       ["Target Date", p.intake.date],
       ["City", p.intake.city],
       ["Planned Guests", p.intake.guest_count],
@@ -1823,7 +2467,7 @@ function setupExports() {
         m.tasks.join(" | "),
       ]),
       [],
-      ["VENDOR TRACKING CHECKLIST"],
+      ["VENDOR TRACKING CHECKLIST (PRIVATE NOTES & CONTACTS)"],
       ["Category", "Vendor Type", "Status", "Contact Details", "Private Notes", "Key Interview Questions"],
       ...p.checklist.tasks.map((t) => [
         t.category,
@@ -1835,7 +2479,34 @@ function setupExports() {
       ]),
     ];
 
-    const csvContent = csvLines.map((row) => row.map(escapeCsv).join(",")).join("\r\n");
+    if (state.vendorQuotes && state.vendorQuotes.length > 0) {
+      csvLines.push([]);
+      csvLines.push(["VENDOR QUOTE COMPARISON (USER-PROVIDED RECORDS)"]);
+      csvLines.push([
+        "Category",
+        "Vendor / Company Name",
+        "Status",
+        `Base Quote (${p.budget.currency})`,
+        `Extra Fees (${p.budget.currency})`,
+        `Total Cost (${p.budget.currency})`,
+        "Included Services & Scope",
+        "Payment Terms",
+      ]);
+      state.vendorQuotes.forEach((q) => {
+        csvLines.push([
+          q.category,
+          q.vendorName,
+          q.status,
+          Number(q.baseAmount).toFixed(2),
+          Number(q.extraFees || 0).toFixed(2),
+          Number(q.totalAmount).toFixed(2),
+          q.includedServices || "",
+          q.paymentTerms || "",
+        ]);
+      });
+    }
+
+    const csvContent = csvLines.map((row) => row.map(sanitizeCsvCell).join(",")).join("\r\n");
     downloadFile(
       csvContent,
       `eventease_budget_${p.intake.event_type}_${p.intake.date}.csv`,
@@ -1846,59 +2517,122 @@ function setupExports() {
     announceLive("Event plan CSV download started.");
   });
 
-  // 4. Download .ICS Calendar
+  // 4. Download .ICS Calendar (RFC 5545 Compliant)
   elements.btnExportIcs?.addEventListener("click", () => {
     if (!state.currentPlan) return;
     const p = state.currentPlan;
 
+    const escapeIcsText = (str) => {
+      if (!str) return "";
+      return String(str)
+        .replace(/\\/g, "\\\\")
+        .replace(/;/g, "\\;")
+        .replace(/,/g, "\\,")
+        .replace(/\r\n|\r|\n/g, "\\n");
+    };
+
+    const getByteLength = (str) => {
+      if (typeof TextEncoder !== "undefined") {
+        return new TextEncoder().encode(str).length;
+      }
+      let bytes = 0;
+      for (let i = 0; i < str.length; i++) {
+        const code = str.charCodeAt(i);
+        if (code <= 0x7f) bytes += 1;
+        else if (code <= 0x7ff) bytes += 2;
+        else if (code >= 0xd800 && code <= 0xdbff) {
+          bytes += 4;
+          i++;
+        } else bytes += 3;
+      }
+      return bytes;
+    };
+
+    const foldIcsLine = (line) => {
+      if (getByteLength(line) <= 75) {
+        return line;
+      }
+      let result = "";
+      let currentLineBytes = 0;
+      let maxBytes = 75;
+      for (const char of line) {
+        const charBytes = getByteLength(char);
+        if (currentLineBytes + charBytes > maxBytes) {
+          result += "\r\n ";
+          currentLineBytes = 1 + charBytes;
+          maxBytes = 75;
+        } else {
+          currentLineBytes += charBytes;
+        }
+        result += char;
+      }
+      return result;
+    };
+
     const formatDateToIcs = (dateStr) => {
-      // Input is YYYY-MM-DD
       return dateStr.replace(/-/g, "");
+    };
+
+    const getNextDayIcs = (dateStr) => {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const date = new Date(Date.UTC(year, month - 1, day));
+      date.setUTCDate(date.getUTCDate() + 1);
+      const y = date.getUTCFullYear();
+      const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const d = String(date.getUTCDate()).padStart(2, "0");
+      return `${y}${m}${d}`;
     };
 
     const pad = (n) => (n < 10 ? `0${n}` : n);
     const now = new Date();
     const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+    const planUidBase = state.activePlanId || `plan-${formatDateToIcs(p.intake.date)}`;
 
     const events = [];
 
     // Milestone Deadlines
     p.timeline.milestones.forEach((m, idx) => {
-      const dt = formatDateToIcs(m.target_date);
+      const dtStart = formatDateToIcs(m.target_date);
+      const dtEnd = getNextDayIcs(m.target_date);
       const isDone = state.completedMilestones.has(`milestone-${idx}`);
-      const summary = `[EventEase] ${m.period_label} - ${p.intake.event_type.toUpperCase()} Prep`;
-      const desc = `${m.description}\\n\\nTasks:\\n- ${m.tasks.join("\\n- ")}`;
+      const summaryText = escapeIcsText(`[EventEase] ${m.period_label} - ${p.intake.event_type.toUpperCase()} Prep`);
+      const tasksFormatted = m.tasks.map((t) => `- ${t}`).join("\n");
+      const descText = escapeIcsText(`${m.description}\n\nTasks:\n${tasksFormatted}`);
 
-      events.push(
-        [
-          "BEGIN:VEVENT",
-          `UID:milestone-${idx}-${p.intake.date}@eventease.app`,
-          `DTSTAMP:${stamp}`,
-          `DTSTART;VALUE=DATE:${dt}`,
-          `DTEND;VALUE=DATE:${dt}`,
-          `SUMMARY:${summary}`,
-          `DESCRIPTION:${desc}`,
-          `STATUS:${isDone ? "COMPLETED" : "CONFIRMED"}`,
-          "END:VEVENT",
-        ].join("\r\n")
-      );
+      const rawLines = [
+        "BEGIN:VEVENT",
+        `UID:eventease-${planUidBase}-milestone-${idx}@eventease.app`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART;VALUE=DATE:${dtStart}`,
+        `DTEND;VALUE=DATE:${dtEnd}`,
+        `SUMMARY:${summaryText}`,
+        `DESCRIPTION:${descText}`,
+        `STATUS:${isDone ? "COMPLETED" : "CONFIRMED"}`,
+        "END:VEVENT",
+      ];
+      events.push(rawLines.map(foldIcsLine).join("\r\n"));
     });
 
     // Main Celebration Day Event
-    const eventDt = formatDateToIcs(p.intake.date);
-    events.push(
-      [
-        "BEGIN:VEVENT",
-        `UID:celebration-day-${p.intake.date}@eventease.app`,
-        `DTSTAMP:${stamp}`,
-        `DTSTART;VALUE=DATE:${eventDt}`,
-        `DTEND;VALUE=DATE:${eventDt}`,
-        `SUMMARY:🎉 ${p.intake.event_type.toUpperCase()} Celebration Day!`,
-        `DESCRIPTION:Celebration in ${p.intake.city} with ${p.intake.guest_count} guests! Total budget: ${p.budget.currency} ${p.budget.total_budget}.`,
-        "STATUS:CONFIRMED",
-        "END:VEVENT",
-      ].join("\r\n")
+    const celebrationDtStart = formatDateToIcs(p.intake.date);
+    const celebrationDtEnd = getNextDayIcs(p.intake.date);
+    const celebrationSummary = escapeIcsText(`🎉 ${p.intake.event_type.toUpperCase()} Celebration Day!`);
+    const celebrationDesc = escapeIcsText(
+      `Celebration in ${p.intake.city} with ${p.intake.guest_count} guests! Total budget: ${p.budget.currency} ${p.budget.total_budget}.`
     );
+
+    const celebrationRawLines = [
+      "BEGIN:VEVENT",
+      `UID:eventease-${planUidBase}-celebration-day@eventease.app`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${celebrationDtStart}`,
+      `DTEND;VALUE=DATE:${celebrationDtEnd}`,
+      `SUMMARY:${celebrationSummary}`,
+      `DESCRIPTION:${celebrationDesc}`,
+      "STATUS:CONFIRMED",
+      "END:VEVENT",
+    ];
+    events.push(celebrationRawLines.map(foldIcsLine).join("\r\n"));
 
     const icsContent = [
       "BEGIN:VCALENDAR",
@@ -1936,15 +2670,20 @@ function setupExports() {
  * Universal browser file download helper
  */
 function downloadFile(content, filename, mimeType) {
+  if (typeof window !== "undefined") {
+    window.__lastDownloadedFile = { content, filename, mimeType };
+  }
   const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
+  const url = typeof URL.createObjectURL === "function" ? URL.createObjectURL(blob) : "#";
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  if (typeof URL.revokeObjectURL === "function" && url !== "#") {
+    URL.revokeObjectURL(url);
+  }
 }
 
 /**
@@ -1957,7 +2696,10 @@ function init() {
   setupTabs();
   setupExports();
   setupNewPlanModal();
+  setupPlanLibrary();
+  setupVendorQuoteForm();
   loadPresets();
+  renderPlanLibrary();
   checkSavedPlanOnLoad();
 
   // Multi-step buttons

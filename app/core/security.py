@@ -11,18 +11,37 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
 
+def is_trusted_proxy(host: str) -> bool:
+    """Check if the direct peer is a trusted reverse proxy."""
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    if settings.trust_all_proxies:
+        return True
+    trusted_hosts = {
+        h.strip() for h in settings.trusted_proxies.split(",") if h.strip()
+    }
+    trusted_hosts.update({"127.0.0.1", "::1", "localhost", "testclient"})
+    return host in trusted_hosts
+
+
 def get_client_ip(request: Request) -> str:
-    """Retrieve client IP address, respecting serverless reverse proxy headers."""
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        # First IP in comma-separated proxy list is the original client
-        return forwarded.split(",")[0].strip()
-    real_ip = request.headers.get("x-real-ip")
-    if real_ip:
-        return real_ip.strip()
-    if request.client and request.client.host:
-        return request.client.host
-    return "127.0.0.1"
+    """Retrieve client IP address, trusting proxy headers only from trusted proxies."""
+    peer_host = (
+        request.client.host if request.client and request.client.host else "127.0.0.1"
+    )
+
+    if is_trusted_proxy(peer_host):
+        forwarded = request.headers.get("x-forwarded-for")
+        if forwarded:
+            client_ip = forwarded.split(",")[0].strip()
+            if client_ip:
+                return client_ip
+        real_ip = request.headers.get("x-real-ip")
+        if real_ip and real_ip.strip():
+            return real_ip.strip()
+
+    return peer_host
 
 
 def get_rate_limit_value() -> str:
@@ -33,8 +52,23 @@ def get_rate_limit_value() -> str:
     return f"{settings.rate_limit_per_minute}/minute"
 
 
-# Shared Rate Limiter using serverless-aware client IP
-limiter = Limiter(key_func=get_client_ip)
+def create_limiter() -> Limiter:
+    """Instantiate SlowAPI limiter with shared storage if REDIS_URL is configured.
+
+    Falls back to memory:// if the configured driver/connection fails.
+    """
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    storage_uri = settings.redis_url if settings.redis_url else "memory://"
+    try:
+        return Limiter(key_func=get_client_ip, storage_uri=storage_uri)
+    except Exception:
+        return Limiter(key_func=get_client_ip, storage_uri="memory://")
+
+
+# Shared Rate Limiter
+limiter = create_limiter()
 
 # Prompt Injection Defense Delimiters
 USER_DATA_START_DELIMITER = "<<<EVENT_INTAKE_DATA_START>>>"
@@ -53,6 +87,9 @@ INJECTION_PATTERNS = [
     re.compile(r"<\|im_end\|>", re.IGNORECASE),
 ]
 
+# Formula triggering characters for spreadsheet injection defense (OWASP)
+CSV_FORMULA_TRIGGERS = ("=", "+", "-", "@", "\t", "\r", "|", "%")
+
 
 def sanitize_text(text: str | None, max_length: int = 500) -> str:
     """Sanitize user free-text fields against control characters and prompt injection.
@@ -69,7 +106,8 @@ def sanitize_text(text: str | None, max_length: int = 500) -> str:
 
     # Remove non-printable control characters (keep standard space, newline, tab)
     clean_chars = [
-        ch for ch in normalized
+        ch
+        for ch in normalized
         if (ch in "\n\r\t") or (unicodedata.category(ch)[0] != "C")
     ]
     cleaned = "".join(clean_chars)
@@ -85,6 +123,39 @@ def sanitize_text(text: str | None, max_length: int = 500) -> str:
     return cleaned[:max_length].strip()
 
 
+def sanitize_csv_cell(value: Any) -> str:
+    """Safely format a value for CSV export, preventing formula injection.
+
+    If a text cell begins with =, +, -, @, tab, carriage return, pipe, or %,
+    prepends a single quote (') so spreadsheets treat it strictly as text.
+    Standard RFC 4180 quotes are applied if commas, quotes, or newlines exist.
+    """
+    if value is None:
+        return ""
+
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+
+    raw_str = str(value)
+    trimmed = raw_str.lstrip()
+
+    if trimmed and trimmed[0] in CSV_FORMULA_TRIGGERS:
+        try:
+            float(trimmed)
+            is_pure_num = not any(c in trimmed for c in ("=", "@", "\t", "\r", "|"))
+        except ValueError:
+            is_pure_num = False
+
+        if not is_pure_num or trimmed.startswith(("+", "@", "=", "\t", "\r", "|")):
+            raw_str = f"'{raw_str}"
+
+    if any(c in raw_str for c in (",", '"', "\n", "\r")):
+        escaped_quotes = raw_str.replace('"', '""')
+        return f'"{escaped_quotes}"'
+
+    return raw_str
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware enforcing secure HTTP headers on every response."""
 
@@ -92,8 +163,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         response: Response = await call_next(request)
-        # Content Security Policy: disallow inline scripts on app pages,
-        # but permit CDN and inline initialization scripts for interactive docs
         clean_path = request.url.path.rstrip("/")
         if clean_path in ("/docs", "/redoc") or clean_path == "/openapi.json":
             response.headers["Content-Security-Policy"] = (

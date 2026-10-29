@@ -44,9 +44,7 @@ async def test_gemini_client_success_mocked() -> None:
 
     with patch("app.services.llm_client.genai.Client") as mock_genai_cls:
         mock_instance = MagicMock()
-        mock_instance.aio.models.generate_content = AsyncMock(
-            return_value=mock_resp
-        )
+        mock_instance.aio.models.generate_content = AsyncMock(return_value=mock_resp)
         mock_genai_cls.return_value = mock_instance
 
         res = await client.generate_json("prompt", "instruction")
@@ -56,9 +54,7 @@ async def test_gemini_client_success_mocked() -> None:
 @pytest.mark.asyncio
 async def test_gemini_client_retries_and_raises_on_persistent_failure() -> None:
     """Ensure GeminiClient retries up to max_retries on error then raises."""
-    client = GeminiClient(
-        api_key="valid-key", max_retries=1, timeout_seconds=2.0
-    )
+    client = GeminiClient(api_key="valid-key", max_retries=1, timeout_seconds=2.0)
 
     with patch("app.services.llm_client.genai.Client") as mock_genai_cls:
         mock_instance = MagicMock()

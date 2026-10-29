@@ -17,7 +17,7 @@ from httpx import ASGITransport, AsyncClient
 
 from app.core.config import get_settings
 from app.core.security import get_client_ip, get_rate_limit_value
-from app.schemas import EventType
+from app.schemas import EventType, PersonalizedIdeas
 from app.services.budget import calculate_budget
 from app.services.ideas import IdeasService
 
@@ -68,26 +68,26 @@ def test_get_rate_limit_value_matches_settings() -> None:
 
 
 def test_get_client_ip_from_x_forwarded_for() -> None:
-    """Ensure get_client_ip resolves the first client IP in X-Forwarded-For."""
+    """Ensure get_client_ip resolves first client IP when from trusted proxy."""
     scope: dict[str, Any] = {
         "type": "http",
         "headers": [
             (b"x-forwarded-for", b"203.0.113.195, 70.41.3.18, 150.172.238.178"),
         ],
-        "client": ("10.0.0.1", 54321),
+        "client": ("127.0.0.1", 54321),
     }
     request = Request(scope)
     assert get_client_ip(request) == "203.0.113.195"
 
 
 def test_get_client_ip_from_x_real_ip() -> None:
-    """Ensure get_client_ip falls back to X-Real-IP when X-Forwarded-For is absent."""
+    """Ensure get_client_ip falls back to X-Real-IP when from trusted proxy."""
     scope: dict[str, Any] = {
         "type": "http",
         "headers": [
             (b"x-real-ip", b"198.51.100.42"),
         ],
-        "client": ("10.0.0.1", 54321),
+        "client": ("127.0.0.1", 54321),
     }
     request = Request(scope)
     assert get_client_ip(request) == "198.51.100.42"
@@ -120,6 +120,19 @@ def test_get_client_ip_fallback_default() -> None:
 # ==============================================================================
 
 
+def _make_dummy_ideas(tag: str) -> PersonalizedIdeas:
+    """Helper to construct dummy PersonalizedIdeas for cache testing."""
+    return PersonalizedIdeas(
+        themes=[f"{tag} Theme"],
+        decor=[f"{tag} Decor"],
+        menu=[f"{tag} Menu"],
+        activities=[f"{tag} Activity"],
+        budget_saving_tips=[f"{tag} Tip"],
+        is_fallback=True,
+        fallback_reason="Cache unit test",
+    )
+
+
 def test_ideas_cache_purge_expired() -> None:
     """Ensure expired cache entries are pruned upon access."""
     service = IdeasService(llm_client=MagicMock(), max_cache_entries=10)
@@ -129,12 +142,12 @@ def test_ideas_cache_purge_expired() -> None:
 
     # Insert an expired entry
     service._cache["expired_key"] = (
-        {"themes": ["Old"]},
+        _make_dummy_ideas("Old"),
         now - 100,  # Expired in past
     )
     # Insert an unexpired entry
     service._cache["fresh_key"] = (
-        {"themes": ["Fresh"]},
+        _make_dummy_ideas("Fresh"),
         now + 3600,  # Valid for an hour
     )
 
@@ -154,9 +167,9 @@ def test_ideas_cache_eviction_when_capacity_reached() -> None:
     now = datetime.now(UTC).timestamp()
 
     # Add 3 entries up to max capacity
-    service._cache["key_early"] = ({"themes": ["Early"]}, now + 50)
-    service._cache["key_mid"] = ({"themes": ["Mid"]}, now + 100)
-    service._cache["key_late"] = ({"themes": ["Late"]}, now + 200)
+    service._cache["key_early"] = (_make_dummy_ideas("Early"), now + 50)
+    service._cache["key_mid"] = (_make_dummy_ideas("Mid"), now + 100)
+    service._cache["key_late"] = (_make_dummy_ideas("Late"), now + 200)
 
     assert service.cache_size == 3
 
@@ -206,9 +219,7 @@ def test_budget_contingency_calculation_from_items() -> None:
 
     # Contingency category exists in items
     contingency_items = [
-        item
-        for item in budget.items
-        if "contingency" in item.category.lower()
+        item for item in budget.items if "contingency" in item.category.lower()
     ]
     assert len(contingency_items) == 1
     contingency = contingency_items[0]
@@ -225,3 +236,129 @@ def test_budget_contingency_calculation_from_items() -> None:
     # Sum of all category percentages must equal 100%
     total_percentage = round(sum(i.percentage for i in budget.items), 1)
     assert total_percentage == 100.0
+
+
+# ==============================================================================
+# 6. Proxy Trust & Serverless Rate Limiting Security
+# ==============================================================================
+
+
+def test_untrusted_proxy_peer_cannot_spoof_client_ip(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ensure peer IPs not in trusted proxies cannot spoof X-Forwarded-For."""
+    import app.core.config as config_mod
+    from app.core.config import Settings
+
+    # Force trusted proxies to loopback only and disable trust_all_proxies
+    mock_settings = Settings.model_validate(
+        {
+            "trust_all_proxies": False,
+            "trusted_proxies": "127.0.0.1,::1",
+        }
+    )
+    monkeypatch.setattr(config_mod, "get_settings", lambda: mock_settings)
+
+    # Untrusted client sends spoofed header
+    scope: dict[str, Any] = {
+        "type": "http",
+        "headers": [
+            (b"x-forwarded-for", b"1.2.3.4"),
+            (b"x-real-ip", b"5.6.7.8"),
+        ],
+        "client": ("198.51.100.22", 45678),
+    }
+    request = Request(scope)
+
+    # Must return the untrusted peer IP, ignoring the spoofed header
+    assert get_client_ip(request) == "198.51.100.22"
+
+
+def test_trusted_proxy_peer_resolves_forwarded_client_ip(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ensure trusted reverse proxies have their X-Forwarded-For accepted."""
+    import app.core.config as config_mod
+    from app.core.config import Settings
+
+    mock_settings = Settings.model_validate(
+        {
+            "trust_all_proxies": False,
+            "trusted_proxies": "10.0.0.1",
+        }
+    )
+    monkeypatch.setattr(config_mod, "get_settings", lambda: mock_settings)
+
+    scope: dict[str, Any] = {
+        "type": "http",
+        "headers": [
+            (b"x-forwarded-for", b"203.0.113.88, 10.0.0.1"),
+        ],
+        "client": ("10.0.0.1", 45678),
+    }
+    request = Request(scope)
+    assert get_client_ip(request) == "203.0.113.88"
+
+
+def test_create_limiter_supports_redis_and_memory(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ensure create_limiter sets Redis URI when provided, memory otherwise."""
+    import app.core.config as config_mod
+    import app.core.security as sec_mod
+    from app.core.config import Settings
+
+    # Case 1: Default memory storage
+    mock_settings_mem = Settings.model_validate({"redis_url": None})
+    monkeypatch.setattr(config_mod, "get_settings", lambda: mock_settings_mem)
+    limiter_mem = sec_mod.create_limiter()
+    assert limiter_mem._storage_uri == "memory://"
+
+    # Case 2: Configured Redis URI passes storage_uri
+    calls: list[str] = []
+
+    class MockLimiter:
+        def __init__(self, key_func: Any, storage_uri: str) -> None:
+            _ = key_func
+            calls.append(storage_uri)
+            self._storage_uri = storage_uri
+
+    monkeypatch.setattr(sec_mod, "Limiter", MockLimiter)
+    mock_settings_redis = Settings.model_validate(
+        {"redis_url": "redis://localhost:6379/0"}
+    )
+    monkeypatch.setattr(config_mod, "get_settings", lambda: mock_settings_redis)
+    limiter_redis = sec_mod.create_limiter()
+    assert calls == ["redis://localhost:6379/0"]
+    assert limiter_redis._storage_uri == "redis://localhost:6379/0"
+
+
+# ==============================================================================
+# 7. CSV Export Formula Injection Defense (OWASP)
+# ==============================================================================
+
+
+def test_sanitize_csv_cell_escapes_formula_triggers() -> None:
+    """Verify formula triggering characters are neutralized with single quote."""
+    from app.core.security import sanitize_csv_cell
+
+    # Formula triggers: =, +, -, @, tab, newline, pipe, %
+    assert sanitize_csv_cell("=1+1") == "'=1+1"
+    assert sanitize_csv_cell("=cmd|' /C calc'!A0") == "'=cmd|' /C calc'!A0"
+    assert sanitize_csv_cell("+123456789") == "'+123456789"
+    assert sanitize_csv_cell("-2+2") == "'-2+2"
+    assert sanitize_csv_cell("@SUM(A1:A5)") == "'@SUM(A1:A5)"
+    assert sanitize_csv_cell("|touch /tmp/pwned") == "'|touch /tmp/pwned"
+    assert sanitize_csv_cell("%SystemRoot%") == "'%SystemRoot%"
+    assert sanitize_csv_cell("\t=1+1") == "'\t=1+1"
+    assert sanitize_csv_cell("   =SUM(B1:B10)") == "'   =SUM(B1:B10)"
+
+    # Standard benign cells
+    assert sanitize_csv_cell("Catering & Bar") == "Catering & Bar"
+    assert sanitize_csv_cell(1500) == "1500"
+    assert sanitize_csv_cell(99.5) == "99.5"
+    assert sanitize_csv_cell(None) == ""
+
+    # Cells containing commas or quotes get RFC 4180 escaped
+    assert sanitize_csv_cell("Napa Valley, CA") == '"Napa Valley, CA"'
+    assert sanitize_csv_cell('Said "Yes"') == '"Said ""Yes"""'

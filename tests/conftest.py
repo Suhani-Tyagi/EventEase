@@ -103,9 +103,7 @@ def app(
 async def async_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     """Async HTTP client for testing API routes."""
     transport = ASGITransport(app=app)
-    async with AsyncClient(
-        transport=transport, base_url="http://testserver"
-    ) as client:
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
         yield client
 
 

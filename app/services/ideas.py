@@ -122,8 +122,7 @@ class IdeasService:
             or "None specified"
         )
         clean_notes = (
-            sanitize_text(request.special_notes, max_length=500)
-            or "None specified"
+            sanitize_text(request.special_notes, max_length=500) or "None specified"
         )
         clean_city = sanitize_text(request.city, max_length=100)
 
@@ -158,9 +157,7 @@ class IdeasService:
         if cache_key in self._cache:
             cached_plan, expiry = self._cache[cache_key]
             if now < expiry:
-                logger.info(
-                    "Serving ideas from memory cache for key %s", cache_key[:8]
-                )
+                logger.info("Serving ideas from memory cache for key %s", cache_key[:8])
                 return cached_plan
 
         # Fallback early if client is not configured

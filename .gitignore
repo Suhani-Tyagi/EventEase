@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+venv311/
 ENV/
 build/
 develop-eggs/
@@ -45,4 +46,3 @@ Thumbs.db
 
 # Node
 node_modules/
-package-lock.json

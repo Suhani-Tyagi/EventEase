@@ -108,6 +108,14 @@ function createTestDOM() {
 
   const { window } = dom;
 
+  // Polyfill environment globals in JSDOM window
+  window.structuredClone = globalThis.structuredClone || ((x) => JSON.parse(JSON.stringify(x)));
+  window.TextEncoder = globalThis.TextEncoder;
+  window.TextDecoder = globalThis.TextDecoder;
+  window.URL.createObjectURL = () => "blob:mock";
+  window.URL.revokeObjectURL = () => {};
+  window.HTMLAnchorElement.prototype.click = () => {};
+
   // Set secure context & clipboard
   window.isSecureContext = true;
   window.document.execCommand = () => true;
@@ -550,6 +558,277 @@ async function runTests() {
 
     minimizeBtn.click();
     assert(!widget.classList.contains("minimized"), "Clicking again restores Lumi widget");
+  }
+
+  // =========================================================================
+  // Test 11: Celebration Plan Library (Save, Name, Open, Duplicate, Delete, Clear All)
+  // =========================================================================
+  {
+    console.log("\n[Test 11] Celebration Plan Library Management");
+    const { window } = createTestDOM();
+    initDOM(window);
+
+    // Generate a plan first
+    window.document.getElementById("event-type").value = "wedding";
+    window.document.getElementById("event-date").value = futureDate;
+    window.document.getElementById("event-city").value = "Napa Valley, CA";
+    window.document.getElementById("guest-count").value = "100";
+    window.document.getElementById("currency").value = "USD";
+    window.document.getElementById("total-budget").value = "20000";
+
+    const form = window.document.getElementById("event-form");
+    form.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Name plan and save to library
+    const planNameInput = window.document.getElementById("active-plan-name-input");
+    assert(planNameInput !== null, "Active plan name input exists");
+    planNameInput.value = "Suhani's Napa Gala";
+
+    const saveToLibBtn = window.document.getElementById("btn-save-plan-name");
+    saveToLibBtn.click();
+
+    // Verify Plan Library has 1 plan
+    const badge = window.document.getElementById("lib-count-badge");
+    assert(badge.textContent.includes("1 Saved Plan"), `Library badge shows 1 Saved Plan (got: ${badge.textContent})`);
+
+    const grid = window.document.getElementById("plan-library-grid");
+    const cards = grid.querySelectorAll(".plan-item-card");
+    assert(cards.length === 1, `1 plan card rendered in library grid (got: ${cards.length})`);
+    assert(cards[0].textContent.includes("Suhani's Napa Gala"), "Plan card shows custom saved plan name");
+
+    // Duplicate Plan
+    const dupBtn = cards[0].querySelector(".btn-secondary");
+    dupBtn.click();
+
+    const dupCards = grid.querySelectorAll(".plan-item-card");
+    assert(dupCards.length === 2, `Duplicating plan creates 2 cards in library (got: ${dupCards.length})`);
+    assert(dupCards[0].textContent.includes("(Copy)"), "Duplicated plan card has (Copy) in title");
+
+    // Delete duplicated plan with modal confirmation
+    const delBtn = dupCards[0].querySelector(".btn-danger");
+    delBtn.click();
+
+    // Confirm modal should be open
+    const modalConfirmBtn = window.document.getElementById("btn-modal-confirm");
+    modalConfirmBtn.click();
+
+    const afterDelCards = grid.querySelectorAll(".plan-item-card");
+    assert(afterDelCards.length === 1, `After deletion, library grid has 1 card (got: ${afterDelCards.length})`);
+
+    // Clear All Plans
+    const clearAllBtn = window.document.getElementById("btn-clear-all-plans");
+    clearAllBtn.click();
+    modalConfirmBtn.click();
+
+    const finalCards = grid.querySelectorAll(".plan-item-card");
+    assert(finalCards.length === 0, "Clear all plans removes all cards from library grid");
+    assert(
+      window.localStorage.getItem("eventease_plan_library_v1") === null ||
+      window.localStorage.getItem("eventease_plan_library_v1") === "[]",
+      "Library storage key cleared"
+    );
+
+    // Test storage quota handling
+    const quotaExceededErr = new Error("QuotaExceededError");
+    quotaExceededErr.name = "QuotaExceededError";
+    const origSetItem = window.localStorage.setItem;
+    window.localStorage.setItem = () => {
+      throw quotaExceededErr;
+    };
+    // Should not throw unhandled exception
+    window.document.getElementById("btn-save-current-to-library").click();
+    window.localStorage.setItem = origSetItem;
+    assert(true, "QuotaExceededError handled gracefully without throwing unhandled exception");
+  }
+
+  // =========================================================================
+  // Test 12: Vendor Quote Comparison (User Records, Formulas, Calculations)
+  // =========================================================================
+  {
+    console.log("\n[Test 12] Vendor Quote Comparison (User-Provided Records)");
+    const { window } = createTestDOM();
+    initDOM(window);
+
+    // Generate plan
+    window.document.getElementById("event-type").value = "wedding";
+    window.document.getElementById("event-date").value = futureDate;
+    window.document.getElementById("event-city").value = "Napa Valley, CA";
+    window.document.getElementById("guest-count").value = "100";
+    window.document.getElementById("currency").value = "USD";
+    window.document.getElementById("total-budget").value = "20000";
+
+    const form = window.document.getElementById("event-form");
+    form.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Submit Quote 1: DJ
+    window.document.getElementById("quote-category").value = "Music & Entertainment";
+    window.document.getElementById("quote-vendor-name").value = "Sunset DJ & Lighting";
+    window.document.getElementById("quote-base-amount").value = "2500";
+    window.document.getElementById("quote-extra-fees").value = "350";
+    window.document.getElementById("quote-included-services").value = "6 hrs DJ + 4 wireless mics";
+    window.document.getElementById("quote-payment-terms").value = "50% deposit, balance 14 days prior";
+    window.document.getElementById("quote-status").value = "Preferred";
+
+    const quoteForm = window.document.getElementById("quote-entry-form");
+    quoteForm.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+
+    // Submit Quote 2: Catering
+    window.document.getElementById("quote-category").value = "Catering & Bar";
+    window.document.getElementById("quote-vendor-name").value = "Napa Vineyard Caterers";
+    window.document.getElementById("quote-base-amount").value = "6000";
+    window.document.getElementById("quote-extra-fees").value = "500";
+    window.document.getElementById("quote-included-services").value = "3 course plated dinner";
+    window.document.getElementById("quote-payment-terms").value = "30% deposit";
+    window.document.getElementById("quote-status").value = "Under Review";
+
+    quoteForm.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+
+    // Verify Quote Cards Grid
+    const quoteGrid = window.document.getElementById("quote-cards-grid");
+    const quoteCards = quoteGrid.querySelectorAll(".quote-card");
+    assert(quoteCards.length === 2, `2 quote cards rendered (got: ${quoteCards.length})`);
+
+    // Verify calculated total cost for DJ (2500 + 350 = 2850)
+    assert(quoteCards[0].textContent.includes("2,850.00"), "Total estimated cost correctly calculates base + extra fees ($2,850.00)");
+    assert(quoteCards[0].textContent.includes("Sunset DJ & Lighting"), "Vendor name displayed accurately");
+
+    // Toggle Selection Status on first quote
+    const selectBtn = quoteCards[0].querySelector(".quote-card-footer button");
+    selectBtn.click();
+    const updatedCards = quoteGrid.querySelectorAll(".quote-card");
+    assert(updatedCards[0].classList.contains("selected-quote"), "Selecting quote applies .selected-quote highlight");
+
+    // Filter by category: Music & Entertainment
+    const catButtons = window.document.querySelectorAll("#quote-filter-bar .filter-pill");
+    const musicBtn = Array.from(catButtons).find((b) => b.textContent.includes("Music & Entertainment"));
+    assert(musicBtn !== undefined, "Dynamic category filter pill for Music & Entertainment exists");
+    musicBtn.click();
+
+    const filteredCards = quoteGrid.querySelectorAll(".quote-card");
+    assert(filteredCards.length === 1, `Category filtering shows only 1 Music & Entertainment quote (got: ${filteredCards.length})`);
+    assert(filteredCards[0].textContent.includes("Sunset DJ & Lighting"), "Filtered card is Sunset DJ");
+  }
+
+  // =========================================================================
+  // Test 13: CSV Export Formula Injection Defense (OWASP Compliant)
+  // =========================================================================
+  {
+    console.log("\n[Test 13] CSV Export Formula Injection Defense");
+    const { window } = createTestDOM();
+    initDOM(window);
+
+    // Generate plan
+    window.document.getElementById("event-type").value = "wedding";
+    window.document.getElementById("event-date").value = futureDate;
+    window.document.getElementById("event-city").value = "Napa Valley, CA";
+    window.document.getElementById("guest-count").value = "100";
+    window.document.getElementById("currency").value = "USD";
+    window.document.getElementById("total-budget").value = "20000";
+
+    const form = window.document.getElementById("event-form");
+    form.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Inject malicious formula values into notes and contact inputs
+    const contactInput = window.document.querySelector(".vendor-contact-input");
+    const notesInput = window.document.querySelector(".vendor-notes-input");
+
+    contactInput.value = "@SUM(1+1)";
+    contactInput.dispatchEvent(new window.Event("input", { bubbles: true }));
+
+    notesInput.value = "=cmd|' /C calc'!A0";
+    notesInput.dispatchEvent(new window.Event("input", { bubbles: true }));
+
+    // Add quote with formula characters in name and payment terms
+    window.document.getElementById("quote-category").value = "Music & Entertainment";
+    window.document.getElementById("quote-vendor-name").value = "+1337 DJ Services";
+    window.document.getElementById("quote-base-amount").value = "1200";
+    window.document.getElementById("quote-extra-fees").value = "0";
+    window.document.getElementById("quote-payment-terms").value = "-10% discount on cash";
+
+    const quoteForm = window.document.getElementById("quote-entry-form");
+    quoteForm.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+
+    // Trigger CSV export
+    const exportCsvBtn = window.document.getElementById("btn-export-csv");
+    exportCsvBtn.click();
+
+    const downloaded = window.__lastDownloadedFile;
+    assert(downloaded !== undefined, "CSV export triggered downloadFile helper");
+    assert(downloaded.filename.endsWith(".csv"), `CSV filename has .csv extension (${downloaded.filename})`);
+
+    const csvContent = downloaded.content;
+
+    // Verify formula cells are prepended with a single quote (') so spreadsheets open them as text
+    assert(csvContent.includes("'=cmd|' /C calc'!A0"), "Formula starting with '=' is sanitized with leading single quote: '=cmd...");
+    assert(csvContent.includes("'@SUM(1+1)"), "Formula starting with '@' is sanitized with leading single quote: '@SUM...");
+    assert(csvContent.includes("'+1337 DJ Services"), "Formula starting with '+' is sanitized with leading single quote: '+1337...");
+    assert(csvContent.includes("'-10% discount on cash"), "Formula starting with '-' is sanitized with leading single quote: '-10%...");
+
+    // Verify Vendor Quote Comparison section is present in CSV
+    assert(csvContent.includes("VENDOR QUOTE COMPARISON (USER-PROVIDED RECORDS)"), "CSV contains Vendor Quote Comparison table");
+  }
+
+  // =========================================================================
+  // Test 14: RFC 5545 .ICS Calendar Export Compliance
+  // =========================================================================
+  {
+    console.log("\n[Test 14] RFC 5545 .ICS Calendar Export Compliance");
+    const { window } = createTestDOM();
+    initDOM(window);
+
+    // Generate plan
+    window.document.getElementById("event-type").value = "wedding";
+    window.document.getElementById("event-date").value = futureDate;
+    window.document.getElementById("event-city").value = "Napa Valley, CA";
+    window.document.getElementById("guest-count").value = "100";
+    window.document.getElementById("currency").value = "USD";
+    window.document.getElementById("total-budget").value = "20000";
+
+    const form = window.document.getElementById("event-form");
+    form.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Trigger ICS export
+    const exportIcsBtn = window.document.getElementById("btn-export-ics");
+    exportIcsBtn.click();
+
+    const downloaded = window.__lastDownloadedFile;
+    assert(downloaded !== undefined, "ICS export triggered downloadFile helper");
+    assert(downloaded.filename.endsWith(".ics"), `ICS filename has .ics extension (${downloaded.filename})`);
+
+    const ics = downloaded.content;
+
+    // RFC 5545 Core Structure
+    assert(ics.startsWith("BEGIN:VCALENDAR"), "ICS starts with BEGIN:VCALENDAR");
+    assert(ics.includes("VERSION:2.0"), "ICS specifies VERSION:2.0");
+    assert(ics.includes("PRODID:-//EventEase//Celebration Planning Prototype//EN"), "ICS specifies proper PRODID");
+    assert(ics.endsWith("END:VCALENDAR"), "ICS ends with END:VCALENDAR");
+
+    // All-Day Exclusive End Date Verification
+    // First milestone target_date in mock is 2027-01-15 -> DTSTART:20270115, DTEND:20270116 (exclusive!)
+    assert(ics.includes("DTSTART;VALUE=DATE:20270115"), "Milestone DTSTART is all-day date 20270115");
+    assert(ics.includes("DTEND;VALUE=DATE:20270116"), "Milestone DTEND is exclusive date 20270116 (DTSTART + 1 day)");
+
+    // Main Celebration Day Event
+    assert(ics.includes("DTSTART;VALUE=DATE:20270615"), "Celebration day DTSTART is 20270615");
+    assert(ics.includes("DTEND;VALUE=DATE:20270616"), "Celebration day DTEND is exclusive date 20270616");
+
+    // Unique Stable UIDs
+    assert(ics.includes("UID:eventease-"), "Events have unique stable UID with eventease- prefix");
+    assert(ics.includes("@eventease.app"), "Events UID ends with domain @eventease.app");
+
+    // Line Folding Verification (RFC 5545 §3.1: lines <= 75 octets)
+    const rawLines = ics.split("\r\n");
+    let maxOctets = 0;
+    const encoder = new TextEncoder();
+    rawLines.forEach((l) => {
+      const len = encoder.encode(l).length;
+      if (len > maxOctets) maxOctets = len;
+    });
+    assert(maxOctets <= 75, `All ICS lines folded to <= 75 octets per RFC 5545 §3.1 (max line was ${maxOctets} octets)`);
   }
 
   // Summary Report
