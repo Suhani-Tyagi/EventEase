@@ -21,7 +21,20 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 
 const htmlContent = fs.readFileSync(path.join(rootDir, "templates", "index.html"), "utf-8");
-const jsContent = fs.readFileSync(path.join(rootDir, "static", "js", "app.js"), "utf-8");
+
+function loadCombinedScripts() {
+  const files = ["api.js", "auth.js", "events.js", "characters.js", "exports.js", "app.js"];
+  let combined = "";
+  for (const f of files) {
+    let content = fs.readFileSync(path.join(rootDir, "static", "js", f), "utf-8");
+    content = content.replace(/^import\s+[\s\S]*?from\s+['"].*?['"];?\s*$/gm, "");
+    content = content.replace(/^export\s+(async\s+function|function|const|let|var)\s+/gm, "$1 ");
+    content = content.replace(/^export\s+default\s+/gm, "");
+    combined += `\n// --- ${f} ---\n` + content;
+  }
+  return combined;
+}
+const jsContent = loadCombinedScripts();
 
 const futureDate = "2027-06-15";
 
@@ -132,8 +145,37 @@ function createTestDOM() {
     dispatchEvent: () => {},
   });
 
+  // Dialog polyfill for JSDOM
+  if (window.HTMLDialogElement) {
+    if (!window.HTMLDialogElement.prototype.showModal) {
+      window.HTMLDialogElement.prototype.showModal = function () {
+        this.setAttribute("open", "");
+      };
+    }
+    if (!window.HTMLDialogElement.prototype.close) {
+      window.HTMLDialogElement.prototype.close = function () {
+        this.removeAttribute("open");
+      };
+    }
+  }
+
+  // Simulated Database & User State for test instance
+  let currentUser = null;
+  const dbEvents = [];
+  let eventSeq = 1;
+
   // Mock fetch
   window.fetch = async (url, options = {}) => {
+    const method = (options.method || "GET").toUpperCase();
+    let body = {};
+    if (options.body && typeof options.body === "string") {
+      try {
+        body = JSON.parse(options.body);
+      } catch {
+        body = {};
+      }
+    }
+
     if (url === "/api/health") {
       return {
         ok: true,
@@ -157,6 +199,142 @@ function createTestDOM() {
         json: async () => samplePlan,
       };
     }
+    if (url === "/api/auth/me") {
+      return {
+        ok: true,
+        json: async () => ({
+          authenticated: Boolean(currentUser),
+          user: currentUser,
+          csrf_token: "csrf_token_test",
+        }),
+      };
+    }
+    if (url === "/api/auth/signup" && method === "POST") {
+      currentUser = {
+        id: "usr_" + Date.now(),
+        email: body.email,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      };
+      return {
+        ok: true,
+        json: async () => ({
+          user: currentUser,
+          csrf_token: "csrf_token_test",
+        }),
+      };
+    }
+    if (url === "/api/auth/signin" && method === "POST") {
+      currentUser = {
+        id: "usr_signin",
+        email: body.email,
+        is_active: true,
+        created_at: new Date().toISOString(),
+      };
+      return {
+        ok: true,
+        json: async () => ({
+          user: currentUser,
+          csrf_token: "csrf_token_test",
+        }),
+      };
+    }
+    if (url === "/api/auth/signout" && method === "POST") {
+      currentUser = null;
+      return {
+        ok: true,
+        json: async () => ({ message: "Signed out successfully." }),
+      };
+    }
+    if (url === "/api/events" && method === "GET") {
+      if (!currentUser) return { ok: false, status: 401, json: async () => ({ detail: "Not authenticated" }) };
+      return {
+        ok: true,
+        json: async () =>
+          dbEvents.map((e) => ({
+            id: e.id,
+            name: e.name,
+            event_type: e.intake.event_type,
+            date: e.intake.date,
+            city: e.intake.city,
+            guest_count: e.intake.guest_count,
+            total_budget: e.intake.total_budget,
+            currency: e.intake.currency,
+            created_at: e.created_at,
+            updated_at: e.updated_at,
+          })),
+      };
+    }
+    if (url === "/api/events" && method === "POST") {
+      if (!currentUser) return { ok: false, status: 401, json: async () => ({ detail: "Not authenticated" }) };
+      const newEv = {
+        id: "evt_" + eventSeq++,
+        name: body.name,
+        intake: body.intake,
+        plan_data: body.plan_data,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      dbEvents.push(newEv);
+      return {
+        ok: true,
+        json: async () => newEv,
+      };
+    }
+    if (url.startsWith("/api/events/") && url.endsWith("/duplicate") && method === "POST") {
+      if (!currentUser) return { ok: false, status: 401, json: async () => ({ detail: "Not authenticated" }) };
+      const id = url.split("/")[3];
+      const orig = dbEvents.find((e) => e.id === id);
+      if (!orig) return { ok: false, status: 404, json: async () => ({ detail: "Event not found" }) };
+      const dup = {
+        ...orig,
+        id: "evt_" + eventSeq++,
+        name: `${orig.name} (Copy)`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      dbEvents.push(dup);
+      return {
+        ok: true,
+        json: async () => dup,
+      };
+    }
+    if (url.startsWith("/api/events/") && method === "GET") {
+      if (!currentUser) return { ok: false, status: 401, json: async () => ({ detail: "Not authenticated" }) };
+      const id = url.split("/")[3];
+      const ev = dbEvents.find((e) => e.id === id);
+      if (!ev) return { ok: false, status: 404, json: async () => ({ detail: "Event not found" }) };
+      return {
+        ok: true,
+        json: async () => ev,
+      };
+    }
+    if (url.startsWith("/api/events/") && method === "PUT") {
+      if (!currentUser) return { ok: false, status: 401, json: async () => ({ detail: "Not authenticated" }) };
+      const id = url.split("/")[3];
+      const ev = dbEvents.find((e) => e.id === id);
+      if (!ev) return { ok: false, status: 404, json: async () => ({ detail: "Event not found" }) };
+      ev.name = body.name;
+      ev.intake = body.intake;
+      ev.plan_data = body.plan_data;
+      ev.updated_at = new Date().toISOString();
+      return {
+        ok: true,
+        json: async () => ev,
+      };
+    }
+    if (url.startsWith("/api/events/") && method === "DELETE") {
+      if (!currentUser) return { ok: false, status: 401, json: async () => ({ detail: "Not authenticated" }) };
+      const id = url.split("/")[3];
+      const idx = dbEvents.findIndex((e) => e.id === id);
+      if (idx === -1) return { ok: false, status: 404, json: async () => ({ detail: "Event not found" }) };
+      dbEvents.splice(idx, 1);
+      return {
+        ok: true,
+        json: async () => ({ message: "Event removed successfully." }),
+      };
+    }
+
     return { ok: false, status: 404, json: async () => ({}) };
   };
 
@@ -829,6 +1007,234 @@ async function runTests() {
       if (len > maxOctets) maxOctets = len;
     });
     assert(maxOctets <= 75, `All ICS lines folded to <= 75 octets per RFC 5545 §3.1 (max line was ${maxOctets} octets)`);
+  }
+
+  // =========================================================================
+  // Test 14: User Authentication & Header UI State
+  // =========================================================================
+  {
+    console.log("\n[Test 14] User Authentication & Header UI State");
+    const { window } = createTestDOM();
+    initDOM(window);
+    await new Promise((r) => setTimeout(r, 60));
+
+    const unauthView = window.document.getElementById("auth-unauth-view");
+    const userView = window.document.getElementById("auth-user-view");
+    const unauthBanner = window.document.getElementById("workspace-unauth-banner");
+    const authContent = window.document.getElementById("workspace-auth-content");
+    const modal = window.document.getElementById("auth-modal");
+    const btnHeaderSignIn = window.document.getElementById("btn-header-signin");
+
+    assert(!unauthView.classList.contains("hidden"), "Unauthenticated header view is visible initially");
+    assert(userView.classList.contains("hidden"), "Authenticated header view is hidden initially");
+    assert(!unauthBanner.classList.contains("hidden"), "Workspace unauth banner is visible");
+    assert(authContent.classList.contains("hidden"), "Workspace auth content is hidden");
+
+    // Open modal via header sign in button
+    btnHeaderSignIn.click();
+    assert(modal.hasAttribute("open"), "Auth modal opened on header button click");
+
+    // Switch to Sign Up tab
+    const tabSignup = window.document.getElementById("tab-auth-signup");
+    tabSignup.click();
+    const panelSignup = window.document.getElementById("auth-panel-signup");
+    assert(!panelSignup.classList.contains("hidden"), "Sign up panel is active");
+
+    // Submit sign up form
+    const signupEmail = window.document.getElementById("signup-email");
+    const signupPassword = window.document.getElementById("signup-password");
+    signupEmail.value = "celebration_planner@example.com";
+    signupPassword.value = "SecurePass123!";
+
+    const formSignup = window.document.getElementById("form-auth-signup");
+    formSignup.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+
+    await new Promise((r) => setTimeout(r, 80));
+
+    // Modal should close and header should update
+    assert(!modal.hasAttribute("open"), "Auth modal closed after successful signup");
+    assert(unauthView.classList.contains("hidden"), "Unauthenticated header view is hidden after signup");
+    assert(!userView.classList.contains("hidden"), "Authenticated header view is visible after signup");
+
+    const userEmailSpan = window.document.getElementById("nav-user-email");
+    assert(userEmailSpan.textContent === "celebration_planner@example.com", `Nav display email matches (${userEmailSpan.textContent})`);
+    assert(!authContent.classList.contains("hidden"), "Workspace auth content is visible after signup");
+
+    // Test Sign Out
+    const btnSignOut = window.document.getElementById("btn-header-signout");
+    btnSignOut.click();
+
+    await new Promise((r) => setTimeout(r, 80));
+
+    assert(!unauthView.classList.contains("hidden"), "Unauthenticated view restored after sign out");
+    assert(userView.classList.contains("hidden"), "Authenticated view hidden after sign out");
+    assert(!unauthBanner.classList.contains("hidden"), "Workspace unauth banner restored after sign out");
+  }
+
+  // =========================================================================
+  // Test 15: Persistent Database Saved Events Workspace (CRUD)
+  // =========================================================================
+  {
+    console.log("\n[Test 15] Persistent Database Saved Events Workspace (CRUD)");
+    const { window } = createTestDOM();
+    window.confirm = () => true;
+    initDOM(window);
+    await new Promise((r) => setTimeout(r, 60));
+
+    // Sign in first
+    const formSignin = window.document.getElementById("form-auth-signin");
+    window.document.getElementById("signin-email").value = "organizer@example.com";
+    window.document.getElementById("signin-password").value = "SecretPassword123!";
+    formSignin.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 80));
+
+    // Generate plan
+    const weddingPreset = window.document.getElementById("preset-wedding");
+    weddingPreset.click();
+    await new Promise((r) => setTimeout(r, 60));
+
+    window.document.getElementById("btn-to-step-2").click();
+    window.document.getElementById("btn-to-step-3").click();
+    window.document.getElementById("event-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 80));
+
+    // Save event to database
+    const btnSaveDb = window.document.getElementById("btn-save-event-to-db");
+    const planNameInput = window.document.getElementById("active-plan-name-input");
+    planNameInput.value = "Grand Napa Gala 2027";
+    btnSaveDb.click();
+    await new Promise((r) => setTimeout(r, 80));
+
+    const grid = window.document.getElementById("saved-events-grid");
+    const countBadge = window.document.getElementById("workspace-count-badge");
+    const cards = grid.querySelectorAll(".saved-event-card");
+
+    assert(cards.length === 1, `Saved events workspace rendered 1 event card (found ${cards.length})`);
+    assert(countBadge.textContent.includes("1 Event"), `Workspace count badge displays 1 Event (${countBadge.textContent})`);
+
+    const titleEl = cards[0].querySelector(".saved-event-title");
+    assert(titleEl.textContent === "Grand Napa Gala 2027", `Card title reflects saved name (${titleEl.textContent})`);
+
+    // Duplicate event
+    const btnDup = cards[0].querySelector(".btn-dup-event");
+    btnDup.click();
+    await new Promise((r) => setTimeout(r, 80));
+
+    const updatedCards = grid.querySelectorAll(".saved-event-card");
+    assert(updatedCards.length === 2, `Workspace has 2 cards after duplicate (found ${updatedCards.length})`);
+
+    // Reopen first event
+    window.document.getElementById("guest-count").value = "1";
+    const btnOpen = updatedCards[0].querySelector(".btn-open-event");
+    btnOpen.click();
+    await new Promise((r) => setTimeout(r, 80));
+
+    assert(window.document.getElementById("guest-count").value === "100", `Guest count restored on reopen (${window.document.getElementById("guest-count").value})`);
+
+    // Delete duplicated event
+    const btnDel = updatedCards[1].querySelector(".btn-del-event");
+    btnDel.click();
+    await new Promise((r) => setTimeout(r, 80));
+
+    const finalCards = grid.querySelectorAll(".saved-event-card");
+    assert(finalCards.length === 1, `Workspace has 1 card after deleting duplicate (${finalCards.length})`);
+  }
+
+  // =========================================================================
+  // Test 16: Interactive Character Squad Reactions
+  // =========================================================================
+  {
+    console.log("\n[Test 16] Interactive Character Squad Reactions");
+    const { window } = createTestDOM();
+    initDOM(window);
+    await new Promise((r) => setTimeout(r, 60));
+
+    // Generate plan
+    window.document.getElementById("preset-wedding").click();
+    await new Promise((r) => setTimeout(r, 50));
+    window.document.getElementById("btn-to-step-2").click();
+    window.document.getElementById("btn-to-step-3").click();
+    window.document.getElementById("event-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 80));
+
+    // 1. Barnaby (Budget Reaction)
+    const barnabySpeech = window.document.getElementById("barnaby-speech");
+    assert(barnabySpeech !== null, "Barnaby speech bubble container exists");
+    assert(barnabySpeech.textContent.includes("Barnaby"), `Barnaby speech has Financial Strategist role (${barnabySpeech.textContent})`);
+
+    // Over-allocate budget and verify Barnaby warns
+    const firstPctInput = window.document.querySelector(".budget-input-pct");
+    firstPctInput.value = "99.0";
+    firstPctInput.dispatchEvent(new window.Event("input"));
+    await new Promise((r) => setTimeout(r, 30));
+
+    assert(barnabySpeech.textContent.includes("overallocated"), `Barnaby warns about over-allocation (${barnabySpeech.textContent})`);
+
+    // 2. Shep (Milestone Reaction)
+    const shepSpeech = window.document.getElementById("shep-speech");
+    assert(shepSpeech !== null, "Shep speech bubble container exists");
+    const milestoneBtn = window.document.querySelector(".milestone-item-btn");
+    milestoneBtn.click();
+    await new Promise((r) => setTimeout(r, 30));
+
+    assert(shepSpeech.textContent.includes("Shep (Timeline)"), `Shep speech updates on milestone progress (${shepSpeech.textContent})`);
+
+    // 3. Nova (Vendor Reaction)
+    const novaSpeech = window.document.getElementById("nova-speech");
+    assert(novaSpeech !== null, "Nova speech bubble container exists");
+    const vendorSelect = window.document.querySelector(".checklist-status-select");
+    vendorSelect.value = "booked";
+    vendorSelect.dispatchEvent(new window.Event("change"));
+    await new Promise((r) => setTimeout(r, 30));
+
+    assert(novaSpeech.textContent.includes("Contract secured") || novaSpeech.textContent.includes("Nova (Vendors)"), `Nova responds to vendor booking (${novaSpeech.textContent})`);
+
+    // 4. Pip (Creative Curator Reaction)
+    const pipSpeech = window.document.getElementById("pip-speech");
+    assert(pipSpeech !== null, "Pip speech bubble container exists");
+    const tabMenu = window.document.getElementById("tab-menu");
+    tabMenu.click();
+    await new Promise((r) => setTimeout(r, 30));
+
+    assert(pipSpeech.textContent.includes("culinary") || pipSpeech.textContent.includes("Pip (Creative)"), `Pip responds with culinary tip on Menu tab (${pipSpeech.textContent})`);
+  }
+
+  // =========================================================================
+  // Test 17: Reduced Motion Controls & Accessibility
+  // =========================================================================
+  {
+    console.log("\n[Test 17] Reduced Motion Controls & Accessibility");
+    const { window } = createTestDOM();
+    initDOM(window);
+    await new Promise((r) => setTimeout(r, 60));
+
+    const root = window.document.documentElement;
+    const motionToggle = window.document.getElementById("motion-toggle");
+    const motionText = window.document.getElementById("motion-text");
+
+    assert(motionToggle !== null, "Motion toggle button exists in header");
+    assert(!root.classList.contains("reduce-motion-active"), "Motion is ON by default");
+    assert(motionToggle.getAttribute("aria-pressed") === "false", "aria-pressed is false by default");
+
+    // Click to disable motion
+    motionToggle.click();
+
+    assert(root.classList.contains("reduce-motion-active"), "Root element receives .reduce-motion-active class");
+    assert(motionToggle.getAttribute("aria-pressed") === "true", "aria-pressed is true when motion disabled");
+    assert(motionText.textContent.includes("OFF"), `Motion label displays OFF (${motionText.textContent})`);
+
+    // Test confetti suppression when motion is off
+    const confettiContainer = window.document.getElementById("confetti-canvas-container");
+    confettiContainer.innerHTML = "";
+    const btnHeroSparkle = window.document.getElementById("btn-hero-sparkle");
+    btnHeroSparkle.click();
+
+    assert(confettiContainer.children.length === 0, "Confetti particles are suppressed when reduced motion is active");
+
+    // Toggle back ON
+    motionToggle.click();
+    assert(!root.classList.contains("reduce-motion-active"), "Motion enabled again after toggle");
+    assert(motionToggle.getAttribute("aria-pressed") === "false", "aria-pressed is false when re-enabled");
   }
 
   // Summary Report

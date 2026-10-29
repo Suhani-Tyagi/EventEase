@@ -1,0 +1,88 @@
+"""Database connection and session management using SQLAlchemy."""
+
+import logging
+from collections.abc import Generator
+from functools import lru_cache
+
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from app.core.config import get_settings
+
+logger = logging.getLogger("eventease.database")
+
+
+class Base(DeclarativeBase):
+    """Base class for all SQLAlchemy declarative models."""
+
+    pass
+
+
+def get_engine_args(database_url: str) -> dict[str, object]:
+    """Return appropriate engine arguments based on database URL."""
+    args: dict[str, object] = {}
+    if database_url.startswith("sqlite"):
+        args["connect_args"] = {"check_same_thread": False}
+        if ":memory:" in database_url:
+            args["poolclass"] = StaticPool
+    else:
+        args["pool_pre_ping"] = True
+    return args
+
+
+@lru_cache
+def get_engine() -> Engine:
+    """Create and return a cached SQLAlchemy Engine."""
+    settings = get_settings()
+    db_url = settings.database_url
+
+    # Normalize older postgres:// prefixes to postgresql://
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+    engine_args = get_engine_args(db_url)
+    try:
+        engine = create_engine(db_url, **engine_args)
+        schema_name = db_url.split("://")[0]
+        logger.info("Initialized database engine with URL schema: %s", schema_name)
+        return engine
+    except Exception as exc:
+        logger.error(
+            "Failed to initialize database engine: %s",
+            str(exc),
+            exc_info=True,
+        )
+        raise
+
+
+def get_session_factory(engine: Engine | None = None) -> sessionmaker[Session]:
+    """Return a sessionmaker bound to the given or cached engine."""
+    eng = engine or get_engine()
+    return sessionmaker(autocommit=False, autoflush=False, bind=eng)
+
+
+def init_db(engine: Engine | None = None) -> None:
+    """Initialize database tables from declarative metadata."""
+    eng = engine or get_engine()
+    # Import models to ensure they are registered with Base.metadata
+    from app.models.models import EventPlanModel, User, UserSession  # noqa: F401
+
+    try:
+        Base.metadata.create_all(bind=eng)
+        logger.info("Database tables initialized successfully.")
+    except Exception as exc:
+        logger.error(
+            "Database schema initialization failed: %s", str(exc), exc_info=True
+        )
+        raise
+
+
+def get_db() -> Generator[Session, None, None]:
+    """FastAPI dependency yielding a transactional database session."""
+    factory = get_session_factory()
+    session = factory()
+    try:
+        yield session
+    finally:
+        session.close()

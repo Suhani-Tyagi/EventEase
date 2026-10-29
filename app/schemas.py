@@ -182,3 +182,138 @@ class FullEventPlan(StrictBaseModel):
     checklist: VendorChecklist
     ideas: PersonalizedIdeas
     generated_at: dt.datetime
+
+
+# ---------------------------------------------------------------------------
+# Authentication & User Management Schemas
+# ---------------------------------------------------------------------------
+
+
+class UserSignUpRequest(StrictBaseModel):
+    """User account creation payload."""
+
+    email: str = Field(
+        ...,
+        min_length=5,
+        max_length=255,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+        description="Valid email address",
+    )
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Password (minimum 8 characters)",
+    )
+
+
+class UserSignInRequest(StrictBaseModel):
+    """User login credential payload."""
+
+    email: str = Field(
+        ...,
+        min_length=5,
+        max_length=255,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    )
+    password: str = Field(
+        ...,
+        min_length=1,
+        max_length=128,
+    )
+
+
+class UserRecoverRequest(StrictBaseModel):
+    """Account recovery request payload."""
+
+    email: str = Field(
+        ...,
+        min_length=5,
+        max_length=255,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    )
+
+
+class UserResetPasswordRequest(StrictBaseModel):
+    """Account password reset payload with token."""
+
+    token: str = Field(..., min_length=10, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class UserResponse(StrictBaseModel):
+    """Public user identity model."""
+
+    id: str
+    email: str
+    created_at: dt.datetime
+
+
+class AuthStatusResponse(StrictBaseModel):
+    """Current session authentication status."""
+
+    authenticated: bool
+    user: UserResponse | None = None
+    csrf_token: str | None = None
+
+
+class AuthMessageResponse(StrictBaseModel):
+    """Generic status message for auth operations."""
+
+    message: str
+    reset_token: str | None = None  # Populated only in development/test environments
+
+
+# ---------------------------------------------------------------------------
+# Persistent Event Schemas
+# ---------------------------------------------------------------------------
+
+
+class EventCreateRequest(StrictBaseModel):
+    """Payload to create and persist a new celebration plan."""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    intake: EventIntakeRequest
+    plan_data: dict[str, object] = Field(default_factory=dict)
+
+
+class EventUpdateRequest(StrictBaseModel):
+    """Payload to update an existing saved celebration plan."""
+
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    intake: EventIntakeRequest | None = None
+    plan_data: dict[str, object] | None = None
+
+
+class EventSummaryResponse(StrictBaseModel):
+    """Summary of a saved celebration plan for listing."""
+
+    id: str
+    name: str
+    event_type: str
+    date: str
+    guest_count: int
+    total_budget: float
+    currency: str
+    city: str
+    created_at: dt.datetime
+    updated_at: dt.datetime
+
+
+class EventDetailResponse(StrictBaseModel):
+    """Full detail of a saved celebration plan."""
+
+    id: str
+    name: str
+    event_type: str
+    date: str
+    guest_count: int
+    total_budget: float
+    currency: str
+    city: str
+    theme: str
+    cultural_dietary_preferences: str
+    special_notes: str
+    plan_data: dict[str, object]
+    created_at: dt.datetime
+    updated_at: dt.datetime

@@ -47,10 +47,34 @@
           <span class="status-text" id="status-text">Detecting AI Engine...</span>
         </div>
 
+        <!-- Reduced Motion Toggle -->
+        <button id="motion-toggle" class="btn btn-secondary btn-icon" type="button" aria-pressed="false" aria-label="Toggle animations and decorative motion">
+          <span id="motion-icon" aria-hidden="true">&#9881;</span>
+          <span id="motion-text">Motion: ON</span>
+        </button>
+
         <button id="theme-toggle" class="btn btn-secondary btn-icon" type="button" aria-pressed="false" aria-label="Toggle dark and light themes">
           <span id="theme-icon" aria-hidden="true">&#9790;</span>
           <span id="theme-text">Dark Mode</span>
         </button>
+
+        <!-- User Authentication View in Nav -->
+        <div id="auth-nav-container" class="auth-nav-container">
+          <div id="auth-unauth-view" class="auth-view-block">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-header-signin">Sign In</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-header-signup">Sign Up</button>
+          </div>
+          <div id="auth-user-view" class="auth-view-block hidden">
+            <span class="user-greeting-pill" id="user-greeting-pill" title="Signed-in Account">
+              <span class="user-avatar-icon" aria-hidden="true">&#128100;</span>
+              <span id="nav-user-email">user@example.com</span>
+            </span>
+            <a href="#saved-events-workspace" class="btn btn-secondary btn-sm" id="btn-header-my-events">
+              <span aria-hidden="true">&#128218;</span> Events (<span id="nav-events-count">0</span>)
+            </a>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-header-signout">Sign Out</button>
+          </div>
+        </div>
 
         <a href="#form-heading" class="btn btn-primary btn-cta">
           <span>Plan An Event</span>
@@ -369,6 +393,47 @@
       <!-- Multi-step Intake Form -->
       <section class="form-section" aria-labelledby="form-heading">
 
+        <!-- Persistent Database Saved Events Workspace -->
+        <div id="saved-events-workspace" class="card saved-events-workspace" role="region" aria-labelledby="workspace-heading">
+          <div class="workspace-header">
+            <div class="workspace-title-group">
+              <span class="workspace-icon" aria-hidden="true">&#128451;</span>
+              <div>
+                <div class="workspace-title-row">
+                  <h2 id="workspace-heading" class="workspace-title">My Saved Events Workspace</h2>
+                  <span class="badge badge-accent">Database Persisted</span>
+                </div>
+                <p class="workspace-desc">Your celebration plans, customized budgets, milestone schedules, and vendor records saved to your account database.</p>
+              </div>
+            </div>
+            <div class="workspace-actions-header">
+              <span class="badge badge-accent" id="workspace-count-badge">0 Events</span>
+              <button type="button" class="btn btn-sm btn-primary" id="btn-create-new-event">
+                <span aria-hidden="true">&#10010;</span> Create New Event
+              </button>
+            </div>
+          </div>
+
+          <!-- Unauthenticated Gate Banner -->
+          <div id="workspace-unauth-banner" class="alert-box alert-info">
+            <span class="alert-icon" aria-hidden="true">&#128274;</span>
+            <div class="alert-content">
+              <strong>Account Database Required:</strong> Sign in or create an account to access your personal celebration database, view saved events, and synchronize your plans across sessions.
+              <div class="banner-btn-row">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-workspace-signin">Sign In / Sign Up</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Authenticated Workspace View -->
+          <div id="workspace-auth-content" class="hidden">
+            <div id="saved-events-grid" class="saved-events-grid"></div>
+            <p id="empty-workspace-msg" class="empty-workspace-msg hidden">
+              No saved celebration plans found in your account database. Start by creating your first celebration plan below!
+            </p>
+          </div>
+        </div>
+
         <!-- Plan Library Section (Multiple Local Plans) -->
         <div id="plan-library-section" class="card plan-library-card" role="region" aria-labelledby="library-heading">
           <div class="library-header">
@@ -585,9 +650,13 @@
             </div>
             <div class="active-plan-title-wrapper">
               <input type="text" id="active-plan-name-input" class="active-plan-name-input" placeholder="Name this celebration plan..." aria-label="Active Celebration Plan Name" maxlength="80">
+              <button type="button" class="btn btn-sm btn-primary" id="btn-save-event-to-db" title="Save this celebration plan to your persistent database account">
+                <span aria-hidden="true">&#9729;</span> <span id="db-save-btn-text">Save to Database</span>
+              </button>
               <button type="button" class="btn btn-sm btn-secondary" id="btn-save-plan-name" title="Save this named plan to your local library">
                 <span aria-hidden="true">&#128190;</span> Save to Library
               </button>
+              <span id="db-save-status" class="db-save-status hidden" role="status">Saved &check;</span>
             </div>
             <p class="results-subtitle" id="results-meta-text">Generated based on your event specifications</p>
           </div>
@@ -749,7 +818,7 @@
                     <span class="character-name">Barnaby the Budget Bear</span>
                     <span class="character-pill">Balanced Allocations</span>
                   </div>
-                  <p class="character-quote">
+                  <p class="character-quote" id="barnaby-speech">
                     &ldquo;Every dollar is deterministically allocated! Edit any category percentage or amount below, and our engine automatically balances totals and safeguards your contingency reserve.&rdquo;
                   </p>
                 </div>
@@ -874,7 +943,7 @@
                     <span class="character-name">Pip the Timekeeper Penguin</span>
                     <span class="character-pill" id="milestone-tracker-pill">0 / 0 Done</span>
                   </div>
-                  <p class="character-quote">
+                  <p class="character-quote" id="pip-speech">
                     &ldquo;Backward-planned from your event date! Click any milestone below to mark it completed as your preparations progress.&rdquo;
                   </p>
                 </div>
@@ -951,7 +1020,7 @@
                     <span class="character-name">Sherlock Shep the Vendor Detective</span>
                     <span class="character-pill">Contract Screening</span>
                   </div>
-                  <p class="character-quote">
+                  <p class="character-quote" id="shep-speech">
                     &ldquo;Never sign blind! Use these tailored screening questions during vendor discovery calls, and log your vendor contact details and private notes directly below.&rdquo;
                   </p>
                 </div>
@@ -1041,7 +1110,7 @@
                     <span class="character-name">Nova the Creative Spark Cat</span>
                     <span class="character-pill">&#10024; Creative Studio</span>
                   </div>
-                  <p class="character-quote">
+                  <p class="character-quote" id="nova-speech">
                     &ldquo;Curated themes, signature menus, and practical budget hacks! Click any card to copy its details straight to your event notes.&rdquo;
                   </p>
                 </div>
@@ -1251,6 +1320,101 @@
       </svg>
     </button>
   </aside>
+
+  <!-- Secure Authentication Modal (Sign In, Create Account, Password Reset) -->
+  <dialog id="auth-modal" class="auth-modal" aria-labelledby="auth-modal-title">
+    <div class="auth-modal-box">
+      <div class="auth-modal-header">
+        <h2 id="auth-modal-title" class="auth-modal-title">Celebration Workspace Account</h2>
+        <button type="button" class="btn-close-modal" id="btn-close-auth-modal" aria-label="Close authentication dialog">&times;</button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="auth-nav-tabs" role="tablist" aria-label="Authentication Options">
+        <button type="button" class="auth-nav-tab active" role="tab" id="tab-auth-signin" data-tab="signin" aria-selected="true">
+          Sign In
+        </button>
+        <button type="button" class="auth-nav-tab" role="tab" id="tab-auth-signup" data-tab="signup" aria-selected="false">
+          Create Account
+        </button>
+        <button type="button" class="auth-nav-tab" role="tab" id="tab-auth-recovery" data-tab="recovery" aria-selected="false">
+          Reset Password
+        </button>
+      </div>
+
+      <!-- Sign In Panel -->
+      <div id="auth-panel-signin" class="auth-tab-panel" role="tabpanel" aria-labelledby="tab-auth-signin">
+        <form id="form-auth-signin" class="auth-form" novalidate>
+          <div id="signin-alert" class="alert-box alert-danger hidden" role="alert"></div>
+          <div class="form-group">
+            <label for="signin-email" class="form-label">Email Address <span class="required-star">*</span></label>
+            <input type="email" id="signin-email" class="form-input" required autocomplete="email" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label for="signin-password" class="form-label">Password <span class="required-star">*</span></label>
+            <input type="password" id="signin-password" class="form-input" required autocomplete="current-password" placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="btn-submit-signin">
+            Sign In to Workspace
+          </button>
+        </form>
+      </div>
+
+      <!-- Create Account Panel -->
+      <div id="auth-panel-signup" class="auth-tab-panel hidden" role="tabpanel" aria-labelledby="tab-auth-signup">
+        <form id="form-auth-signup" class="auth-form" novalidate>
+          <div id="signup-alert" class="alert-box alert-danger hidden" role="alert"></div>
+          <div class="form-group">
+            <label for="signup-email" class="form-label">Email Address <span class="required-star">*</span></label>
+            <input type="email" id="signup-email" class="form-input" required autocomplete="email" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label for="signup-password" class="form-label">Password <span class="required-star">*</span></label>
+            <input type="password" id="signup-password" class="form-input" required minlength="8" autocomplete="new-password" placeholder="Minimum 8 characters">
+            <span class="form-hint">Stored securely using modern bcrypt hashing. Never logged or exposed.</span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="btn-submit-signup">
+            Create Account &amp; Start Planning
+          </button>
+        </form>
+      </div>
+
+      <!-- Password Recovery Panel -->
+      <div id="auth-panel-recovery" class="auth-tab-panel hidden" role="tabpanel" aria-labelledby="tab-auth-recovery">
+        <div class="recovery-steps-wrapper">
+          <form id="form-auth-recovery" class="auth-form" novalidate>
+            <h3 class="auth-section-title">Step 1: Request Reset Token</h3>
+            <div id="recovery-alert" class="alert-box hidden" role="alert"></div>
+            <div class="form-group">
+              <label for="recovery-email" class="form-label">Registered Email <span class="required-star">*</span></label>
+              <input type="email" id="recovery-email" class="form-input" required autocomplete="email" placeholder="you@example.com">
+            </div>
+            <button type="submit" class="btn btn-secondary btn-block" id="btn-submit-recovery">
+              Request Reset Token
+            </button>
+          </form>
+
+          <hr class="auth-divider">
+
+          <form id="form-auth-reset" class="auth-form" novalidate>
+            <h3 class="auth-section-title">Step 2: Enter Token &amp; New Password</h3>
+            <div id="reset-alert" class="alert-box hidden" role="alert"></div>
+            <div class="form-group">
+              <label for="reset-token-input" class="form-label">Reset Token <span class="required-star">*</span></label>
+              <input type="text" id="reset-token-input" class="form-input" required placeholder="Paste recovery token">
+            </div>
+            <div class="form-group">
+              <label for="reset-new-password" class="form-label">New Password <span class="required-star">*</span></label>
+              <input type="password" id="reset-new-password" class="form-input" required minlength="8" autocomplete="new-password" placeholder="Minimum 8 characters">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="btn-submit-reset">
+              Update Password
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </dialog>
 
   <!-- Confirm Start New Plan Modal -->
   <dialog id="confirm-modal" class="confirm-modal" aria-labelledby="modal-title">

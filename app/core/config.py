@@ -38,6 +38,23 @@ class Settings(BaseSettings):
         default=1_048_576, alias="MAX_REQUEST_BODY_BYTES"
     )
 
+    # Database & Sessions
+    database_url: str = Field(default="sqlite:///./eventease.db", alias="DATABASE_URL")
+    session_secret_key: str = Field(
+        default="dev-secret-key-change-in-production-must-be-32-chars",
+        alias="SESSION_SECRET_KEY",
+    )
+    session_cookie_name: str = Field(
+        default="eventease_session", alias="SESSION_COOKIE_NAME"
+    )
+    csrf_cookie_name: str = Field(default="eventease_csrf", alias="CSRF_COOKIE_NAME")
+    session_max_age_seconds: int = Field(
+        default=604800, alias="SESSION_MAX_AGE_SECONDS"
+    )
+    auth_rate_limit_per_minute: int = Field(
+        default=5, alias="AUTH_RATE_LIMIT_PER_MINUTE"
+    )
+
     # LLM Settings
     gemini_model: str = Field(default="gemini-2.5-flash", alias="GEMINI_MODEL")
     llm_timeout_seconds: float = Field(default=10.0, alias="LLM_TIMEOUT_SECONDS")

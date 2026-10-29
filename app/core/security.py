@@ -1,14 +1,43 @@
-"""Security utilities: input sanitization, security headers, and rate limiting."""
+"""Security utilities: input sanitization, headers, hashing, and rate limiting."""
 
+import hashlib
 import re
+import secrets
 import unicodedata
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+import bcrypt
 from fastapi import Request, Response
 from slowapi import Limiter
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+
+
+def hash_password(plain_password: str) -> str:
+    """Hash password using modern bcrypt with auto-generated salt."""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(plain_password.encode("utf-8"), salt).decode("utf-8")
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a plain-text password against a bcrypt hash in constant time."""
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+        )
+    except Exception:
+        return False
+
+
+def hash_token(raw_token: str) -> str:
+    """Compute SHA-256 hex digest so raw tokens are not stored in database."""
+    return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+
+
+def generate_secure_token(length_bytes: int = 32) -> str:
+    """Generate a cryptographically secure URL-safe token."""
+    return secrets.token_urlsafe(length_bytes)
 
 
 def is_trusted_proxy(host: str) -> bool:
@@ -50,6 +79,14 @@ def get_rate_limit_value() -> str:
 
     settings = get_settings()
     return f"{settings.rate_limit_per_minute}/minute"
+
+
+def get_auth_rate_limit_value() -> str:
+    """Dynamically resolve configured authentication rate limit string."""
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    return f"{settings.auth_rate_limit_per_minute}/minute"
 
 
 def create_limiter() -> Limiter:

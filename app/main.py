@@ -1,6 +1,8 @@
 """FastAPI application factory for EventEase."""
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -13,8 +15,11 @@ from fastapi.staticfiles import StaticFiles
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.auth_routes import router as auth_router
+from app.api.event_routes import router as event_router
 from app.api.routes import router as api_router
 from app.core.config import get_settings
+from app.core.database import init_db
 from app.core.security import (
     RequestSizeLimitMiddleware,
     SecurityHeadersMiddleware,
@@ -33,6 +38,19 @@ STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Application lifespan manager to initialize database schema on startup."""
+    _ = app
+    try:
+        init_db()
+    except Exception as exc:
+        logger.warning(
+            "Database initialization on startup encountered notice: %s", str(exc)
+        )
+    yield
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application instance."""
     settings = get_settings()
@@ -46,6 +64,7 @@ def create_app() -> FastAPI:
         version="1.0.0",
         docs_url="/docs",
         redoc_url="/redoc",
+        lifespan=lifespan,
     )
 
     # Attach rate limiter to app state
@@ -176,6 +195,8 @@ def create_app() -> FastAPI:
         return {"service": "EventEase API", "status": "active", "docs": "/docs"}
 
     # Include API routes
+    app.include_router(auth_router)
+    app.include_router(event_router)
     app.include_router(api_router)
 
     return app

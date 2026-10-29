@@ -3,6 +3,10 @@
  * WCAG 2.1 AA Compliant & Secure (strictly uses textContent for dynamic content)
  */
 
+import { setupAuthUI, checkAuthStatus, onAuthStateChanged, openAuthModal, getCurrentUser } from './auth.js';
+import { fetchUserEvents, fetchEventDetail, createDatabaseEvent, updateDatabaseEvent, duplicateDatabaseEvent, deleteDatabaseEvent, renderSavedEventsWorkspace, getActiveDatabaseEventId, setActiveDatabaseEventId } from './events.js';
+import { setupCharacterWidgets, reactToBudget, reactToMilestone, reactToVendorBooking, reactToCreativeTab, triggerLumiReaction, triggerSparkles } from './characters.js';
+
 // Application State
 const state = {
   currentStep: 1,
@@ -291,8 +295,12 @@ async function copyToClipboard(text, successMessage = "Copied to clipboard! 📋
 function triggerConfetti() {
   if (!elements.confettiContainer) return;
 
-  // Respect user preference for reduced motion
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  // Respect user preference for reduced motion (both OS preference and in-app toggle)
+  if (
+    document.documentElement.classList.contains("reduce-motion-active") ||
+    (typeof isMotionEnabled === "function" && !isMotionEnabled()) ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
     return;
   }
 
@@ -493,19 +501,22 @@ function initMascots() {
   });
 
   // Floating widget minimize toggle button
-  elements.lumiMinimizeBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isMinimized = elements.lumiWidget?.classList.toggle("minimized");
-    if (elements.lumiMinimizeBtn) {
-      elements.lumiMinimizeBtn.innerHTML = isMinimized ? "&#43;" : "&minus;";
-      elements.lumiMinimizeBtn.setAttribute(
-        "aria-label",
-        isMinimized ? "Restore celebration companion" : "Minimize celebration companion"
-      );
-    }
-    localStorage.setItem("eventease-lumi-minimized", isMinimized ? "true" : "false");
-    showToast(isMinimized ? "Lumi minimized 🪄" : "Lumi restored ✨");
-  });
+  if (elements.lumiMinimizeBtn && !elements.lumiMinimizeBtn.dataset.wired) {
+    elements.lumiMinimizeBtn.dataset.wired = "true";
+    elements.lumiMinimizeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isMinimized = elements.lumiWidget?.classList.toggle("minimized");
+      if (elements.lumiMinimizeBtn) {
+        elements.lumiMinimizeBtn.innerHTML = isMinimized ? "&#43;" : "&minus;";
+        elements.lumiMinimizeBtn.setAttribute(
+          "aria-label",
+          isMinimized ? "Restore celebration companion" : "Minimize celebration companion"
+        );
+      }
+      localStorage.setItem("eventease-lumi-minimized", isMinimized ? "true" : "false");
+      showToast(isMinimized ? "Lumi minimized 🪄" : "Lumi restored ✨");
+    });
+  }
 
   // Restore saved minimize state
   if (localStorage.getItem("eventease-lumi-minimized") === "true") {
@@ -1309,8 +1320,10 @@ async function handlePlanSubmit(e) {
 
     // Celebration effects
     triggerConfetti();
+    triggerSparkles();
     showToast("Celebration Plan generated successfully! 🎉✨");
     announceLive("Event plan generated successfully.");
+    triggerLumiReaction("Woohoo! Your celebration blueprint is complete! Check out all 5 deliverables below! 🥳🎉");
 
     if (elements.lumiHeroText) {
       elements.lumiHeroText.textContent =
@@ -1550,6 +1563,10 @@ function recalculateBudgetMetrics() {
     elements.costPerGuestBadge.textContent = `Per-Guest: ${formatCurrency(costPerGuest, currency)}`;
   }
 
+  // Reactive feedback from Financial Strategist Barnaby
+  const statusStr = isBalanced ? "balanced" : (diffAmt > 0 ? "over" : "under");
+  reactToBudget(isBalanced, statusStr, totalAllocatedPct, contingencyPct);
+
   // Render Visual Segmented Bar
   renderSegmentedBar(state.budgetAllocations, currency);
 
@@ -1605,6 +1622,10 @@ function updateMilestoneProgress(timeline) {
     triggerConfetti();
     showToast("🎉 Amazing! All milestones completed!");
   }
+
+  // Reactive feedback from Milestone Pathfinder Shep
+  const uncompleted = (timeline.milestones || []).find((_, idx) => !state.completedMilestones.has(`milestone-${idx}`));
+  reactToMilestone(completed, total, uncompleted ? uncompleted.period_label : "All completed");
 
   updateDashboard();
   savePlanLocally();
@@ -1789,6 +1810,9 @@ function renderChecklist(checklist) {
       } else {
         card.classList.remove("status-booked");
       }
+
+      // Reactive feedback from Vendor Contract Scout Nova
+      reactToVendorBooking(task.vendor_type, newStatus);
 
       applyVendorFilter(state.activeVendorFilter);
       updateChecklistSummary();
@@ -2178,6 +2202,7 @@ function setupTabs() {
     { btn: elements.tabTips, panel: elements.panelTips },
   ];
 
+  const tabIds = ["themes", "decor", "menu", "activities", "tips"];
   const activateTab = (targetIdx) => {
     tabs.forEach(({ btn, panel }, idx) => {
       const isSelected = idx === targetIdx;
@@ -2189,6 +2214,9 @@ function setupTabs() {
       panel?.classList.toggle("active", isSelected);
     });
     tabs[targetIdx].btn?.focus();
+
+    // Creative Curator Pip tips
+    reactToCreativeTab(tabIds[targetIdx]);
   };
 
   tabs.forEach(({ btn }, idx) => {
@@ -2687,6 +2715,217 @@ function downloadFile(content, filename, mimeType) {
 }
 
 /**
+ * Database Workspace Setup and Synchronization
+ */
+function setupDatabaseWorkspace() {
+  setupAuthUI();
+  setupCharacterWidgets();
+
+  const btnSaveDb = document.getElementById("btn-save-event-to-db");
+  const dbSaveStatus = document.getElementById("db-save-status");
+  const dbSaveBtnText = document.getElementById("db-save-btn-text");
+  const btnWorkspaceSignIn = document.getElementById("btn-workspace-signin");
+  const btnCreateNewEvent = document.getElementById("btn-create-new-event");
+
+  btnWorkspaceSignIn?.addEventListener("click", () => {
+    openAuthModal("signin");
+  });
+
+  btnCreateNewEvent?.addEventListener("click", () => {
+    setActiveDatabaseEventId(null);
+    state.activePlanId = null;
+    state.activePlanName = "";
+    if (elements.activePlanNameInput) elements.activePlanNameInput.value = "";
+    elements.eventForm?.reset();
+    setStep(1);
+    elements.eventForm?.scrollIntoView({ behavior: "smooth" });
+    showToast("Ready to plan a new celebration! ✨");
+  });
+
+  async function handleSaveToDatabase() {
+    const user = getCurrentUser();
+    if (!user) {
+      openAuthModal("signin");
+      showToast("Please sign in or create an account to save to the database.");
+      return;
+    }
+
+    if (!state.currentPlan) {
+      showToast("Generate or open a plan first before saving.");
+      return;
+    }
+
+    const planName =
+      (elements.activePlanNameInput?.value || "").trim() ||
+      state.activePlanName ||
+      `${state.currentPlan.intake.city} ${state.currentPlan.intake.event_type.toUpperCase()} (${new Date().toLocaleDateString()})`;
+
+    state.activePlanName = planName;
+
+    const intakeData = {
+      event_type: state.currentPlan.intake.event_type || elements.eventType?.value || "other",
+      date: state.currentPlan.intake.date || elements.eventDate?.value || new Date().toISOString().split("T")[0],
+      city: state.currentPlan.intake.city || elements.eventCity?.value || "City",
+      guest_count: Number(state.currentPlan.intake.guest_count || elements.guestCount?.value || 50),
+      total_budget: Number(state.currentPlan.intake.total_budget || elements.totalBudget?.value || 5000),
+      currency: state.currentPlan.intake.currency || elements.currency?.value || "USD",
+      theme: state.currentPlan.intake.theme || elements.eventTheme?.value || null,
+      cultural_dietary: state.currentPlan.intake.cultural_dietary || elements.culturalDietary?.value || null,
+      special_notes: state.currentPlan.intake.special_notes || elements.specialNotes?.value || null,
+    };
+
+    const planData = {
+      ...state.currentPlan,
+      budgetAllocations: state.budgetAllocations,
+      completedMilestones: Array.from(state.completedMilestones),
+      checklistStatusMap: state.checklistStatusMap,
+      vendorNotes: state.vendorNotes,
+      vendorContacts: state.vendorContacts,
+      vendorQuotes: state.vendorQuotes,
+    };
+
+    try {
+      if (dbSaveBtnText) dbSaveBtnText.textContent = "Saving...";
+      btnSaveDb?.setAttribute("disabled", "true");
+
+      const activeDbId = getActiveDatabaseEventId();
+      let savedEvent;
+      if (activeDbId) {
+        savedEvent = await updateDatabaseEvent(activeDbId, planName, intakeData, planData);
+        showToast(`Updated "${planName}" in database! ☁️`);
+      } else {
+        savedEvent = await createDatabaseEvent(planName, intakeData, planData);
+        showToast(`Saved "${planName}" to database! ☁️`);
+      }
+
+      if (dbSaveStatus) {
+        dbSaveStatus.classList.remove("hidden");
+        dbSaveStatus.textContent = "Saved to Database ✓";
+        setTimeout(() => dbSaveStatus.classList.add("hidden"), 4000);
+      }
+
+      await reloadDatabaseWorkspace();
+    } catch (err) {
+      console.error("Save to database error:", err);
+      showToast(err.message || "Failed to save plan to database.");
+    } finally {
+      if (dbSaveBtnText) dbSaveBtnText.textContent = "Save to Database";
+      btnSaveDb?.removeAttribute("disabled");
+    }
+  }
+
+  btnSaveDb?.addEventListener("click", handleSaveToDatabase);
+
+  // Sync workspace on auth state change
+  onAuthStateChanged(() => {
+    reloadDatabaseWorkspace();
+  });
+
+  // Initial check
+  checkAuthStatus().then(() => {
+    reloadDatabaseWorkspace();
+  });
+}
+
+async function reloadDatabaseWorkspace() {
+  const user = getCurrentUser();
+  const authContent = document.getElementById("workspace-auth-content");
+  const unauthBanner = document.getElementById("workspace-unauth-banner");
+
+  if (!user) {
+    if (authContent) authContent.classList.add("hidden");
+    if (unauthBanner) unauthBanner.classList.remove("hidden");
+    return;
+  }
+
+  if (authContent) authContent.classList.remove("hidden");
+  if (unauthBanner) unauthBanner.classList.add("hidden");
+
+  try {
+    const events = await fetchUserEvents();
+    renderSavedEventsWorkspace(events, {
+      onOpen: async (id) => {
+        try {
+          showToast("Loading event from database...");
+          const detail = await fetchEventDetail(id);
+          setActiveDatabaseEventId(detail.id);
+          state.activePlanName = detail.name;
+          if (elements.activePlanNameInput) {
+            elements.activePlanNameInput.value = detail.name;
+          }
+
+          // Populate intake inputs
+          if (detail.intake) {
+            if (elements.eventType) elements.eventType.value = detail.intake.event_type || "";
+            if (elements.eventDate) elements.eventDate.value = detail.intake.date || "";
+            if (elements.eventCity) elements.eventCity.value = detail.intake.city || "";
+            if (elements.guestCount) elements.guestCount.value = detail.intake.guest_count || "";
+            if (elements.currency) elements.currency.value = detail.intake.currency || "USD";
+            if (elements.totalBudget) elements.totalBudget.value = detail.intake.total_budget || "";
+            if (elements.eventTheme) elements.eventTheme.value = detail.intake.theme || "";
+            if (elements.culturalDietary) elements.culturalDietary.value = detail.intake.cultural_dietary || "";
+            if (elements.specialNotes) elements.specialNotes.value = detail.intake.special_notes || "";
+          }
+
+          // Restore plan
+          const planData = detail.plan_data;
+          state.currentPlan = planData;
+          state.budgetAllocations =
+            planData.budgetAllocations ||
+            (planData.budget?.items ? planData.budget.items.map((i) => ({ ...i })) : []);
+          state.completedMilestones = new Set(planData.completedMilestones || []);
+          state.checklistStatusMap = planData.checklistStatusMap || {};
+          state.vendorNotes = planData.vendorNotes || {};
+          state.vendorContacts = planData.vendorContacts || {};
+          state.vendorQuotes = planData.vendorQuotes || [];
+
+          updateLiveEstimate();
+
+          // Render master plan
+          elements.resultsContainer?.classList.remove("hidden");
+          renderMasterPlan(state.currentPlan);
+          elements.resultsContainer?.scrollIntoView({ behavior: "smooth" });
+
+          triggerLumiReaction(`Loaded "${detail.name}" from your database! ✨`);
+          showToast(`Reopened "${detail.name}"`);
+        } catch (err) {
+          console.error("Failed to open event:", err);
+          showToast("Could not load event from database.");
+        }
+      },
+      onDuplicate: async (id) => {
+        try {
+          const dup = await duplicateDatabaseEvent(id);
+          showToast(`Duplicated as "${dup.name}"!`);
+          await reloadDatabaseWorkspace();
+        } catch (err) {
+          showToast("Failed to duplicate event.");
+        }
+      },
+      onDelete: async (id, name) => {
+        if (confirm(`Are you sure you want to delete "${name}" from your account database?`)) {
+          try {
+            await deleteDatabaseEvent(id);
+            showToast(`Deleted "${name}".`);
+            await reloadDatabaseWorkspace();
+          } catch (err) {
+            showToast("Failed to delete event.");
+          }
+        }
+      },
+      onCreateNew: () => {
+        setActiveDatabaseEventId(null);
+        elements.eventForm?.reset();
+        setStep(1);
+        elements.eventForm?.scrollIntoView({ behavior: "smooth" });
+      },
+    });
+  } catch (err) {
+    console.error("Failed to fetch user events:", err);
+  }
+}
+
+/**
  * Initialize Application
  */
 function init() {
@@ -2701,6 +2940,7 @@ function init() {
   loadPresets();
   renderPlanLibrary();
   checkSavedPlanOnLoad();
+  setupDatabaseWorkspace();
 
   // Multi-step buttons
   elements.btnToStep2?.addEventListener("click", () => {
@@ -2733,8 +2973,15 @@ function init() {
 }
 
 // Bootstrap once DOM is loaded
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
+let isInitialized = false;
+function safeInit() {
+  if (isInitialized) return;
+  isInitialized = true;
   init();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", safeInit);
+} else {
+  safeInit();
 }

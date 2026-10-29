@@ -1,7 +1,7 @@
 # EventEase Accessibility Conformance Report (WCAG 2.1 Level AA)
 
 ## Overview
-EventEase is engineered to deliver an inclusive celebration planning experience adhering strictly to the **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** standards. All capabilities—from multi-step intake and editable budget balancing to milestone checklists and tabbed creative suggestions—are fully functional using keyboard-only input and assistive technologies.
+EventEase is engineered to deliver an inclusive celebration planning experience adhering strictly to the **Web Content Accessibility Guidelines (WCAG) 2.1 Level AA** standards. All capabilities—from user authentication and multi-step intake to editable budget balancing, database workspace management, milestone checklists, and tabbed creative suggestions—are fully functional using keyboard-only input and assistive technologies.
 
 ---
 
@@ -10,7 +10,7 @@ EventEase is engineered to deliver an inclusive celebration planning experience 
 ### 1. Perceivable
 - **Text Alternatives & Non-Text Content**:
   - All decorative character SVGs (Barnaby, Pip, Shep, Nova, Lumi) and visual badges are annotated with `aria-hidden="true"` or provided with explicit `aria-label` descriptors so screen readers bypass irrelevant visual markup.
-  - Interactive icons include explicit text labels or `aria-label` attributes (e.g., `aria-label="Toggle dark and light themes"`, `aria-label="Minimize celebration companion"`).
+  - Interactive icons include explicit text labels or `aria-label` attributes (e.g., `aria-label="Toggle dark and light themes"`, `aria-label="Minimize celebration companion"`, `aria-label="Toggle motion and animations"`).
 - **Color Contrast Ratios (Minimum 4.5:1)**:
   - Verified across the bespoke 5-color palette (Warm Fog `#DDD3C9`, Berry Good `#ECC4C3`, Usu Koubai Blossom `#B97D7B`, Meadow Mauve `#928E5E`, Soldier Green `#575527`):
     - **Light Theme**:
@@ -22,26 +22,27 @@ EventEase is engineered to deliver an inclusive celebration planning experience 
       - Primary text `#DDD3C9` (Warm Fog) on dark canvas `#1a1917`: **11.2:1**.
       - Accent text `#ECC4C3` (Berry Good) on `#24221f`: **8.1:1**.
       - Border contrast `#575527` on `#1a1917`: **3.5:1** (Meets 3:1 non-text contrast).
-- **Reduced Motion Support**:
+- **Dual-Layer Reduced Motion Controls**:
   - CSS rule `@media (prefers-reduced-motion: reduce)` zeroes all animation durations and transitions across mascots, clocks, and progress bars.
-  - JavaScript confetti generator actively checks `window.matchMedia("(prefers-reduced-motion: reduce)").matches` and aborts DOM particle instantiation when reduced motion is preferred.
+  - **In-App Motion Toggle (`#motion-toggle`)**: An explicit control in the header allows users to toggle decorative motion (`aria-pressed="true"` when disabled), applying `.reduce-motion-active` to the document root and suppressing particle confetti effects.
+  - JavaScript confetti and sparkle generators check both OS preferences and the in-app motion state before instantiating DOM particles.
 
 ---
 
 ### 2. Operable
 - **Keyboard Operability & Tab Flow**:
-  - All interactive elements (form inputs, step buttons, presets, editable budget cells, vendor filters, and export buttons) follow natural DOM tab order.
-  - Interactive milestone buttons and checklist items can be triggered with `Enter` or `Space`.
+  - All interactive elements (form inputs, step buttons, presets, editable budget cells, vendor filters, auth forms, and export buttons) follow natural DOM tab order.
+  - Interactive milestone buttons, vendor status selectors, and checklist items can be triggered with `Enter` or `Space`.
 - **WAI-ARIA Tabbed Navigation**:
-  - Creative ideas tabs (`#tab-themes`, `#tab-decor`, `#tab-menu`, `#tab-activities`, `#tab-tips`) strictly adhere to the WAI-ARIA tab pattern:
+  - Creative ideas tabs (`#tab-themes`, `#tab-decor`, `#tab-menu`, `#tab-activities`, `#tab-tips`) and Authentication modal tabs (`#tab-auth-signin`, `#tab-auth-signup`, `#tab-auth-recovery`) strictly adhere to the WAI-ARIA tab pattern:
     - Active tab possesses `tabindex="0"` and `aria-selected="true"`.
     - Inactive tabs possess `tabindex="-1"` and `aria-selected="false"`.
     - Arrow navigation: `ArrowRight` and `ArrowDown` move to the next tab with wrap-around; `ArrowLeft` and `ArrowUp` move to the previous tab.
     - Quick jump keys: `Home` focuses the first tab, and `End` focuses the last tab.
-- **Confirmation Dialog Modal**:
-  - The confirmation modal uses native `<dialog id="confirm-modal">` with `aria-labelledby="modal-title"` and `aria-describedby="modal-desc"`. Focus is trapped inside the dialog when open and dismissible via the `Escape` key or "Cancel / Keep Current Plan" button. Used across "Start New Plan", "Delete Plan", and "Clear All Plans" workflows.
-- **Plan Library & Vendor Quote Accessibility**:
-  - All library actions (save, rename, reopen, duplicate, delete) and quote comparison inputs (quote, fees, terms, notes, services) are keyboard operable, provide clear textual labels, and announce state changes via the live region.
+- **Accessible Modal Dialogs**:
+  - Both `<dialog id="confirm-modal">` and `<dialog id="auth-modal">` use native dialog primitives with `aria-labelledby`. Focus is trapped inside the active dialog, keyboard navigation cycles within the modal, and pressing `Escape` dismisses the dialog and safely returns focus to the initiating element.
+- **Database Workspace & Quote Comparison Accessibility**:
+  - All workspace actions (reopen, duplicate, delete) and quote comparison inputs (quote, fees, terms, notes, services) are keyboard operable, provide clear textual labels, and announce state changes via the live region.
 - **Visible Focus Indicator**:
   - High-visibility focus ring configured globally:
     ```css
@@ -64,6 +65,7 @@ EventEase is engineered to deliver an inclusive celebration planning experience 
 - **Clear Status & Transparency**:
   - Header AI Status pill clearly labels whether "Live AI Engine (Gemini)" or "Offline Fallback (Curated)" is active, ensuring users always understand the source of creative recommendations.
   - Budget balance status bar clearly flags whether allocations are balanced, overallocated, or underallocated.
+  - Character squad speech bubbles (Barnaby, Shep, Nova, Pip, Lumi) give clear, purposeful textual feedback alongside visual updates.
 
 ---
 
@@ -74,7 +76,7 @@ EventEase is engineered to deliver an inclusive celebration planning experience 
     <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
     <div id="alert-region" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
     ```
-  - Used when loading plans, updating vendor statuses, toggling dark mode, restoring saved plans, and copying items to clipboard.
+  - Used when loading plans, updating vendor statuses, toggling dark mode, saving/reopening plans from the database, and copying items to clipboard.
 - **Semantic Tables & Landmark Hierarchy**:
   - Landmarks: `<header role="banner">`, `<main role="main">`, `<footer role="contentinfo">`.
   - Exactly one `<h1>` per page with strictly ordered `<h2>` and `<h3>` section headers.
@@ -83,7 +85,11 @@ EventEase is engineered to deliver an inclusive celebration planning experience 
 ---
 
 ## 5. Automated Verification & Regression Testing
-Every pull request and commit to `main` executes 87 automated browser-level DOM integration checks (`npm run test:browser`) in GitHub Actions, verifying:
+Every pull request and commit to `main` executes **125 automated browser-level DOM integration checks** (`npm run test:browser`) in GitHub Actions, verifying:
+- User authentication and session switching.
+- Database workspace persistence, reopening, duplicating, and deleting plans.
+- Character squad reactive updates and speech bubble announcements.
+- In-app motion toggle and confetti suppression under reduced motion.
 - WAI-ARIA tab state management (`tabindex`, `aria-selected`, and arrow-key focus shifting).
 - Keyboard activation of milestone checkmarks and modal dialogs.
 - Clear error alerts and screen-reader status announcements.
