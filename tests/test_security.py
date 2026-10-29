@@ -76,3 +76,26 @@ async def test_payload_size_limit_rejection(async_client: AsyncClient) -> None:
     assert response.status_code == 413
     data = response.json()
     assert data["error"] == "Payload Too Large"
+
+
+@pytest.mark.asyncio
+async def test_docs_csp_allows_swagger_ui_assets(async_client: AsyncClient) -> None:
+    """Ensure /docs endpoint serves CSP permitting Swagger UI scripts & styles."""
+    response = await async_client.get("/docs")
+    assert response.status_code == 200
+    csp = response.headers.get("content-security-policy", "")
+    assert "https://cdn.jsdelivr.net" in csp
+    assert "'unsafe-inline'" in csp
+    assert "https://fastapi.tiangolo.com" in csp
+
+
+@pytest.mark.asyncio
+async def test_frontend_suhani_tyagi_footer_link(async_client: AsyncClient) -> None:
+    """Ensure Suhani Tyagi LinkedIn is in footer and legacy developer links removed."""
+    response = await async_client.get("/")
+    assert response.status_code == 200
+    html = response.text
+    assert "https://www.linkedin.com/in/suhani-tyagi" in html
+    assert "Suhani Tyagi" in html
+    assert "OpenAPI Swagger UI" not in html
+    assert "ReDoc Specification" not in html

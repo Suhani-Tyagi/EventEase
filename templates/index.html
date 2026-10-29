@@ -119,20 +119,20 @@
                 <defs>
                   <linearGradient id="lumi-body-grad" x1="50" y1="50" x2="150" y2="190" gradientUnits="userSpaceOnUse">
                     <stop offset="0%" stop-color="#ffffff"/>
-                    <stop offset="100%" stop-color="#f5e6ff"/>
+                    <stop offset="100%" stop-color="#f7f4f0"/>
                   </linearGradient>
                   <linearGradient id="lumi-ear-inner" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#fbcfe8"/>
-                    <stop offset="100%" stop-color="#f472b6"/>
+                    <stop offset="0%" stop-color="#fae9e8"/>
+                    <stop offset="100%" stop-color="#ECC4C3"/>
                   </linearGradient>
                   <linearGradient id="lumi-hat-grad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#818cf8"/>
-                    <stop offset="50%" stop-color="#c084fc"/>
-                    <stop offset="100%" stop-color="#f472b6"/>
+                    <stop offset="0%" stop-color="#B97D7B"/>
+                    <stop offset="50%" stop-color="#928E5E"/>
+                    <stop offset="100%" stop-color="#ECC4C3"/>
                   </linearGradient>
                   <linearGradient id="lumi-star-grad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#fef08a"/>
-                    <stop offset="100%" stop-color="#f59e0b"/>
+                    <stop offset="0%" stop-color="#ECC4C3"/>
+                    <stop offset="100%" stop-color="#928E5E"/>
                   </linearGradient>
                   <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -144,37 +144,37 @@
                 <g class="lumi-sparkles" aria-hidden="true">
                   <path class="sparkle sp-1" d="M30 40 L33 48 L41 51 L33 54 L30 62 L27 54 L19 51 L27 48 Z" fill="url(#lumi-star-grad)"/>
                   <path class="sparkle sp-2" d="M170 30 L172 36 L178 38 L172 40 L170 46 L168 40 L162 38 L168 36 Z" fill="url(#lumi-star-grad)"/>
-                  <path class="sparkle sp-3" d="M175 140 L178 145 L183 147 L178 149 L175 154 L172 149 L167 147 L172 145 Z" fill="#ec4899"/>
-                  <circle class="sparkle sp-4" cx="25" cy="120" r="3.5" fill="#a855f7"/>
+                  <path class="sparkle sp-3" d="M175 140 L178 145 L183 147 L178 149 L175 154 L172 149 L167 147 L172 145 Z" fill="#B97D7B"/>
+                  <circle class="sparkle sp-4" cx="25" cy="120" r="3.5" fill="#ECC4C3"/>
                 </g>
 
                 <!-- Lumi Character Body with Floating Animation -->
                 <g class="lumi-character-body">
                   <!-- Left Ear -->
                   <g class="lumi-ear ear-left">
-                    <ellipse cx="68" cy="48" rx="16" ry="42" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2" transform="rotate(-14 68 48)"/>
-                    <ellipse cx="68" cy="48" rx="8" ry="28" fill="url(#lumi-ear-inner)" opacity="0.8" transform="rotate(-14 68 48)"/>
+                    <ellipse cx="68" cy="48" rx="16" ry="42" fill="url(#lumi-body-grad)" stroke="#DDD3C9" stroke-width="2" transform="rotate(-14 68 48)"/>
+                    <ellipse cx="68" cy="48" rx="8" ry="28" fill="url(#lumi-ear-inner)" opacity="0.85" transform="rotate(-14 68 48)"/>
                   </g>
 
                   <!-- Right Ear -->
                   <g class="lumi-ear ear-right">
-                    <ellipse cx="132" cy="48" rx="16" ry="42" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2" transform="rotate(14 132 48)"/>
-                    <ellipse cx="132" cy="48" rx="8" ry="28" fill="url(#lumi-ear-inner)" opacity="0.8" transform="rotate(14 132 48)"/>
+                    <ellipse cx="132" cy="48" rx="16" ry="42" fill="url(#lumi-body-grad)" stroke="#DDD3C9" stroke-width="2" transform="rotate(14 132 48)"/>
+                    <ellipse cx="132" cy="48" rx="8" ry="28" fill="url(#lumi-ear-inner)" opacity="0.85" transform="rotate(14 132 48)"/>
                   </g>
 
                   <!-- Rounded Torso -->
-                  <ellipse cx="100" cy="155" rx="42" ry="40" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2"/>
+                  <ellipse cx="100" cy="155" rx="42" ry="40" fill="url(#lumi-body-grad)" stroke="#DDD3C9" stroke-width="2"/>
                   <!-- Feet -->
-                  <ellipse cx="78" cy="192" rx="15" ry="10" fill="#fce7f3" stroke="#f472b6" stroke-width="1.5"/>
-                  <ellipse cx="122" cy="192" rx="15" ry="10" fill="#fce7f3" stroke="#f472b6" stroke-width="1.5"/>
+                  <ellipse cx="78" cy="192" rx="15" ry="10" fill="#fae9e8" stroke="#B97D7B" stroke-width="1.5"/>
+                  <ellipse cx="122" cy="192" rx="15" ry="10" fill="#fae9e8" stroke="#B97D7B" stroke-width="1.5"/>
 
                   <!-- Head -->
-                  <ellipse cx="100" cy="108" rx="52" ry="46" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2"/>
+                  <ellipse cx="100" cy="108" rx="52" ry="46" fill="url(#lumi-body-grad)" stroke="#DDD3C9" stroke-width="2"/>
 
                   <!-- Party Hat -->
                   <g class="lumi-hat">
                     <polygon points="100,28 78,74 122,74" fill="url(#lumi-hat-grad)"/>
-                    <ellipse cx="100" cy="74" rx="22" ry="5" fill="#fce7f3"/>
+                    <ellipse cx="100" cy="74" rx="22" ry="5" fill="#fae9e8"/>
                     <path d="M86 58 Q100 62 114 58" stroke="#ffffff" stroke-width="2.5" fill="none" opacity="0.8"/>
                     <path d="M92 44 Q100 47 108 44" stroke="#ffffff" stroke-width="2.5" fill="none" opacity="0.8"/>
                     <!-- Star on Top of Hat -->
@@ -184,43 +184,43 @@
                   <!-- Eyes with Blinking Keyframe -->
                   <g class="lumi-eyes">
                     <g class="eye eye-left">
-                      <ellipse cx="80" cy="106" rx="7" ry="9" fill="#312e81"/>
+                      <ellipse cx="80" cy="106" rx="7" ry="9" fill="#575527"/>
                       <circle cx="78" cy="103" r="3" fill="#ffffff"/>
                       <circle cx="83" cy="109" r="1.5" fill="#ffffff"/>
                     </g>
                     <g class="eye eye-right">
-                      <ellipse cx="120" cy="106" rx="7" ry="9" fill="#312e81"/>
+                      <ellipse cx="120" cy="106" rx="7" ry="9" fill="#575527"/>
                       <circle cx="118" cy="103" r="3" fill="#ffffff"/>
                       <circle cx="123" cy="109" r="1.5" fill="#ffffff"/>
                     </g>
                   </g>
 
                   <!-- Blushing Cheeks -->
-                  <ellipse class="blush blush-left" cx="68" cy="116" rx="9" ry="5" fill="#f472b6" opacity="0.6"/>
-                  <ellipse class="blush blush-right" cx="132" cy="116" rx="9" ry="5" fill="#f472b6" opacity="0.6"/>
+                  <ellipse class="blush blush-left" cx="68" cy="116" rx="9" ry="5" fill="#ECC4C3" opacity="0.75"/>
+                  <ellipse class="blush blush-right" cx="132" cy="116" rx="9" ry="5" fill="#ECC4C3" opacity="0.75"/>
 
                   <!-- Nose & Mouth -->
-                  <ellipse cx="100" cy="114" rx="3.5" ry="2.5" fill="#ec4899"/>
-                  <path d="M95 120 Q100 124 105 120" stroke="#831843" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <ellipse cx="100" cy="114" rx="3.5" ry="2.5" fill="#B97D7B"/>
+                  <path d="M95 120 Q100 124 105 120" stroke="#575527" stroke-width="2" stroke-linecap="round" fill="none"/>
 
                   <!-- Bowtie -->
                   <g class="lumi-bowtie" transform="translate(100, 138)">
-                    <polygon points="0,0 -12,-6 -12,6" fill="#ec4899"/>
-                    <polygon points="0,0 12,-6 12,6" fill="#ec4899"/>
-                    <circle cx="0" cy="0" r="3" fill="#fbcfe8"/>
+                    <polygon points="0,0 -12,-6 -12,6" fill="#B97D7B"/>
+                    <polygon points="0,0 12,-6 12,6" fill="#B97D7B"/>
+                    <circle cx="0" cy="0" r="3" fill="#ECC4C3"/>
                   </g>
 
                   <!-- Left Arm & Wand -->
                   <g class="lumi-arm arm-left">
-                    <line x1="45" y1="125" x2="30" y2="90" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="45" y1="125" x2="30" y2="90" stroke="#928E5E" stroke-width="3" stroke-linecap="round"/>
                     <polygon class="wand-star" points="30,85 33,91 40,92 35,97 36,103 30,100 24,103 25,97 20,92 27,91" fill="url(#lumi-star-grad)" filter="url(#soft-glow)"/>
-                    <circle cx="45" cy="125" r="8" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1.5"/>
+                    <circle cx="45" cy="125" r="8" fill="#ffffff" stroke="#DDD3C9" stroke-width="1.5"/>
                   </g>
 
                   <!-- Right Arm (Waving) -->
                   <g class="lumi-arm arm-right">
-                    <ellipse cx="145" cy="138" rx="8" ry="12" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1.5" transform="rotate(-30 145 138)"/>
-                    <circle cx="152" cy="130" r="7" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1.5"/>
+                    <ellipse cx="145" cy="138" rx="8" ry="12" fill="#ffffff" stroke="#DDD3C9" stroke-width="1.5" transform="rotate(-30 145 138)"/>
+                    <circle cx="152" cy="130" r="7" fill="#ffffff" stroke="#DDD3C9" stroke-width="1.5"/>
                   </g>
                 </g>
               </svg>
@@ -587,32 +587,32 @@
                   <svg class="character-svg character-mini barnaby-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Barnaby the Budget Bear">
                     <defs>
                       <linearGradient id="barnaby-fur" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#d97706"/>
-                        <stop offset="100%" stop-color="#b45309"/>
+                        <stop offset="0%" stop-color="#928E5E"/>
+                        <stop offset="100%" stop-color="#575527"/>
                       </linearGradient>
                       <linearGradient id="gold-coin-grad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#fef08a"/>
-                        <stop offset="60%" stop-color="#f59e0b"/>
-                        <stop offset="100%" stop-color="#d97706"/>
+                        <stop offset="0%" stop-color="#ECC4C3"/>
+                        <stop offset="50%" stop-color="#B97D7B"/>
+                        <stop offset="100%" stop-color="#928E5E"/>
                       </linearGradient>
                     </defs>
                     <circle cx="42" cy="40" r="18" fill="url(#barnaby-fur)"/>
-                    <circle cx="42" cy="40" r="10" fill="#fed7aa"/>
+                    <circle cx="42" cy="40" r="10" fill="#DDD3C9"/>
                     <circle cx="118" cy="40" r="18" fill="url(#barnaby-fur)"/>
-                    <circle cx="118" cy="40" r="10" fill="#fed7aa"/>
+                    <circle cx="118" cy="40" r="10" fill="#DDD3C9"/>
                     <circle cx="80" cy="75" r="45" fill="url(#barnaby-fur)"/>
-                    <ellipse cx="80" cy="88" rx="20" ry="15" fill="#fef3c7"/>
-                    <ellipse cx="80" cy="80" rx="8" ry="5" fill="#451a03"/>
-                    <path d="M75 88 Q80 94 85 88" stroke="#451a03" stroke-width="2" stroke-linecap="round" fill="none"/>
-                    <circle class="character-eye" cx="62" cy="68" r="5" fill="#451a03"/>
+                    <ellipse cx="80" cy="88" rx="20" ry="15" fill="#f7f4f0"/>
+                    <ellipse cx="80" cy="80" rx="8" ry="5" fill="#575527"/>
+                    <path d="M75 88 Q80 94 85 88" stroke="#575527" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <circle class="character-eye" cx="62" cy="68" r="5" fill="#575527"/>
                     <circle cx="60.5" cy="66.5" r="1.8" fill="#ffffff"/>
-                    <circle class="character-eye" cx="98" cy="68" r="5" fill="#451a03"/>
+                    <circle class="character-eye" cx="98" cy="68" r="5" fill="#575527"/>
                     <circle cx="96.5" cy="66.5" r="1.8" fill="#ffffff"/>
-                    <circle cx="62" cy="68" r="13" stroke="#f59e0b" stroke-width="2.5" fill="rgba(254, 240, 138, 0.25)"/>
-                    <circle cx="98" cy="68" r="13" stroke="#f59e0b" stroke-width="2.5" fill="rgba(254, 240, 138, 0.25)"/>
-                    <line x1="75" y1="68" x2="85" y2="68" stroke="#f59e0b" stroke-width="2.5"/>
-                    <ellipse cx="48" cy="80" rx="6" ry="3.5" fill="#fbbf24" opacity="0.6"/>
-                    <ellipse cx="112" cy="80" rx="6" ry="3.5" fill="#fbbf24" opacity="0.6"/>
+                    <circle cx="62" cy="68" r="13" stroke="#B97D7B" stroke-width="2.5" fill="rgba(236, 196, 195, 0.25)"/>
+                    <circle cx="98" cy="68" r="13" stroke="#B97D7B" stroke-width="2.5" fill="rgba(236, 196, 195, 0.25)"/>
+                    <line x1="75" y1="68" x2="85" y2="68" stroke="#B97D7B" stroke-width="2.5"/>
+                    <ellipse cx="48" cy="80" rx="6" ry="3.5" fill="#ECC4C3" opacity="0.8"/>
+                    <ellipse cx="112" cy="80" rx="6" ry="3.5" fill="#ECC4C3" opacity="0.8"/>
                     <ellipse cx="80" cy="135" rx="36" ry="25" fill="url(#barnaby-fur)"/>
                     <g class="animated-coin">
                       <circle cx="80" cy="128" r="18" fill="url(#gold-coin-grad)" stroke="#b45309" stroke-width="1.5"/>
@@ -700,33 +700,33 @@
                   <svg class="character-svg character-mini pip-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Pip the Timekeeper Penguin">
                     <defs>
                       <linearGradient id="penguin-dark" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#1e293b"/>
-                        <stop offset="100%" stop-color="#0f172a"/>
+                        <stop offset="0%" stop-color="#575527"/>
+                        <stop offset="100%" stop-color="#2f2e13"/>
                       </linearGradient>
                       <linearGradient id="pip-scarf" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#10b981"/>
-                        <stop offset="100%" stop-color="#06b6d4"/>
+                        <stop offset="0%" stop-color="#B97D7B"/>
+                        <stop offset="100%" stop-color="#ECC4C3"/>
                       </linearGradient>
                     </defs>
                     <ellipse cx="80" cy="85" rx="44" ry="50" fill="url(#penguin-dark)"/>
                     <ellipse cx="80" cy="92" rx="30" ry="38" fill="#ffffff"/>
-                    <ellipse class="character-eye" cx="66" cy="62" rx="4.5" ry="6" fill="#0f172a"/>
+                    <ellipse class="character-eye" cx="66" cy="62" rx="4.5" ry="6" fill="#2f2e13"/>
                     <circle cx="64.5" cy="60" r="2" fill="#ffffff"/>
-                    <ellipse class="character-eye" cx="94" cy="62" rx="4.5" ry="6" fill="#0f172a"/>
+                    <ellipse class="character-eye" cx="94" cy="62" rx="4.5" ry="6" fill="#2f2e13"/>
                     <circle cx="92.5" cy="60" r="2" fill="#ffffff"/>
-                    <ellipse cx="56" cy="70" rx="6" ry="3" fill="#f43f5e" opacity="0.5"/>
-                    <ellipse cx="104" cy="70" rx="6" ry="3" fill="#f43f5e" opacity="0.5"/>
-                    <polygon points="80,66 74,74 86,74" fill="#f97316"/>
+                    <ellipse cx="56" cy="70" rx="6" ry="3" fill="#ECC4C3" opacity="0.8"/>
+                    <ellipse cx="104" cy="70" rx="6" ry="3" fill="#ECC4C3" opacity="0.8"/>
+                    <polygon points="80,66 74,74 86,74" fill="#B97D7B"/>
                     <path d="M52 82 Q80 92 108 82" stroke="url(#pip-scarf)" stroke-width="12" stroke-linecap="round" fill="none"/>
                     <path d="M96 85 L96 112" stroke="url(#pip-scarf)" stroke-width="10" stroke-linecap="round"/>
                     <ellipse class="penguin-flipper-left" cx="38" cy="95" rx="8" ry="22" fill="url(#penguin-dark)" transform="rotate(20 38 95)"/>
                     <g class="animated-clock" transform="translate(118, 98)">
-                      <circle cx="0" cy="0" r="16" fill="#fef08a" stroke="#d97706" stroke-width="2"/>
+                      <circle cx="0" cy="0" r="16" fill="#f7f4f0" stroke="#928E5E" stroke-width="2"/>
                       <circle cx="0" cy="0" r="13" fill="#ffffff"/>
-                      <line class="clock-hand-hour" x1="0" y1="0" x2="0" y2="-7" stroke="#b45309" stroke-width="2" stroke-linecap="round"/>
-                      <line class="clock-hand-min" x1="0" y1="0" x2="6" y2="0" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
-                      <circle cx="0" cy="0" r="2" fill="#b45309"/>
-                      <rect x="-3" y="-19" width="6" height="4" fill="#d97706" rx="1"/>
+                      <line class="clock-hand-hour" x1="0" y1="0" x2="0" y2="-7" stroke="#575527" stroke-width="2" stroke-linecap="round"/>
+                      <line class="clock-hand-min" x1="0" y1="0" x2="6" y2="0" stroke="#B97D7B" stroke-width="1.5" stroke-linecap="round"/>
+                      <circle cx="0" cy="0" r="2" fill="#575527"/>
+                      <rect x="-3" y="-19" width="6" height="4" fill="#928E5E" rx="1"/>
                     </g>
                     <ellipse cx="64" cy="138" rx="12" ry="7" fill="#f97316"/>
                     <ellipse cx="96" cy="138" rx="12" ry="7" fill="#f97316"/>
@@ -773,31 +773,31 @@
                   <svg class="character-svg character-mini shep-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Sherlock Shep the Vendor Detective Puppy">
                     <defs>
                       <linearGradient id="corgi-fur" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#f59e0b"/>
-                        <stop offset="100%" stop-color="#d97706"/>
+                        <stop offset="0%" stop-color="#928E5E"/>
+                        <stop offset="100%" stop-color="#575527"/>
                       </linearGradient>
                       <linearGradient id="corgi-hat" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#78716c"/>
-                        <stop offset="100%" stop-color="#44403c"/>
+                        <stop offset="0%" stop-color="#B97D7B"/>
+                        <stop offset="100%" stop-color="#575527"/>
                       </linearGradient>
                     </defs>
-                    <ellipse class="corgi-tail" cx="126" cy="120" rx="14" ry="7" fill="#f59e0b" transform="rotate(-30 126 120)"/>
+                    <ellipse class="corgi-tail" cx="126" cy="120" rx="14" ry="7" fill="#928E5E" transform="rotate(-30 126 120)"/>
                     <polygon points="45,55 35,20 65,40" fill="url(#corgi-fur)"/>
-                    <polygon points="46,50 39,26 60,40" fill="#fecdd3"/>
+                    <polygon points="46,50 39,26 60,40" fill="#ECC4C3"/>
                     <polygon points="115,55 125,20 95,40" fill="url(#corgi-fur)"/>
-                    <polygon points="114,50 121,26 100,40" fill="#fecdd3"/>
+                    <polygon points="114,50 121,26 100,40" fill="#ECC4C3"/>
                     <ellipse cx="80" cy="115" rx="38" ry="28" fill="url(#corgi-fur)"/>
                     <ellipse cx="80" cy="118" rx="18" ry="18" fill="#ffffff"/>
                     <ellipse cx="80" cy="75" rx="40" ry="32" fill="url(#corgi-fur)"/>
                     <ellipse cx="80" cy="82" rx="24" ry="18" fill="#ffffff"/>
                     <ellipse cx="80" cy="50" rx="30" ry="8" fill="url(#corgi-hat)"/>
                     <path d="M56 50 C56 32 104 32 104 50 Z" fill="url(#corgi-hat)"/>
-                    <circle cx="80" cy="34" r="3" fill="#f59e0b"/>
-                    <ellipse class="character-eye" cx="64" cy="72" rx="5" ry="6" fill="#292524"/>
+                    <circle cx="80" cy="34" r="3" fill="#ECC4C3"/>
+                    <ellipse class="character-eye" cx="64" cy="72" rx="5" ry="6" fill="#2f2e13"/>
                     <circle cx="62" cy="70" r="2" fill="#ffffff"/>
-                    <ellipse class="character-eye" cx="96" cy="72" rx="5" ry="6" fill="#292524"/>
+                    <ellipse class="character-eye" cx="96" cy="72" rx="5" ry="6" fill="#2f2e13"/>
                     <circle cx="94" cy="70" r="2" fill="#ffffff"/>
-                    <ellipse cx="80" cy="80" rx="6" ry="4" fill="#292524"/>
+                    <ellipse cx="80" cy="80" rx="6" ry="4" fill="#2f2e13"/>
                     <path d="M74 85 Q80 90 86 85" stroke="#292524" stroke-width="2" stroke-linecap="round" fill="none"/>
                     <path d="M78 88 Q80 94 82 88" fill="#f43f5e"/>
                     <ellipse cx="52" cy="80" rx="6" ry="3.5" fill="#f43f5e" opacity="0.4"/>
@@ -858,31 +858,31 @@
                   <svg class="character-svg character-mini nova-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Nova the Creative Spark Cat">
                     <defs>
                       <linearGradient id="nova-fur" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#e0e7ff"/>
-                        <stop offset="100%" stop-color="#c7d2fe"/>
+                        <stop offset="0%" stop-color="#f7f4f0"/>
+                        <stop offset="100%" stop-color="#DDD3C9"/>
                       </linearGradient>
                       <linearGradient id="bulb-gold" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#fef08a"/>
-                        <stop offset="100%" stop-color="#f59e0b"/>
+                        <stop offset="0%" stop-color="#ECC4C3"/>
+                        <stop offset="100%" stop-color="#B97D7B"/>
                       </linearGradient>
                     </defs>
-                    <polygon class="orbiting-star" points="135,45 137,49 141,50 138,53 139,57 135,55 131,57 132,53 129,50 133,49" fill="#f472b6"/>
+                    <polygon class="orbiting-star" points="135,45 137,49 141,50 138,53 139,57 135,55 131,57 132,53 129,50 133,49" fill="#B97D7B"/>
                     <g class="animated-bulb">
                       <ellipse cx="80" cy="24" rx="12" ry="12" fill="url(#bulb-gold)" filter="url(#soft-glow)"/>
-                      <rect x="76" y="34" width="8" height="5" fill="#94a3b8" rx="1"/>
-                      <line x1="80" y1="6" x2="80" y2="0" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-                      <line x1="64" y1="14" x2="59" y2="9" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-                      <line x1="96" y1="14" x2="101" y2="9" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                      <rect x="76" y="34" width="8" height="5" fill="#928E5E" rx="1"/>
+                      <line x1="80" y1="6" x2="80" y2="0" stroke="#B97D7B" stroke-width="2.5" stroke-linecap="round"/>
+                      <line x1="64" y1="14" x2="59" y2="9" stroke="#B97D7B" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="96" y1="14" x2="101" y2="9" stroke="#B97D7B" stroke-width="2" stroke-linecap="round"/>
                     </g>
                     <polygon points="48,60 40,32 68,48" fill="url(#nova-fur)"/>
-                    <polygon points="50,56 45,38 64,48" fill="#fbcfe8"/>
+                    <polygon points="50,56 45,38 64,48" fill="#ECC4C3"/>
                     <polygon points="112,60 120,32 92,48" fill="url(#nova-fur)"/>
-                    <polygon points="110,56 115,38 96,48" fill="#fbcfe8"/>
+                    <polygon points="110,56 115,38 96,48" fill="#ECC4C3"/>
                     <ellipse cx="80" cy="85" rx="42" ry="36" fill="url(#nova-fur)"/>
-                    <path d="M58 82 Q65 74 72 82" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                    <path d="M88 82 Q95 74 102 82" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                    <line x1="45" y1="88" x2="28" y2="85" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="45" y1="94" x2="30" y2="96" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M58 82 Q65 74 72 82" stroke="#575527" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M88 82 Q95 74 102 82" stroke="#575527" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <line x1="45" y1="88" x2="28" y2="85" stroke="#928E5E" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="45" y1="94" x2="30" y2="96" stroke="#928E5E" stroke-width="2" stroke-linecap="round"/>
                     <line x1="115" y1="88" x2="132" y2="85" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
                     <line x1="115" y1="94" x2="130" y2="96" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
                     <polygon points="80,88 77,92 83,92" fill="#ec4899"/>
@@ -1016,9 +1016,11 @@
 
         <div class="footer-links-group">
           <span class="footer-heading">Developers</span>
-          <a href="/docs" target="_blank" rel="noopener" class="footer-link">OpenAPI Swagger UI</a>
-          <a href="/redoc" target="_blank" rel="noopener" class="footer-link">ReDoc Specification</a>
-          <a href="https://github.com/Suhani-Tyagi/EventEase" target="_blank" rel="noopener" class="footer-link">GitHub Repository</a>
+          <a href="https://www.linkedin.com/in/suhani-tyagi" target="_blank" rel="noopener noreferrer" class="footer-link footer-dev-link" title="Suhani Tyagi on LinkedIn">
+            <span class="linkedin-badge" aria-hidden="true">&#128279;</span>
+            <span>Suhani Tyagi</span>
+            <span class="external-arrow" aria-hidden="true">&nearr;</span>
+          </a>
         </div>
 
         <div class="footer-links-group">
@@ -1050,20 +1052,20 @@
     <button type="button" class="lumi-widget-btn" id="lumi-widget-btn" aria-label="Lumi Party Assistant (Click for celebration sparkles and tips)">
       <span class="lumi-btn-sparkle" aria-hidden="true">&#10024;</span>
       <svg class="lumi-mini-svg" viewBox="0 0 100 100" width="56" height="56" fill="none" aria-hidden="true">
-        <circle cx="50" cy="50" r="46" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="2"/>
-        <ellipse cx="36" cy="24" rx="8" ry="20" fill="#fbcfe8" transform="rotate(-15 36 24)"/>
-        <ellipse cx="64" cy="24" rx="8" ry="20" fill="#fbcfe8" transform="rotate(15 64 24)"/>
-        <ellipse cx="50" cy="55" rx="28" ry="24" fill="#ffffff" stroke="#e9d5ff" stroke-width="1.5"/>
-        <polygon points="50,14 40,36 60,36" fill="#ec4899"/>
-        <circle cx="50" cy="12" r="3.5" fill="#f59e0b"/>
-        <ellipse class="character-eye" cx="40" cy="54" rx="3.5" ry="5" fill="#312e81"/>
+        <circle cx="50" cy="50" r="46" fill="#f7f4f0" stroke="#DDD3C9" stroke-width="2"/>
+        <ellipse cx="36" cy="24" rx="8" ry="20" fill="#ECC4C3" transform="rotate(-15 36 24)"/>
+        <ellipse cx="64" cy="24" rx="8" ry="20" fill="#ECC4C3" transform="rotate(15 64 24)"/>
+        <ellipse cx="50" cy="55" rx="28" ry="24" fill="#ffffff" stroke="#DDD3C9" stroke-width="1.5"/>
+        <polygon points="50,14 40,36 60,36" fill="#B97D7B"/>
+        <circle cx="50" cy="12" r="3.5" fill="#928E5E"/>
+        <ellipse class="character-eye" cx="40" cy="54" rx="3.5" ry="5" fill="#575527"/>
         <circle cx="39" cy="52" r="1.5" fill="#ffffff"/>
-        <ellipse class="character-eye" cx="60" cy="54" rx="3.5" ry="5" fill="#312e81"/>
+        <ellipse class="character-eye" cx="60" cy="54" rx="3.5" ry="5" fill="#575527"/>
         <circle cx="59" cy="52" r="1.5" fill="#ffffff"/>
-        <ellipse cx="32" cy="60" rx="4.5" ry="2.5" fill="#f472b6" opacity="0.6"/>
-        <ellipse cx="68" cy="60" rx="4.5" ry="2.5" fill="#f472b6" opacity="0.6"/>
-        <ellipse cx="50" cy="58" rx="2" ry="1.5" fill="#ec4899"/>
-        <path d="M47 62 Q50 65 53 62" stroke="#831843" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <ellipse cx="32" cy="60" rx="4.5" ry="2.5" fill="#ECC4C3" opacity="0.8"/>
+        <ellipse cx="68" cy="60" rx="4.5" ry="2.5" fill="#ECC4C3" opacity="0.8"/>
+        <ellipse cx="50" cy="58" rx="2" ry="1.5" fill="#B97D7B"/>
+        <path d="M47 62 Q50 65 53 62" stroke="#575527" stroke-width="1.5" stroke-linecap="round" fill="none"/>
       </svg>
     </button>
   </aside>

@@ -6,45 +6,71 @@
    CSS Custom Properties (Variables) & Theme Tokens
    -------------------------------------------------------------------------- */
 :root {
+  /* ==========================================================================
+     Custom 5-Color Enterprise Palette:
+     - WARM FOG:           #DDD3C9 (RGB: 222, 211, 202)
+     - BERRY GOOD:         #ECC4C3 (RGB: 237, 197, 197)
+     - USU KOUBAI BLOSSOM: #B97D7B (RGB: 186, 127, 123)
+     - MEADOW MAUVE:       #928E5E (RGB: 145, 141, 93)
+     - SOLDIER GREEN:      #575527 (RGB: 87, 85, 39)
+     ========================================================================== */
+  --palette-warm-fog: #DDD3C9;
+  --palette-berry-good: #ECC4C3;
+  --palette-usu-koubai: #B97D7B;
+  --palette-meadow-mauve: #928E5E;
+  --palette-soldier-green: #575527;
+
+  /* Derived Tone Variations */
+  --palette-warm-fog-light: #f7f4f0;
+  --palette-warm-fog-tint: #eae3db;
+  --palette-berry-good-light: #fcf4f4;
+  --palette-berry-good-border: #deb0af;
+  --palette-usu-koubai-hover: #a16462;
+  --palette-usu-koubai-light: #f8ebea;
+  --palette-meadow-mauve-dark: #777443;
+  --palette-soldier-green-dark: #3b3917;
+  --palette-soldier-green-text: #2c2b14;
+
   /* Light Theme (Default) - Contrast >= 4.5:1 */
-  --bg-primary: #f8fafc;
+  --bg-primary: #f6f3ee;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #ffffff;
-  --bg-muted: #f1f5f9;
-  --bg-subtle: #e2e8f0;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --bg-glass-card: rgba(255, 255, 255, 0.9);
+  --bg-muted: #f0ebe4;
+  --bg-subtle: #DDD3C9;
+  --bg-glass: rgba(255, 255, 255, 0.90);
+  --bg-glass-card: rgba(255, 255, 255, 0.94);
 
-  --text-primary: #0f172a;       /* 14.5:1 against #ffffff */
-  --text-secondary: #334155;     /* 7.3:1 against #ffffff */
-  --text-muted: #64748b;         /* 4.5:1 against #ffffff */
+  --text-primary: #2c2b14;       /* Deep Soldier Green: 9.8:1 against #ffffff */
+  --text-secondary: #575527;     /* SOLDIER GREEN: 6.8:1 against #ffffff, 5.1:1 on Warm Fog */
+  --text-muted: #777443;         /* Meadow Mauve dark: 4.6:1 against #ffffff */
   --text-inverse: #ffffff;
 
-  --border-light: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --border-glass: rgba(226, 232, 240, 0.8);
+  --border-light: #DDD3C9;       /* WARM FOG */
+  --border-strong: #ECC4C3;      /* BERRY GOOD Accent Border */
+  --border-glass: rgba(221, 211, 201, 0.75);
 
-  --brand-primary: #4f46e5;      /* Indigo */
-  --brand-primary-hover: #4338ca;
-  --brand-secondary: #7c3aed;    /* Purple */
-  --brand-accent: #0284c7;       /* Cyan */
-  --brand-light: #eef2ff;
-  --brand-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+  --brand-primary: #B97D7B;      /* USU KOUBAI BLOSSOM */
+  --brand-primary-hover: #a16462;
+  --brand-secondary: #928E5E;    /* MEADOW MAUVE */
+  --brand-accent: #ECC4C3;       /* BERRY GOOD */
+  --brand-light: #f8ebea;
+  --brand-gradient: linear-gradient(135deg, #B97D7B 0%, #928E5E 55%, #575527 100%);
+  --brand-gradient-soft: linear-gradient(135deg, #ECC4C3 0%, #B97D7B 50%, #928E5E 100%);
 
-  --success: #15803d;
-  --success-bg: #f0fdf4;
-  --warning: #b45309;
-  --warning-bg: #fffbeb;
-  --caution: #c2410c;
-  --caution-bg: #fff7ed;
-  --error: #b91c1c;
-  --error-bg: #fef2f2;
+  --success: #575527;
+  --success-bg: #f2f1e6;
+  --warning: #928E5E;
+  --warning-bg: #fdfbf2;
+  --caution: #B97D7B;
+  --caution-bg: #fae9e8;
+  --error: #9e3634;
+  --error-bg: #faebea;
 
-  --focus-ring: #4f46e5;
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
-  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.08), 0 4px 8px -2px rgb(0 0 0 / 0.04);
-  --shadow-glow: 0 0 24px -4px rgba(79, 70, 229, 0.15);
+  --focus-ring: #B97D7B;
+  --shadow-sm: 0 1px 3px 0 rgb(87 85 39 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(87 85 39 / 0.10), 0 2px 4px -2px rgb(87 85 39 / 0.06);
+  --shadow-lg: 0 12px 24px -4px rgb(87 85 39 / 0.12), 0 4px 8px -2px rgb(87 85 39 / 0.06);
+  --shadow-glow: 0 0 24px -4px rgba(185, 125, 123, 0.35);
 
   --font-family-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -59,44 +85,45 @@
 
 /* Dark Theme Overrides */
 [data-theme="dark"] {
-  --bg-primary: #090d16;
-  --bg-surface: #111827;
-  --bg-surface-elevated: #1e293b;
-  --bg-muted: #131b2e;
-  --bg-subtle: #1e293b;
-  --bg-glass: rgba(17, 24, 39, 0.82);
-  --bg-glass-card: rgba(19, 27, 46, 0.88);
+  --bg-primary: #18180d;         /* Deep Soldier Green dark canvas */
+  --bg-surface: #222314;         /* Soldier Dark Surface */
+  --bg-surface-elevated: #2c2d1b;
+  --bg-muted: #1e1f11;
+  --bg-subtle: #363721;
+  --bg-glass: rgba(34, 35, 20, 0.88);
+  --bg-glass-card: rgba(38, 39, 23, 0.92);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-inverse: #0f172a;
+  --text-primary: #f7f4f0;       /* Light Warm Fog: 14:1 against dark surface */
+  --text-secondary: #DDD3C9;     /* WARM FOG: 9:1 against dark surface */
+  --text-muted: #ECC4C3;         /* BERRY GOOD muted */
+  --text-inverse: #18180d;
 
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --border-glass: rgba(255, 255, 255, 0.1);
+  --border-light: rgba(221, 211, 201, 0.18);
+  --border-strong: rgba(236, 196, 195, 0.35);
+  --border-glass: rgba(221, 211, 201, 0.16);
 
-  --brand-primary: #6366f1;
-  --brand-primary-hover: #818cf8;
-  --brand-secondary: #a855f7;
-  --brand-accent: #38bdf8;
-  --brand-light: #1e1b4b;
-  --brand-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --brand-primary: #cf9391;      /* Usu Koubai Blossom brightened for dark backgrounds */
+  --brand-primary-hover: #ECC4C3;/* BERRY GOOD */
+  --brand-secondary: #b0ab75;    /* Meadow Mauve brightened */
+  --brand-accent: #ECC4C3;       /* BERRY GOOD */
+  --brand-light: #332624;
+  --brand-gradient: linear-gradient(135deg, #cf9391 0%, #b0ab75 55%, #ECC4C3 100%);
+  --brand-gradient-soft: linear-gradient(135deg, #ECC4C3 0%, #cf9391 50%, #b0ab75 100%);
 
-  --success: #34d399;
-  --success-bg: #064e3b;
-  --warning: #fbbf24;
-  --warning-bg: #451a03;
-  --caution: #fb923c;
-  --caution-bg: #431407;
-  --error: #f87171;
-  --error-bg: #450a0a;
+  --success: #a0a66d;
+  --success-bg: #222718;
+  --warning: #b0ab75;
+  --warning-bg: #2d2a14;
+  --caution: #ECC4C3;
+  --caution-bg: #3d2625;
+  --error: #e07270;
+  --error-bg: #3b1716;
 
-  --focus-ring: #818cf8;
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.6), 0 4px 8px -2px rgb(0 0 0 / 0.4);
-  --shadow-glow: 0 0 30px -4px rgba(99, 102, 241, 0.3);
+  --focus-ring: #cf9391;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.7), 0 4px 8px -2px rgb(0 0 0 / 0.5);
+  --shadow-glow: 0 0 30px -4px rgba(207, 147, 145, 0.35);
 }
 
 /* --------------------------------------------------------------------------
@@ -117,8 +144,9 @@ body {
   font-family: var(--font-family-sans);
   background-color: var(--bg-primary);
   background-image:
-    radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.06) 0%, transparent 45%);
+    radial-gradient(circle at 15% 10%, rgba(185, 125, 123, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(146, 142, 94, 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(236, 196, 195, 0.14) 0%, transparent 60%);
   background-repeat: no-repeat;
   color: var(--text-primary);
   line-height: 1.6;
@@ -215,7 +243,7 @@ body {
   justify-content: center;
   font-size: 1.35rem;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 12px rgba(185, 125, 123, 0.4);
   flex-shrink: 0;
 }
 
@@ -311,20 +339,20 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  background-color: var(--palette-meadow-mauve);
+  box-shadow: 0 0 0 0 rgba(146, 142, 94, 0.7);
   animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    box-shadow: 0 0 0 0 rgba(146, 142, 94, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 6px rgba(146, 142, 94, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 0 rgba(146, 142, 94, 0);
   }
 }
 
@@ -365,12 +393,12 @@ body {
 .btn-primary {
   background: var(--brand-primary);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 2px 8px rgba(185, 125, 123, 0.35);
 }
 
 .btn-primary:hover {
   background: var(--brand-primary-hover);
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 4px 14px rgba(185, 125, 123, 0.45);
   transform: translateY(-1px);
 }
 
@@ -388,12 +416,12 @@ body {
 .btn-success {
   background: var(--brand-gradient);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 14px rgba(185, 125, 123, 0.35);
 }
 
 .btn-success:hover {
   filter: brightness(1.08);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 6px 20px rgba(185, 125, 123, 0.45);
   transform: translateY(-1px);
 }
 
@@ -424,13 +452,13 @@ body {
 .badge-accent {
   background: var(--brand-light);
   color: var(--brand-primary);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border: 1px solid var(--palette-usu-koubai);
 }
 
 .badge-ai {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.15));
-  color: var(--brand-secondary);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: linear-gradient(135deg, rgba(236, 196, 195, 0.4), rgba(185, 125, 123, 0.25));
+  color: var(--palette-soldier-green);
+  border: 1px solid var(--palette-usu-koubai);
 }
 
 .badge-neutral {
@@ -1197,14 +1225,14 @@ body {
   transition: width var(--transition-normal);
 }
 
-.segment-venue { background-color: #6366f1; }
-.segment-catering { background-color: #a855f7; }
-.segment-photo { background-color: #ec4899; }
-.segment-decor { background-color: #06b6d4; }
-.segment-music { background-color: #f59e0b; }
-.segment-attire { background-color: #10b981; }
-.segment-misc { background-color: #8b5cf6; }
-.segment-contingency { background-color: #ef4444; }
+.segment-venue { background-color: var(--palette-usu-koubai); }
+.segment-catering { background-color: var(--palette-meadow-mauve); }
+.segment-photo { background-color: var(--palette-soldier-green); }
+.segment-decor { background-color: var(--palette-berry-good); }
+.segment-music { background-color: var(--palette-warm-fog); }
+.segment-attire { background-color: #a16462; }
+.segment-misc { background-color: #777443; }
+.segment-contingency { background-color: #3b3917; }
 
 /* Budget Table */
 .table-responsive {
@@ -1651,6 +1679,31 @@ body {
   color: var(--brand-primary);
 }
 
+.footer-dev-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  padding: 0.35rem 0.75rem;
+  background: var(--palette-berry-good-light, rgba(236, 196, 195, 0.25));
+  border: 1px solid var(--palette-usu-koubai, #B97D7B);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.footer-dev-link:hover {
+  background: var(--palette-usu-koubai, #B97D7B);
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(185, 125, 123, 0.35);
+}
+
+.footer-dev-link .linkedin-badge {
+  font-size: 0.95rem;
+}
+
 .footer-tech-tag {
   font-size: 0.8rem;
   color: var(--text-secondary);
@@ -1730,7 +1783,7 @@ body {
   right: -40px;
   width: 180px;
   height: 180px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.22) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(185, 125, 123, 0.25) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -1758,8 +1811,8 @@ body {
 .mascot-live-tag {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
+  color: var(--palette-soldier-green);
+  background: rgba(87, 85, 39, 0.12);
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-full);
 }
@@ -1780,7 +1833,7 @@ body {
 .lumi-hero-svg {
   animation: floatBob 3.5s ease-in-out infinite;
   transition: transform var(--transition-normal);
-  filter: drop-shadow(0 8px 20px rgba(99, 102, 241, 0.18));
+  filter: drop-shadow(0 8px 20px rgba(185, 125, 123, 0.25));
 }
 
 .mascot-speech-bubble {
@@ -2170,7 +2223,7 @@ body {
   border-radius: 50%;
   background: var(--bg-surface);
   border: 2px solid var(--brand-primary);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 20px rgba(185, 125, 123, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2181,7 +2234,7 @@ body {
 
 .lumi-widget-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 28px rgba(185, 125, 123, 0.55);
 }
 
 .lumi-btn-sparkle {
@@ -2318,8 +2371,8 @@ body {
 }
 
 .milestone-item-btn.completed .milestone-checkbox {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--palette-soldier-green);
+  border-color: var(--palette-soldier-green);
 }
 
 .milestone-item-btn.completed .timeline-title {
@@ -2363,9 +2416,9 @@ body {
 }
 
 .btn-celebrate {
-  background: linear-gradient(135deg, #f59e0b, #ec4899);
+  background: linear-gradient(135deg, var(--palette-usu-koubai), var(--palette-meadow-mauve));
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 4px 12px rgba(185, 125, 123, 0.35);
 }
 
 .btn-celebrate:hover {

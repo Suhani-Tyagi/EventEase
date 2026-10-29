@@ -205,8 +205,14 @@ function triggerConfetti() {
   elements.confettiContainer.textContent = "";
 
   const colors = [
-    "#818cf8", "#c084fc", "#f472b6", "#f59e0b",
-    "#10b981", "#38bdf8", "#fbbf24", "#ec4899",
+    "#DDD3C9", // WARM FOG
+    "#ECC4C3", // BERRY GOOD
+    "#B97D7B", // USU KOUBAI BLOSSOM
+    "#928E5E", // MEADOW MAUVE
+    "#575527", // SOLDIER GREEN
+    "#f6e6e5", // Soft Blossom
+    "#c9bea2", // Warm Sand
+    "#deb0af", // Rose Blush
   ];
   const shapes = ["circle", "rect", "star"];
   const particleCount = 70;
@@ -690,8 +696,14 @@ function renderBudget(budget) {
   if (elements.budgetSegmentedBar) {
     elements.budgetSegmentedBar.textContent = "";
     const colorMap = [
-      "#6366f1", "#a855f7", "#ec4899", "#06b6d4",
-      "#f59e0b", "#10b981", "#8b5cf6", "#ef4444",
+      "#B97D7B", // USU KOUBAI BLOSSOM
+      "#928E5E", // MEADOW MAUVE
+      "#575527", // SOLDIER GREEN
+      "#ECC4C3", // BERRY GOOD
+      "#DDD3C9", // WARM FOG
+      "#a16462", // Deep Blossom
+      "#777443", // Deep Meadow
+      "#3b3917", // Deep Soldier Green
     ];
 
     budget.items.forEach((item, idx) => {

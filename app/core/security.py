@@ -70,18 +70,35 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         response: Response = await call_next(request)
-        # Content Security Policy: disallow inline scripts, allow self, fonts, images
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "script-src 'self'; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com; "
-            "img-src 'self' data:; "
-            "connect-src 'self'; "
-            "frame-ancestors 'none'; "
-            "base-uri 'self'; "
-            "form-action 'self';"
-        )
+        # Content Security Policy: disallow inline scripts on app pages,
+        # but permit CDN and inline initialization scripts for interactive docs
+        clean_path = request.url.path.rstrip("/")
+        if clean_path in ("/docs", "/redoc") or clean_path == "/openapi.json":
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' "
+                "https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+                "font-src 'self' https://fonts.gstatic.com data:; "
+                "img-src 'self' data: https://fastapi.tiangolo.com; "
+                "connect-src 'self' https://cdn.jsdelivr.net; "
+                "worker-src 'self' blob:; "
+                "frame-ancestors 'none'; "
+                "base-uri 'self'; "
+                "form-action 'self';"
+            )
+        else:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self'; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "font-src 'self' https://fonts.gstatic.com; "
+                "img-src 'self' data:; "
+                "connect-src 'self'; "
+                "frame-ancestors 'none'; "
+                "base-uri 'self'; "
+                "form-action 'self';"
+            )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
