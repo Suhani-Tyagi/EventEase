@@ -1,5 +1,6 @@
 """Vercel serverless entrypoint for EventEase FastAPI application."""
 
+import logging
 import os
 import sys
 import traceback
@@ -11,10 +12,42 @@ PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-startup_error: str | None = None
-startup_trace: list[str] = []
+logger = logging.getLogger("eventease.serverless")
 
 app: Any
+
+def create_fallback_app(exc: Exception | None = None) -> Any:
+    """Create a minimal fallback ASGI application that returns sanitized 500 errors."""
+    if exc:
+        logger.critical("Fatal serverless startup error: %s", exc)
+        sys.stderr.write(
+            f"CRITICAL [eventease.serverless] Startup failed: {exc}\n"
+            f"{traceback.format_exc()}\n"
+        )
+
+    from fastapi import FastAPI
+    from fastapi.responses import JSONResponse
+
+    fallback_app = FastAPI(title="EventEase Service Notice")
+
+    @fallback_app.api_route(
+        "/{path_name:path}", methods=["GET", "POST", "PUT", "DELETE"]
+    )
+    async def catch_all(path_name: str) -> JSONResponse:
+        _ = path_name
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "Internal Server Error",
+                "detail": (
+                    "The service is temporarily unavailable. "
+                    "Please try again later."
+                ),
+            },
+        )
+
+    return fallback_app
+
 
 try:
     from app.main import app as fastapi_app
@@ -54,9 +87,9 @@ try:
                 if clean_path in root_aliases:
                     scope["path"] = "/"
                 elif clean_path.startswith("/api/index.py/"):
-                    scope["path"] = clean_path[len("/api/index.py"):]
+                    scope["path"] = clean_path[len("/api/index.py") :]
                 elif clean_path.startswith("/api/index/"):
-                    scope["path"] = clean_path[len("/api/index"):]
+                    scope["path"] = clean_path[len("/api/index") :]
                 else:
                     scope["path"] = clean_path
 
@@ -67,27 +100,5 @@ try:
 
     app = VercelPathMiddleware(fastapi_app)
 
-except Exception as exc:
-    startup_error = str(exc)
-    startup_trace = traceback.format_exc().splitlines()
-
-    from fastapi import FastAPI
-    from fastapi.responses import JSONResponse
-
-    fallback_app = FastAPI(title="EventEase Startup Error")
-
-    @fallback_app.api_route(
-        "/{path_name:path}", methods=["GET", "POST", "PUT", "DELETE"]
-    )
-    async def catch_all(path_name: str) -> JSONResponse:
-        _ = path_name
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": "Startup Crash",
-                "details": startup_error,
-                "traceback": startup_trace,
-            },
-        )
-
-    app = fallback_app
+except Exception as startup_exc:
+    app = create_fallback_app(startup_exc)

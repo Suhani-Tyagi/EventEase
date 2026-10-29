@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventEase — Enterprise Celebration &amp; Event Planning Intelligence</title>
-  <meta name="description" content="Organize weddings, birthdays, and community festivals with deterministic budget models, adaptive backward-planned milestone timelines, vendor screening playbooks, and contextual GenAI inspiration.">
+  <title>EventEase — Celebration Planning Prototype</title>
+  <meta name="description" content="Organize celebrations with deterministic budget allocations, adaptive backward milestone timelines, vendor screening checklists, and offline-ready creative concepts.">
   <!-- Google Fonts: Inter & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +23,7 @@
         <div class="brand-text">
           <div class="brand-title-row">
             <span class="brand-title">EventEase</span>
-            <span class="brand-badge-pro">PRO</span>
+            <span class="brand-badge-pro">PROTOTYPE</span>
           </div>
           <span class="brand-tagline">Celebration Planning Intelligence</span>
         </div>
@@ -39,9 +39,10 @@
 
       <!-- Header Actions -->
       <div class="header-actions">
-        <div class="status-indicator-pill" title="Deterministic Engine &amp; Gemini Pro Online">
-          <span class="status-pulse-dot" aria-hidden="true"></span>
-          <span class="status-text">AI Engine Active</span>
+        <!-- Live AI vs Offline Fallback Status Indicator -->
+        <div class="status-indicator-pill" id="ai-engine-pill" role="status" title="Checking engine status...">
+          <span class="status-pulse-dot" id="status-pulse-dot" aria-hidden="true"></span>
+          <span class="status-text" id="status-text">Detecting AI Engine...</span>
         </div>
 
         <button id="theme-toggle" class="btn btn-secondary btn-icon" type="button" aria-pressed="false" aria-label="Toggle dark and light themes">
@@ -69,33 +70,33 @@
         <div class="hero-split-grid">
           <div class="hero-left">
             <div class="hero-announcement">
-              <span class="hero-badge-tag">&#10024; Next-Gen Event Platform</span>
-              <span class="hero-badge-desc">Deterministic Financial Math &bull; Adaptive Milestones &bull; Zero Hallucinations</span>
+              <span class="hero-badge-tag">&#10024; Event Planning Prototype</span>
+              <span class="hero-badge-desc">Deterministic Financial Math &bull; Adaptive Milestones &bull; Offline Fallback Ready</span>
             </div>
 
             <h1 id="hero-heading" class="hero-title">
               Plan Extraordinary Celebrations with <span class="gradient-text">Algorithmic Precision</span>
             </h1>
             <p class="hero-subtitle">
-              EventEase blends <strong>deterministic financial &amp; timeline algorithms</strong> with <strong>curated GenAI creativity</strong> to organize weddings, birthdays, and civic festivals with total mathematical transparency.
+              EventEase combines <strong>deterministic financial &amp; timeline algorithms</strong> with <strong>curated creativity</strong> to organize celebrations with complete mathematical transparency and instant offline support.
             </p>
 
-            <!-- Value Stats Counter Bar -->
-            <div class="stats-bar" role="region" aria-label="Key Platform Metrics">
+            <!-- Value Stats Counter Bar (Core Prototype Features) -->
+            <div class="stats-bar" role="region" aria-label="Prototype Core Capabilities">
               <div class="stat-card">
                 <span class="stat-value">100%</span>
-                <span class="stat-label">Deterministic Math</span>
-                <span class="stat-hint">No random budget estimates</span>
+                <span class="stat-label">Balanced Math</span>
+                <span class="stat-hint">Deterministic budget formulas</span>
               </div>
               <div class="stat-card">
                 <span class="stat-value">0%</span>
-                <span class="stat-label">Math Hallucinations</span>
+                <span class="stat-label">Guesswork</span>
                 <span class="stat-hint">Guaranteed balanced books</span>
               </div>
               <div class="stat-card">
                 <span class="stat-value">8.0%</span>
-                <span class="stat-label">Automatic Contingency</span>
-                <span class="stat-hint">Built-in emergency buffer</span>
+                <span class="stat-label">Contingency Buffer</span>
+                <span class="stat-hint">Recommended emergency reserve</span>
               </div>
               <div class="stat-card">
                 <span class="stat-value">Adaptive</span>
@@ -249,14 +250,13 @@
                 <span class="squad-name">Shep</span>
                 <span class="squad-role">Vendors</span>
               </div>
-              <div class="squad-member" title="Nova the Creative Spark Cat &bull; AI Ideas">
+              <div class="squad-member" title="Nova the Creative Spark Cat &bull; Curated Inspiration">
                 <span class="squad-emoji" aria-hidden="true">&#128049;</span>
                 <span class="squad-name">Nova</span>
-                <span class="squad-role">Inspiration</span>
+                <span class="squad-role">Ideas</span>
               </div>
             </div>
 
-            <!-- Interactive Buttons -->
             <div class="mascot-actions">
               <button type="button" class="btn btn-sm btn-accent" id="btn-hero-sparkle">
                 <span aria-hidden="true">&#10024;</span> Sparkle &amp; Confetti!
@@ -275,10 +275,10 @@
               <span class="presets-icon" aria-hidden="true">&#9889;</span>
               <div>
                 <h2 id="presets-heading" class="presets-title">One-Click Demonstration Scenarios</h2>
-                <p class="presets-desc" id="presets-desc">Select an enterprise template to load instant allocations, adaptive schedules, and creative concepts:</p>
+                <p class="presets-desc" id="presets-desc">Select an example demonstration scenario below to load sample parameters into the planner:</p>
               </div>
             </div>
-            <span class="badge badge-accent">Instant Pre-load</span>
+            <span class="badge badge-accent">Sample Data</span>
           </div>
 
           <div class="presets-btn-group" role="group" aria-describedby="presets-desc">
@@ -318,28 +318,28 @@
       <!-- Why EventEase Section -->
       <section id="why-eventease" class="why-section" aria-labelledby="why-heading">
         <div class="section-header-centered">
-          <span class="badge badge-accent">Platform Architecture</span>
-          <h2 id="why-heading" class="section-title">Engineered to Outperform Generic Chatbots</h2>
+          <span class="badge badge-accent">Algorithmic Design</span>
+          <h2 id="why-heading" class="section-title">Engineered with Mathematical Rigor</h2>
           <p class="section-subtitle">
-            Most AI tools hallucinate unvetted costs and unrealistic timelines. EventEase separates mathematical computation from creative ideation.
+            Generic chatbots often generate ungrounded numbers and inconsistent timelines. EventEase isolates mathematical budgeting and backwards timeline calculation from creative ideation.
           </p>
         </div>
 
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon-wrapper" aria-hidden="true">&#128176;</div>
-            <h3 class="feature-title">Algorithmic Budgeting</h3>
+            <h3 class="feature-title">Deterministic Budgeting</h3>
             <p class="feature-desc">
-              Deterministic category weights distribute your funds precisely across venue, catering, decor, and entertainment, locking in an 8% emergency contingency.
+              Every dollar is deterministically computed based on proven industry benchmarks. Allocations automatically balance to 100% with a locked contingency safety buffer.
             </p>
-            <span class="feature-tag">&check; 100% Balanced Books</span>
+            <span class="feature-tag">&check; Balanced Accounting</span>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon-wrapper" aria-hidden="true">&#128197;</div>
             <h3 class="feature-title">Adaptive Timeline Engine</h3>
             <p class="feature-desc">
-              Backward-planned from your target event date. Whether you have 30 days or 18 months, milestones compress intelligently with urgent path warnings.
+              Backward-planned from your target celebration date. Whether you have 30 days or 18 months, milestones compress intelligently with urgent path notices.
             </p>
             <span class="feature-tag">&check; Dynamic Lead Time</span>
           </div>
@@ -348,24 +348,39 @@
             <div class="feature-icon-wrapper" aria-hidden="true">&#9745;</div>
             <h3 class="feature-title">Vendor Screening Playbook</h3>
             <p class="feature-desc">
-              Battle-tested interview questions for venues, caterers, photographers, and audio teams to smoke out hidden fees and contract traps.
+              Curated interview questions for venues, caterers, photographers, and audio teams to evaluate contracts, overtime policies, and power-drop fees.
             </p>
             <span class="feature-tag">&check; Interactive Booking Tracker</span>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon-wrapper" aria-hidden="true">&#128161;</div>
-            <h3 class="feature-title">Contextual GenAI Creative Lab</h3>
+            <h3 class="feature-title">Contextual Creative Inspiration</h3>
             <p class="feature-desc">
-              Powered by Google Gemini with deterministic offline fallback. Generates tailored decor aesthetics, signature menus, and practical cost-saving hacks.
+              Integrates with Google Gemini when configured, with seamless offline fallback templates. Generates tailored decor aesthetics, signature menus, and cost-saving tips.
             </p>
-            <span class="feature-tag">&check; Instant Local Fallback</span>
+            <span class="feature-tag">&check; Instant Offline Fallback</span>
           </div>
         </div>
       </section>
 
       <!-- Multi-step Intake Form -->
       <section class="form-section" aria-labelledby="form-heading">
+        <!-- Saved Plan Notification Banner -->
+        <div id="saved-plan-banner" class="saved-plan-banner hidden" role="region" aria-label="Saved Celebration Plan Banner">
+          <div class="saved-banner-content">
+            <span class="saved-banner-icon" aria-hidden="true">&#128190;</span>
+            <div class="saved-banner-text">
+              <strong>Saved Plan Found:</strong>
+              <span id="saved-plan-timestamp">You have an ongoing celebration plan saved in this browser.</span>
+            </div>
+          </div>
+          <div class="saved-banner-actions">
+            <button type="button" class="btn btn-sm btn-primary" id="btn-restore-plan">Restore Plan</button>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-discard-plan">Discard &amp; Start Fresh</button>
+          </div>
+        </div>
+
         <div class="card form-card">
           <div class="form-header">
             <div>
@@ -482,7 +497,7 @@
                 <div class="form-group form-col-span-2">
                   <label for="event-theme" class="form-label">Theme or Aesthetic Style (Optional)</label>
                   <input type="text" id="event-theme" name="theme" class="form-control" maxlength="120" placeholder="e.g., Midnight Garden, Rustic Chic, Retro 80s, Bohemian Sunset" aria-describedby="event-theme-hint">
-                  <p id="event-theme-hint" class="form-hint">Guides the GenAI model in crafting tailored decor and mood concepts.</p>
+                  <p id="event-theme-hint" class="form-hint">Guides creative suggestions for tailored decor and mood concepts.</p>
                 </div>
 
                 <div class="form-group form-col-span-2">
@@ -513,8 +528,8 @@
       <!-- Global Loading State -->
       <section id="loading-indicator" class="loading-container hidden" aria-labelledby="loading-text">
         <div class="spinner-large" aria-hidden="true"></div>
-        <p id="loading-text" class="loading-label">Deriving deterministic budget metrics, backward-planning milestones, and generating creative ideas...</p>
-        <span class="loading-sublabel">Processing via Algorithmic Core + Gemini 2.0 Engine</span>
+        <p id="loading-text" class="loading-label">Calculating deterministic budget metrics, backward-planning milestones, and generating creative ideas...</p>
+        <span class="loading-sublabel">Processing via Algorithmic Core + Gemini AI Engine</span>
       </section>
 
       <!-- Results Section -->
@@ -524,23 +539,35 @@
         <div class="results-action-bar">
           <div>
             <div class="results-header-tag">
-              <span class="badge badge-accent">Executive Deliverables</span>
-              <span class="results-live-badge">&#10004; Verified Calculation</span>
+              <span class="badge badge-accent">Celebration Plan</span>
+              <span class="save-indicator" id="save-indicator" title="Your edits, vendor statuses, and checklist are saved in your browser">
+                <span class="save-dot" aria-hidden="true"></span>
+                <span id="save-status-text">Saved locally</span>
+              </span>
             </div>
             <h2 class="results-title">Your Celebration Master Plan</h2>
             <p class="results-subtitle" id="results-meta-text">Generated based on your event specifications</p>
           </div>
           <div class="export-actions">
-            <button type="button" class="btn btn-secondary" id="btn-copy-summary" title="Copy text summary of entire plan">
+            <button type="button" class="btn btn-secondary" id="btn-copy-summary" title="Copy formatted text summary of entire plan">
               <span aria-hidden="true">&#128203;</span> Copy Summary
             </button>
-            <button type="button" class="btn btn-secondary" id="btn-export-json">
-              <span aria-hidden="true">&#128190;</span> Download JSON
+            <button type="button" class="btn btn-secondary" id="btn-export-json" title="Download JSON plan">
+              <span aria-hidden="true">&#128190;</span> JSON
             </button>
-            <button type="button" class="btn btn-primary" id="btn-print-view">
-              <span aria-hidden="true">&#128424;</span> Print / PDF Export
+            <button type="button" class="btn btn-secondary" id="btn-export-csv" title="Download CSV spreadsheet">
+              <span aria-hidden="true">&#128202;</span> CSV
             </button>
-            <button type="button" class="btn btn-accent btn-celebrate" id="btn-celebrate">
+            <button type="button" class="btn btn-secondary" id="btn-export-ics" title="Export milestone deadlines to .ics calendar">
+              <span aria-hidden="true">&#128197;</span> .ICS Calendar
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-print-view" title="Print or save as PDF">
+              <span aria-hidden="true">&#128424;</span> Print / PDF
+            </button>
+            <button type="button" class="btn btn-secondary btn-new-plan" id="btn-start-new-plan" title="Reset and plan another celebration">
+              <span aria-hidden="true">&#10010;</span> New Plan
+            </button>
+            <button type="button" class="btn btn-accent btn-celebrate" id="btn-celebrate" title="Celebrate plan completion">
               <span aria-hidden="true">&#127881;</span> Celebrate!
             </button>
           </div>
@@ -551,7 +578,7 @@
           <span class="alert-icon" aria-hidden="true">&#9888;</span>
           <div class="alert-content">
             <strong class="alert-title">Curated Offline Ideas Active</strong>
-            <p id="fallback-reason-text" class="alert-message">Template-based curated ideas are being displayed.</p>
+            <p id="fallback-reason-text" class="alert-message">Curated template ideas are being displayed.</p>
           </div>
         </div>
 
@@ -561,6 +588,60 @@
           <div class="alert-content">
             <strong class="alert-title">Budget Benchmark Warning</strong>
             <p id="budget-warning-text" class="alert-message"></p>
+          </div>
+        </div>
+
+        <!-- Compact Celebration Progress Dashboard -->
+        <div class="planning-dashboard" id="planning-dashboard" role="region" aria-label="Celebration Progress Dashboard">
+          <div class="dashboard-grid">
+            <!-- Metric 1: Budget Balance -->
+            <div class="dashboard-card" id="dash-budget-card">
+              <div class="dash-card-header">
+                <span class="dash-icon" aria-hidden="true">&#128176;</span>
+                <span class="dash-label">Budget Balance</span>
+              </div>
+              <div class="dash-value" id="dash-budget-status">Balanced</div>
+              <div class="dash-meta" id="dash-budget-meta">100.0% allocated &bull; $0.00 contingency</div>
+              <div class="dash-progress-track" aria-hidden="true">
+                <div class="dash-progress-fill fill-budget" id="dash-budget-fill" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <!-- Metric 2: Milestones Progress -->
+            <div class="dashboard-card" id="dash-milestones-card">
+              <div class="dash-card-header">
+                <span class="dash-icon" aria-hidden="true">&#9201;</span>
+                <span class="dash-label">Milestones Done</span>
+              </div>
+              <div class="dash-value" id="dash-milestones-count">0 / 0</div>
+              <div class="dash-meta" id="dash-milestones-meta">0% completed</div>
+              <div class="dash-progress-track" aria-hidden="true">
+                <div class="dash-progress-fill fill-milestones" id="dash-milestones-fill" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Metric 3: Vendor Booking Progress -->
+            <div class="dashboard-card" id="dash-vendors-card">
+              <div class="dash-card-header">
+                <span class="dash-icon" aria-hidden="true">&#129309;</span>
+                <span class="dash-label">Vendors Booked</span>
+              </div>
+              <div class="dash-value" id="dash-vendors-count">0 / 0</div>
+              <div class="dash-meta" id="dash-vendors-meta">0 booked &bull; 0 in progress</div>
+              <div class="dash-progress-track" aria-hidden="true">
+                <div class="dash-progress-fill fill-vendors" id="dash-vendors-fill" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Metric 4: Event Countdown & Next Deadline -->
+            <div class="dashboard-card" id="dash-deadline-card">
+              <div class="dash-card-header">
+                <span class="dash-icon" aria-hidden="true">&#128197;</span>
+                <span class="dash-label">Event Countdown</span>
+              </div>
+              <div class="dash-value" id="dash-days-remaining">-- Days</div>
+              <div class="dash-meta" id="dash-next-deadline-text">Next: Set event parameters</div>
+            </div>
           </div>
         </div>
 
@@ -574,7 +655,7 @@
                 <span class="card-icon" aria-hidden="true">&#128176;</span>
                 <div>
                   <h3 id="budget-heading" class="card-title">1. Budget Allocation</h3>
-                  <span class="card-subtitle">Deterministic percentage distribution &amp; contingency reserve</span>
+                  <span class="card-subtitle">Editable allocations with real-time balance &amp; contingency check</span>
                 </div>
               </div>
               <span class="badge badge-accent" id="cost-per-guest-badge">Per-Guest: $0.00</span>
@@ -613,25 +694,40 @@
                     <line x1="75" y1="68" x2="85" y2="68" stroke="#B97D7B" stroke-width="2.5"/>
                     <ellipse cx="48" cy="80" rx="6" ry="3.5" fill="#ECC4C3" opacity="0.8"/>
                     <ellipse cx="112" cy="80" rx="6" ry="3.5" fill="#ECC4C3" opacity="0.8"/>
-                    <ellipse cx="80" cy="135" rx="36" ry="25" fill="url(#barnaby-fur)"/>
-                    <g class="animated-coin">
-                      <circle cx="80" cy="128" r="18" fill="url(#gold-coin-grad)" stroke="#b45309" stroke-width="1.5"/>
-                      <circle cx="80" cy="128" r="14" stroke="#fef3c7" stroke-width="1" stroke-dasharray="3 2" fill="none"/>
-                      <text x="80" y="134" font-size="16" font-weight="bold" fill="#78350f" text-anchor="middle" font-family="sans-serif">$</text>
-                    </g>
-                    <ellipse cx="58" cy="130" rx="8" ry="6" fill="#fef3c7"/>
-                    <ellipse cx="102" cy="130" rx="8" ry="6" fill="#fef3c7"/>
                   </svg>
                 </div>
                 <div class="character-callout-content">
                   <div class="character-callout-header">
                     <span class="character-name">Barnaby the Budget Bear</span>
-                    <span class="character-pill">100% Balanced Math</span>
+                    <span class="character-pill">Balanced Allocations</span>
                   </div>
                   <p class="character-quote">
-                    &ldquo;Every dollar is deterministically allocated! We locked in your <strong>8.0% emergency contingency buffer</strong> so surprise price spikes won&rsquo;t throw your party off track.&rdquo;
+                    &ldquo;Every dollar is deterministically allocated! Edit any category percentage or amount below, and our engine automatically balances totals and safeguards your contingency reserve.&rdquo;
                   </p>
                 </div>
+              </div>
+
+              <!-- Live Balance Bar with Real-Time Contingency Calculation -->
+              <div class="budget-balance-bar" id="budget-balance-bar">
+                <div class="budget-stat-item">
+                  <span class="stat-label-tiny">Total Budget</span>
+                  <strong id="budget-total-display">$0.00</strong>
+                </div>
+                <div class="budget-stat-item">
+                  <span class="stat-label-tiny">Allocated</span>
+                  <strong id="budget-allocated-display">$0.00 (100.0%)</strong>
+                </div>
+                <div class="budget-stat-item">
+                  <span class="stat-label-tiny">Contingency Buffer</span>
+                  <strong id="budget-contingency-display">$0.00 (8.0%)</strong>
+                </div>
+                <div class="budget-stat-item">
+                  <span class="stat-label-tiny">Status</span>
+                  <span class="badge" id="budget-status-pill">Balanced</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" id="btn-reset-budget" title="Reset allocations back to the initial benchmark split">
+                  Reset Allocation
+                </button>
               </div>
 
               <p class="card-desc" id="budget-explanation">Deterministic category percentage allocation with dedicated contingency reserve.</p>
@@ -643,14 +739,7 @@
                   <span id="budget-bar-summary">100% Allocated</span>
                 </div>
                 <div class="budget-segmented-bar" id="budget-segmented-bar">
-                  <div class="segment segment-venue" style="width: 25%" title="Venue &amp; Rentals: 25%"></div>
-                  <div class="segment segment-catering" style="width: 30%" title="Catering &amp; Bar: 30%"></div>
-                  <div class="segment segment-photo" style="width: 10%" title="Photography: 10%"></div>
-                  <div class="segment segment-decor" style="width: 10%" title="Decor: 10%"></div>
-                  <div class="segment segment-music" style="width: 8%" title="Entertainment: 8%"></div>
-                  <div class="segment segment-attire" style="width: 5%" title="Attire: 5%"></div>
-                  <div class="segment segment-misc" style="width: 4%" title="Stationery: 4%"></div>
-                  <div class="segment segment-contingency" style="width: 8%" title="Contingency: 8%"></div>
+                  <!-- Dynamically Rendered Segments -->
                 </div>
               </div>
 
@@ -659,7 +748,7 @@
                   <thead>
                     <tr>
                       <th scope="col">Category</th>
-                      <th scope="col" class="text-right">Allocation</th>
+                      <th scope="col" class="text-right">Allocation (%)</th>
                       <th scope="col" class="text-right">Amount</th>
                       <th scope="col">Scope &amp; Description</th>
                     </tr>
@@ -669,10 +758,10 @@
                   </tbody>
                   <tfoot>
                     <tr class="table-total-row">
-                      <th scope="row">Total Projected Budget</th>
-                      <td class="text-right">100.0%</td>
+                      <th scope="row">Total Budget</th>
+                      <td class="text-right" id="budget-foot-pct">100.0%</td>
                       <td class="text-right" id="budget-total-amount">$0.00</td>
-                      <td>Balanced Allocation</td>
+                      <td id="budget-foot-status">Balanced Allocation</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -728,8 +817,8 @@
                       <circle cx="0" cy="0" r="2" fill="#575527"/>
                       <rect x="-3" y="-19" width="6" height="4" fill="#928E5E" rx="1"/>
                     </g>
-                    <ellipse cx="64" cy="138" rx="12" ry="7" fill="#f97316"/>
-                    <ellipse cx="96" cy="138" rx="12" ry="7" fill="#f97316"/>
+                    <ellipse cx="64" cy="138" rx="12" ry="7" fill="#B97D7B"/>
+                    <ellipse cx="96" cy="138" rx="12" ry="7" fill="#B97D7B"/>
                   </svg>
                 </div>
                 <div class="character-callout-content">
@@ -738,7 +827,7 @@
                     <span class="character-pill" id="milestone-tracker-pill">0 / 0 Done</span>
                   </div>
                   <p class="character-quote">
-                    &ldquo;Backward-planned from your event date! Click any milestone in the schedule below to mark it completed as your preparations progress.&rdquo;
+                    &ldquo;Backward-planned from your event date! Click any milestone below to mark it completed as your preparations progress.&rdquo;
                   </p>
                 </div>
               </div>
@@ -760,7 +849,7 @@
                 <span class="card-icon" aria-hidden="true">&#9745;</span>
                 <div>
                   <h3 id="checklist-heading" class="card-title">3. Vendor Screening Checklist</h3>
-                  <span class="card-subtitle">Contract interrogation questions &amp; procurement status</span>
+                  <span class="card-subtitle">Contract interrogation questions, tracking notes &amp; contacts</span>
                 </div>
               </div>
               <span class="badge badge-neutral" id="checklist-summary-badge">0 / 0 Booked</span>
@@ -798,13 +887,13 @@
                     <ellipse class="character-eye" cx="96" cy="72" rx="5" ry="6" fill="#2f2e13"/>
                     <circle cx="94" cy="70" r="2" fill="#ffffff"/>
                     <ellipse cx="80" cy="80" rx="6" ry="4" fill="#2f2e13"/>
-                    <path d="M74 85 Q80 90 86 85" stroke="#292524" stroke-width="2" stroke-linecap="round" fill="none"/>
-                    <path d="M78 88 Q80 94 82 88" fill="#f43f5e"/>
-                    <ellipse cx="52" cy="80" rx="6" ry="3.5" fill="#f43f5e" opacity="0.4"/>
-                    <ellipse cx="108" cy="80" rx="6" ry="3.5" fill="#f43f5e" opacity="0.4"/>
+                    <path d="M74 85 Q80 90 86 85" stroke="#2f2e13" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <path d="M78 88 Q80 94 82 88" fill="#B97D7B"/>
+                    <ellipse cx="52" cy="80" rx="6" ry="3.5" fill="#ECC4C3" opacity="0.6"/>
+                    <ellipse cx="108" cy="80" rx="6" ry="3.5" fill="#ECC4C3" opacity="0.6"/>
                     <g class="animated-glass" transform="translate(42, 92)">
-                      <line x1="8" y1="8" x2="22" y2="22" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
-                      <circle cx="5" cy="5" r="14" stroke="#d97706" stroke-width="3" fill="rgba(224, 242, 254, 0.45)"/>
+                      <line x1="8" y1="8" x2="22" y2="22" stroke="#575527" stroke-width="4" stroke-linecap="round"/>
+                      <circle cx="5" cy="5" r="14" stroke="#928E5E" stroke-width="3" fill="rgba(236, 196, 195, 0.45)"/>
                       <line class="glass-glare" x1="-3" y1="0" x2="3" y2="-6" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
                     </g>
                   </svg>
@@ -812,10 +901,10 @@
                 <div class="character-callout-content">
                   <div class="character-callout-header">
                     <span class="character-name">Sherlock Shep the Vendor Detective</span>
-                    <span class="character-pill">Contract Interrogation</span>
+                    <span class="character-pill">Contract Screening</span>
                   </div>
                   <p class="character-quote">
-                    &ldquo;Never sign blind! Use these tailored screening questions during vendor discovery calls to uncover sneaky overtime, corkage, or power-drop fees.&rdquo;
+                    &ldquo;Never sign blind! Use these tailored screening questions during vendor discovery calls, and log your vendor contact details and private notes directly below.&rdquo;
                   </p>
                 </div>
               </div>
@@ -823,7 +912,7 @@
               <!-- Live Booking Progress Bar -->
               <div class="vendor-progress-wrapper" aria-hidden="true">
                 <div class="vendor-progress-label">
-                  <span>Vendor Hiring Progress</span>
+                  <span>Vendor Booking Progress</span>
                   <span id="vendor-progress-percent">0%</span>
                 </div>
                 <div class="vendor-progress-track">
@@ -831,7 +920,15 @@
                 </div>
               </div>
 
-              <p class="card-desc">Essential screening questions to interview each vendor before signing contracts:</p>
+              <!-- Vendor Filter Pills -->
+              <div class="vendor-filter-bar" id="vendor-filter-bar" role="group" aria-label="Filter vendor checklist">
+                <span class="filter-label">Filter:</span>
+                <button type="button" class="filter-pill active" data-filter="all" aria-pressed="true">All (<span id="count-all">0</span>)</button>
+                <button type="button" class="filter-pill" data-filter="to-do" aria-pressed="false">To-Do (<span id="count-todo">0</span>)</button>
+                <button type="button" class="filter-pill" data-filter="contacted" aria-pressed="false">Contacted (<span id="count-contacted">0</span>)</button>
+                <button type="button" class="filter-pill" data-filter="booked" aria-pressed="false">Booked (<span id="count-booked">0</span>)</button>
+              </div>
+
               <div class="checklist-container" id="checklist-container" role="list">
                 <!-- Dynamic Checklist Items Rendered by JS -->
               </div>
@@ -845,10 +942,10 @@
                 <span class="card-icon" aria-hidden="true">&#128161;</span>
                 <div>
                   <h3 id="ideas-heading" class="card-title">4. Personalized Inspiration &amp; Cost Savings</h3>
-                  <span class="card-subtitle">AI-curated aesthetic concepts, menus, and efficiency hacks</span>
+                  <span class="card-subtitle">Curated aesthetic concepts, signature menus, and budget hacks</span>
                 </div>
               </div>
-              <span class="badge badge-ai" id="ideas-ai-badge">&#10024; AI Suggestions</span>
+              <span class="badge badge-ai" id="ideas-ai-badge">&#10024; Suggestions</span>
             </div>
             <div class="card-body">
 
@@ -883,12 +980,8 @@
                     <path d="M88 82 Q95 74 102 82" stroke="#575527" stroke-width="2.5" stroke-linecap="round" fill="none"/>
                     <line x1="45" y1="88" x2="28" y2="85" stroke="#928E5E" stroke-width="2" stroke-linecap="round"/>
                     <line x1="45" y1="94" x2="30" y2="96" stroke="#928E5E" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="115" y1="88" x2="132" y2="85" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="115" y1="94" x2="130" y2="96" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
-                    <polygon points="80,88 77,92 83,92" fill="#ec4899"/>
-                    <path d="M75 94 Q80 98 85 94" stroke="#4338ca" stroke-width="2" stroke-linecap="round" fill="none"/>
-                    <ellipse cx="56" cy="90" rx="7" ry="4" fill="#f472b6" opacity="0.6"/>
-                    <ellipse cx="104" cy="90" rx="7" ry="4" fill="#f472b6" opacity="0.6"/>
+                    <ellipse cx="56" cy="90" rx="7" ry="4" fill="#ECC4C3" opacity="0.8"/>
+                    <ellipse cx="104" cy="90" rx="7" ry="4" fill="#ECC4C3" opacity="0.8"/>
                     <ellipse cx="80" cy="130" rx="34" ry="24" fill="url(#nova-fur)"/>
                     <ellipse cx="80" cy="132" rx="18" ry="16" fill="#ffffff"/>
                     <ellipse cx="64" cy="138" rx="8" ry="6" fill="#ffffff"/>
@@ -898,7 +991,7 @@
                 <div class="character-callout-content">
                   <div class="character-callout-header">
                     <span class="character-name">Nova the Creative Spark Cat</span>
-                    <span class="character-pill">&#10024; AI Creative Lab</span>
+                    <span class="character-pill">&#10024; Creative Studio</span>
                   </div>
                   <p class="character-quote">
                     &ldquo;Curated themes, signature menus, and practical budget hacks! Click any card to copy its details straight to your event notes.&rdquo;
@@ -906,86 +999,34 @@
                 </div>
               </div>
 
+              <!-- Accessible WAI-ARIA Ideas Tabs -->
               <div class="ideas-tabs" role="tablist" aria-label="Personalized Ideas Categories">
-                <button type="button" role="tab" class="tab-btn active" id="tab-themes" aria-selected="true" aria-controls="panel-themes">Themes</button>
-                <button type="button" role="tab" class="tab-btn" id="tab-decor" aria-selected="false" aria-controls="panel-decor">Decor</button>
-                <button type="button" role="tab" class="tab-btn" id="tab-menu" aria-selected="false" aria-controls="panel-menu">Menu &amp; Bar</button>
-                <button type="button" role="tab" class="tab-btn" id="tab-activities" aria-selected="false" aria-controls="panel-activities">Activities</button>
-                <button type="button" role="tab" class="tab-btn" id="tab-tips" aria-selected="false" aria-controls="panel-tips">Savings Tips</button>
+                <button type="button" role="tab" class="tab-btn active" id="tab-themes" aria-selected="true" aria-controls="panel-themes" tabindex="0">Themes</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-decor" aria-selected="false" aria-controls="panel-decor" tabindex="-1">Decor</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-menu" aria-selected="false" aria-controls="panel-menu" tabindex="-1">Menu &amp; Bar</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-activities" aria-selected="false" aria-controls="panel-activities" tabindex="-1">Activities</button>
+                <button type="button" role="tab" class="tab-btn" id="tab-tips" aria-selected="false" aria-controls="panel-tips" tabindex="-1">Savings Tips</button>
               </div>
 
-              <!-- Tab Panels -->
-              <div id="panel-themes" role="tabpanel" class="tab-panel active" aria-labelledby="tab-themes">
+              <!-- Tab Panels with full ARIA semantics -->
+              <div id="panel-themes" role="tabpanel" class="tab-panel active" aria-labelledby="tab-themes" tabindex="0">
                 <ul class="ideas-list" id="ideas-list-themes"></ul>
               </div>
-              <div id="panel-decor" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-decor">
+              <div id="panel-decor" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-decor" tabindex="0">
                 <ul class="ideas-list" id="ideas-list-decor"></ul>
               </div>
-              <div id="panel-menu" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-menu">
+              <div id="panel-menu" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-menu" tabindex="0">
                 <ul class="ideas-list" id="ideas-list-menu"></ul>
               </div>
-              <div id="panel-activities" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-activities">
+              <div id="panel-activities" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-activities" tabindex="0">
                 <ul class="ideas-list" id="ideas-list-activities"></ul>
               </div>
-              <div id="panel-tips" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-tips">
+              <div id="panel-tips" role="tabpanel" class="tab-panel hidden" aria-labelledby="tab-tips" tabindex="0">
                 <ul class="ideas-list" id="ideas-list-tips"></ul>
               </div>
             </div>
           </div>
 
-        </div>
-      </section>
-
-      <!-- Testimonials / Social Proof Section -->
-      <section class="testimonials-section" aria-labelledby="testimonials-heading">
-        <div class="section-header-centered">
-          <span class="badge badge-accent">Host &amp; Planner Stories</span>
-          <h2 id="testimonials-heading" class="section-title">Trusted by Hosts and Event Directors</h2>
-          <p class="section-subtitle">Real experiences from coordinators who switched from chaotic spreadsheets to deterministic planning.</p>
-        </div>
-
-        <div class="testimonials-grid">
-          <div class="testimonial-card">
-            <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-            <p class="testimonial-quote">
-              &ldquo;The 8% contingency fund literally saved our vineyard wedding when an unseasonable heatwave required extra industrial pavilion fans. Zero stress because it was already budgeted.&rdquo;
-            </p>
-            <div class="testimonial-author">
-              <div class="author-avatar" aria-hidden="true">EL</div>
-              <div class="author-info">
-                <span class="author-name">Elena &amp; Lucas</span>
-                <span class="author-title">Napa Valley Wedding &bull; 120 Guests</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-            <p class="testimonial-quote">
-              &ldquo;The vendor screening questions caught a clause in our rooftop DJ contract that would have billed us $150/hour for basic power extension. That single question paid for itself.&rdquo;
-            </p>
-            <div class="testimonial-author">
-              <div class="author-avatar" aria-hidden="true">MR</div>
-              <div class="author-info">
-                <span class="author-name">Marcus R.</span>
-                <span class="author-title">30th Birthday Host &bull; Austin, TX</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="testimonial-card">
-            <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-            <p class="testimonial-quote">
-              &ldquo;Managing a 500-person public festival with multiple food trucks requires rock-solid milestone pacing. EventEase gave our committee the exact timeline we needed.&rdquo;
-            </p>
-            <div class="testimonial-author">
-              <div class="author-avatar" aria-hidden="true">ST</div>
-              <div class="author-info">
-                <span class="author-name">Sarah Tanaka</span>
-                <span class="author-title">Community Arts Coordinator &bull; Seattle, WA</span>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -999,10 +1040,10 @@
         <div class="footer-brand">
           <div class="brand-title-row">
             <span class="footer-logo">&#10024; EventEase</span>
-            <span class="brand-badge-pro">PRO</span>
+            <span class="brand-badge-pro">PROTOTYPE</span>
           </div>
           <p class="footer-desc">
-            Enterprise celebration planning intelligence. Deterministic financial allocations, adaptive backward milestone scheduling, and curated GenAI creativity.
+            EventEase celebration planning prototype. Deterministic financial allocations, adaptive backward milestone scheduling, and curated offline inspiration.
           </p>
         </div>
 
@@ -1027,14 +1068,14 @@
           <span class="footer-heading">Architecture</span>
           <span class="footer-tech-tag">FastAPI 0.115</span>
           <span class="footer-tech-tag">Pydantic v2</span>
-          <span class="footer-tech-tag">Google Gemini 2.0</span>
+          <span class="footer-tech-tag">Google Gemini 2.5</span>
           <span class="footer-tech-tag">WCAG 2.1 AA</span>
         </div>
       </div>
 
       <div class="footer-bottom">
         <p class="footer-copy">
-          &copy; 2026 EventEase Inc. All rights reserved. Built with mathematical rigor and zero hallucinated financials.
+          &copy; 2026 EventEase Prototype. Built with mathematical rigor and zero hallucinated financials.
         </p>
         <p class="footer-back-top">
           <a href="#main-content">Back to Top &uarr;</a>
@@ -1043,13 +1084,16 @@
     </div>
   </footer>
 
-  <!-- Floating Lumi Assistant Widget -->
+  <!-- Floating Lumi Assistant Widget with Collapse / Minimize Toggle -->
   <aside id="lumi-widget" class="lumi-floating-widget" aria-label="Celebration Companion">
     <div class="lumi-widget-bubble" id="lumi-widget-bubble" role="tooltip">
       <p id="lumi-widget-text">Ready to plan something amazing? Let&rsquo;s do this! &#10024;</p>
-      <button type="button" class="lumi-bubble-close" id="lumi-bubble-close" aria-label="Dismiss message">&times;</button>
+      <div class="lumi-bubble-actions">
+        <button type="button" class="lumi-minimize-btn" id="lumi-minimize-btn" aria-label="Minimize celebration companion" title="Minimize or restore assistant">&minus;</button>
+        <button type="button" class="lumi-bubble-close" id="lumi-bubble-close" aria-label="Dismiss message">&times;</button>
+      </div>
     </div>
-    <button type="button" class="lumi-widget-btn" id="lumi-widget-btn" aria-label="Lumi Party Assistant (Click for celebration sparkles and tips)">
+    <button type="button" class="lumi-widget-btn" id="lumi-widget-btn" aria-label="Lumi Party Assistant (Click for tips or toggle)">
       <span class="lumi-btn-sparkle" aria-hidden="true">&#10024;</span>
       <svg class="lumi-mini-svg" viewBox="0 0 100 100" width="56" height="56" fill="none" aria-hidden="true">
         <circle cx="50" cy="50" r="46" fill="#f7f4f0" stroke="#DDD3C9" stroke-width="2"/>
@@ -1069,6 +1113,20 @@
       </svg>
     </button>
   </aside>
+
+  <!-- Confirm Start New Plan Modal -->
+  <dialog id="confirm-modal" class="confirm-modal" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h3 id="modal-title" class="modal-title">Start a New Celebration Plan?</h3>
+      <p class="modal-desc">
+        Starting a new plan will reset your current progress, edited budget allocations, completed milestones, and vendor notes. Are you sure you want to proceed?
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-modal-cancel">Keep Current Plan</button>
+        <button type="button" class="btn btn-danger" id="btn-modal-confirm">Yes, Start New Plan</button>
+      </div>
+    </div>
+  </dialog>
 
   <!-- Confetti Canvas Container -->
   <div id="confetti-canvas-container" class="confetti-container" aria-hidden="true"></div>

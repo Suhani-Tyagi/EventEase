@@ -11,7 +11,9 @@ EventEase handles celebration planning inputs from web clients and coordinates w
 | :--- | :--- | :--- |
 | **Prompt Injection Attacks** | Input sanitization, isolation delimiters, system prompt isolation, and output schema validation. | `app/core/security.py`, `app/services/ideas.py` |
 | **Cross-Site Scripting (XSS)** | Strict Content Security Policy (`script-src 'self'`) and pure `textContent` DOM manipulation. | `app/core/security.py`, `static/js/app.js` |
-| **Denial of Service (DoS)** | Max payload limits (1MB), IP rate limiting (20 req/min), and async client timeouts. | `RequestSizeLimitMiddleware`, `limiter` |
+| **Denial of Service (DoS)** | Max payload limits (1MB), rate limiting wired into settings, and async client timeouts. | `RequestSizeLimitMiddleware`, `limiter` |
+| **Serverless Information Leakage** | Exception sanitization; stack traces and internal errors logged privately, returning generic 500. | `api/index.py` |
+| **Unbounded Cache Growth** | Proactive expired entry pruning and eviction of oldest entries when cache reaches capacity. | `app/services/ideas.py` |
 | **Data Tampering & Mass Assignment** | Strict Pydantic v2 validation forbidding unknown fields (`extra="forbid"`). | `app/schemas.py` |
 | **Credential & Secret Leakage** | `pydantic-settings` environment isolation; secrets never logged or exposed in client responses. | `app/core/config.py`, `.env.example` |
 | **Clickjacking & MIME Confusion** | `X-Frame-Options: DENY`, `frame-ancestors 'none'`, and `X-Content-Type-Options: nosniff`. | `SecurityHeadersMiddleware` |
@@ -43,7 +45,34 @@ User free text (e.g., Theme, Cultural Preferences, Special Notes) represents unt
 
 ---
 
-### 3.2 Output Encoding & Frontend Protection
+### 3.2 Serverless Error Sanitization
+In serverless environments (such as Vercel), uncaught exceptions can inadvertently leak database credentials, internal file paths, or framework tracebacks to end users.
+- `api/index.py` catches all unhandled exceptions during startup and runtime.
+- Diagnostic details and stack traces are logged privately via `logger.critical` and `sys.stderr`.
+- The client receives a sanitized, generic 500 JSON payload:
+  ```json
+  {
+    "error": "Internal Server Error",
+    "detail": "The service is temporarily unavailable. Please try again later."
+  }
+  ```
+
+---
+
+### 3.3 Rate Limiting & Serverless IP Resolution
+- `app/core/security.py` implements `get_client_ip(request)` which inspects `X-Forwarded-For` (first client IP in comma-separated list) and `X-Real-IP` before falling back to `request.client.host`.
+- The rate limiter is dynamically wired into application configuration (`settings.rate_limit_per_minute`) on sensitive endpoints (`/api/ideas`, `/api/plan`).
+
+---
+
+### 3.4 Bounded Ideas Cache
+- To prevent memory exhaustion in long-running processes or serverless warm containers, `IdeasService` enforces a bounded cache (`max_cache_entries = 256` default).
+- On every read/write, expired entries are purged via `_purge_expired()`.
+- If cache capacity is reached, entries closest to expiration are pruned via `_evict_oldest()`.
+
+---
+
+### 3.5 Output Encoding & Frontend Protection
 - **No Inline JavaScript**:
   - The application uses modular ES scripts (`<script type="module" src="/static/js/app.js">`).
 - **Strict `textContent` Rendering**:
@@ -52,7 +81,7 @@ User free text (e.g., Theme, Cultural Preferences, Special Notes) represents unt
 
 ---
 
-### 3.3 HTTP Security Headers
+### 3.6 HTTP Security Headers
 Every HTTP response includes the following protective headers:
 ```http
 Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
@@ -61,10 +90,3 @@ X-Frame-Options: DENY
 Referrer-Policy: strict-origin-when-cross-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 ```
-
----
-
-### 3.4 Rate Limiting & Resource Protection
-- **Per-IP Rate Limiting**: AI endpoints (`/api/ideas` and `/api/plan`) are capped at 20 requests per minute per IP via `slowapi`.
-- **Payload Size Capping**: Payloads exceeding 1,048,576 bytes (1 MB) receive an immediate `413 Payload Too Large` error prior to parsing.
-- **LLM Timeout & Circuit Breaking**: Calls to Gemini API are bounded by a 10.0-second timeout with an exponential backoff cap (max 2 retries) before falling back to curated offline templates.

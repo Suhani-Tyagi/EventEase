@@ -17,6 +17,7 @@ from app.services.llm_client import LLMClientProtocol
 
 logger = logging.getLogger("eventease.ideas")
 
+
 def _load_fallback_ideas() -> dict[str, Any]:
     """Load curated offline ideas from JSON."""
     possible_paths = [
@@ -53,16 +54,36 @@ SYSTEM_INSTRUCTION = (
 
 
 class IdeasService:
-    """Orchestrates personalized event ideas via LLM with TTL caching and fallback."""
+    """Orchestrates personalized event ideas via LLM with bounded TTL caching."""
 
     def __init__(
         self,
         llm_client: LLMClientProtocol,
         cache_ttl_seconds: int = 3600,
+        max_cache_entries: int = 256,
     ) -> None:
         self.llm_client = llm_client
         self.cache_ttl_seconds = cache_ttl_seconds
+        self.max_cache_entries = max_cache_entries
         self._cache: dict[str, tuple[PersonalizedIdeas, float]] = {}
+
+    @property
+    def cache_size(self) -> int:
+        """Return the current number of cached items."""
+        return len(self._cache)
+
+    def _purge_expired(self, now: float) -> int:
+        """Remove all expired entries from cache to prevent unbounded accumulation."""
+        expired_keys = [k for k, (_, exp) in self._cache.items() if now >= exp]
+        for k in expired_keys:
+            self._cache.pop(k, None)
+        return len(expired_keys)
+
+    def _evict_oldest(self) -> None:
+        """Enforce maximum capacity by evicting entries nearest to expiration."""
+        while len(self._cache) >= self.max_cache_entries and self._cache:
+            oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k][1])
+            self._cache.pop(oldest_key, None)
 
     def _generate_cache_key(self, request: EventIntakeRequest) -> str:
         """Create a deterministic hash key from normalized request parameters."""
@@ -130,6 +151,9 @@ class IdeasService:
         cache_key = self._generate_cache_key(request)
         now = time.time()
 
+        # Proactively purge expired entries
+        self._purge_expired(now)
+
         # Check in-memory TTL cache
         if cache_key in self._cache:
             cached_plan, expiry = self._cache[cache_key]
@@ -176,7 +200,8 @@ class IdeasService:
                 fallback_reason=None,
             )
 
-            # Store in TTL cache
+            # Enforce max capacity and store in TTL cache
+            self._evict_oldest()
             self._cache[cache_key] = (ideas, now + self.cache_ttl_seconds)
             return ideas
 

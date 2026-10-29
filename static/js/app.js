@@ -8,9 +8,16 @@ const state = {
   currentStep: 1,
   currentPlan: null,
   checklistStatusMap: {},
+  vendorNotes: {},
+  vendorContacts: {},
   completedMilestones: new Set(),
+  budgetAllocations: [],
   currentTipIndex: 0,
+  activeVendorFilter: "all",
+  aiStatus: { configured: false, mode: "offline_fallback" },
 };
+
+const STORAGE_KEY = "eventease_saved_plan_v1";
 
 // Curated Planning Tips for Lumi
 const planningTips = [
@@ -30,6 +37,17 @@ const elements = {
   themeText: document.getElementById("theme-text"),
   liveRegion: document.getElementById("live-region"),
   alertRegion: document.getElementById("alert-region"),
+
+  // AI Engine Status Indicator in Header
+  aiEnginePill: document.getElementById("ai-engine-pill"),
+  statusPulseDot: document.getElementById("status-pulse-dot"),
+  statusText: document.getElementById("status-text"),
+
+  // Saved Plan Banner
+  savedPlanBanner: document.getElementById("saved-plan-banner"),
+  savedPlanTimestamp: document.getElementById("saved-plan-timestamp"),
+  btnRestorePlan: document.getElementById("btn-restore-plan"),
+  btnDiscardPlan: document.getElementById("btn-discard-plan"),
 
   // Form Steps
   eventForm: document.getElementById("event-form"),
@@ -80,22 +98,48 @@ const elements = {
   lumiWidgetText: document.getElementById("lumi-widget-text"),
   lumiBubbleClose: document.getElementById("lumi-bubble-close"),
   lumiWidgetBtn: document.getElementById("lumi-widget-btn"),
+  lumiMinimizeBtn: document.getElementById("lumi-minimize-btn"),
 
   // Results Section
   loadingIndicator: document.getElementById("loading-indicator"),
   resultsContainer: document.getElementById("results-container"),
   resultsMetaText: document.getElementById("results-meta-text"),
+  saveIndicator: document.getElementById("save-indicator"),
+  saveStatusText: document.getElementById("save-status-text"),
   fallbackNoticeBanner: document.getElementById("fallback-notice-banner"),
   fallbackReasonText: document.getElementById("fallback-reason-text"),
   budgetWarningBanner: document.getElementById("budget-warning-banner"),
   budgetWarningText: document.getElementById("budget-warning-text"),
 
+  // Compact Celebration Progress Dashboard
+  planningDashboard: document.getElementById("planning-dashboard"),
+  dashBudgetStatus: document.getElementById("dash-budget-status"),
+  dashBudgetMeta: document.getElementById("dash-budget-meta"),
+  dashBudgetFill: document.getElementById("dash-budget-fill"),
+  dashMilestonesCount: document.getElementById("dash-milestones-count"),
+  dashMilestonesMeta: document.getElementById("dash-milestones-meta"),
+  dashMilestonesFill: document.getElementById("dash-milestones-fill"),
+  dashVendorsCount: document.getElementById("dash-vendors-count"),
+  dashVendorsMeta: document.getElementById("dash-vendors-meta"),
+  dashVendorsFill: document.getElementById("dash-vendors-fill"),
+  dashDaysRemaining: document.getElementById("dash-days-remaining"),
+  dashNextDeadlineText: document.getElementById("dash-next-deadline-text"),
+
   // Deliverable 1: Budget
   costPerGuestBadge: document.getElementById("cost-per-guest-badge"),
+  budgetBalanceBar: document.getElementById("budget-balance-bar"),
+  budgetTotalDisplay: document.getElementById("budget-total-display"),
+  budgetAllocatedDisplay: document.getElementById("budget-allocated-display"),
+  budgetContingencyDisplay: document.getElementById("budget-contingency-display"),
+  budgetStatusPill: document.getElementById("budget-status-pill"),
+  btnResetBudget: document.getElementById("btn-reset-budget"),
   budgetExplanation: document.getElementById("budget-explanation"),
   budgetTableBody: document.getElementById("budget-table-body"),
   budgetTotalAmount: document.getElementById("budget-total-amount"),
+  budgetFootPct: document.getElementById("budget-foot-pct"),
+  budgetFootStatus: document.getElementById("budget-foot-status"),
   budgetSegmentedBar: document.getElementById("budget-segmented-bar"),
+  budgetBarSummary: document.getElementById("budget-bar-summary"),
 
   // Deliverable 2: Timeline
   timelineDaysBadge: document.getElementById("timeline-days-badge"),
@@ -109,6 +153,11 @@ const elements = {
   checklistContainer: document.getElementById("checklist-container"),
   vendorProgressFill: document.getElementById("vendor-progress-fill"),
   vendorProgressPercent: document.getElementById("vendor-progress-percent"),
+  vendorFilterBar: document.getElementById("vendor-filter-bar"),
+  countAll: document.getElementById("count-all"),
+  countTodo: document.getElementById("count-todo"),
+  countContacted: document.getElementById("count-contacted"),
+  countBooked: document.getElementById("count-booked"),
 
   // Deliverable 4: Ideas
   tabThemes: document.getElementById("tab-themes"),
@@ -127,13 +176,21 @@ const elements = {
   ideasListActivities: document.getElementById("ideas-list-activities"),
   ideasListTips: document.getElementById("ideas-list-tips"),
 
-  // Export Buttons & Global Containers
+  // Export Buttons & Actions
   btnCopySummary: document.getElementById("btn-copy-summary"),
   btnExportJson: document.getElementById("btn-export-json"),
-  btnPrintView: document.getElementById("btn-print-view"),
+  btnExportCsv: document.getElementById("btn-export-csv"),
+  btnExportIcs: document.getElementById("btn-export-ics"),
+  btnPrintView: document.getElementById("btnPrintView") || document.getElementById("btn-print-view"),
+  btnStartNewPlan: document.getElementById("btn-start-new-plan"),
   btnCelebrate: document.getElementById("btn-celebrate"),
   confettiContainer: document.getElementById("confetti-canvas-container"),
   toastContainer: document.getElementById("toast-container"),
+
+  // Confirm Reset Modal
+  confirmModal: document.getElementById("confirm-modal"),
+  btnModalCancel: document.getElementById("btn-modal-cancel"),
+  btnModalConfirm: document.getElementById("btn-modal-confirm"),
 };
 
 /**
@@ -196,10 +253,15 @@ async function copyToClipboard(text, successMessage = "Copied to clipboard! 📋
 }
 
 /**
- * Aesthetic Confetti Shower Particle Generator
+ * Aesthetic Confetti Shower Particle Generator (Respects Reduced Motion)
  */
 function triggerConfetti() {
   if (!elements.confettiContainer) return;
+
+  // Respect user preference for reduced motion
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
 
   // Clear previous confetti
   elements.confettiContainer.textContent = "";
@@ -238,7 +300,8 @@ function triggerConfetti() {
     if (shape === "circle") {
       piece.style.borderRadius = "50%";
     } else if (shape === "star") {
-      piece.style.clipPath = "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
+      piece.style.clipPath =
+        "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
     }
 
     elements.confettiContainer.appendChild(piece);
@@ -250,6 +313,17 @@ function triggerConfetti() {
       elements.confettiContainer.textContent = "";
     }
   }, 4200);
+}
+
+/**
+ * Format currency with international number formatter fallback
+ */
+function formatCurrency(amount, currencyCode = "USD") {
+  const safeAmount = typeof amount === "number" && !isNaN(amount) ? amount : 0;
+  return `${currencyCode} ${safeAmount.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 /**
@@ -287,14 +361,54 @@ function applyTheme(theme) {
 }
 
 /**
- * Interactive Mascots & Companion Logic
+ * Check Backend AI Health & Update Status Pill
+ */
+async function checkAiStatus() {
+  try {
+    const res = await fetch("/api/health");
+    if (!res.ok) throw new Error("Health endpoint error");
+    const data = await res.json();
+    state.aiStatus = {
+      configured: Boolean(data.gemini_configured),
+      mode: data.ai_mode || "offline_fallback",
+    };
+
+    if (elements.aiEnginePill && elements.statusText) {
+      if (data.ai_mode === "live") {
+        elements.aiEnginePill.classList.remove("offline-fallback");
+        elements.aiEnginePill.classList.add("live-ai");
+        elements.statusText.textContent = "Live AI Engine (Gemini)";
+        elements.aiEnginePill.setAttribute(
+          "title",
+          "Google Gemini AI is configured and providing live customized inspiration."
+        );
+      } else {
+        elements.aiEnginePill.classList.remove("live-ai");
+        elements.aiEnginePill.classList.add("offline-fallback");
+        elements.statusText.textContent = "Offline Fallback (Curated)";
+        elements.aiEnginePill.setAttribute(
+          "title",
+          "Deterministic planning active with curated offline inspiration templates."
+        );
+      }
+    }
+  } catch (err) {
+    if (elements.statusText) {
+      elements.statusText.textContent = "Offline Fallback (Curated)";
+    }
+  }
+}
+
+/**
+ * Interactive Mascots & Companion Logic with Minimize Toggle
  */
 function initMascots() {
   // Hero Sparkle button
   elements.btnHeroSparkle?.addEventListener("click", () => {
     triggerConfetti();
     if (elements.lumiHeroText) {
-      elements.lumiHeroText.textContent = "✨ Sparkles activated! May your event be bright, beautiful, and completely stress-free!";
+      elements.lumiHeroText.textContent =
+        "✨ Sparkles activated! May your event be bright, beautiful, and completely stress-free!";
     }
     showToast("✨ Celebration sparkles launched!");
   });
@@ -319,10 +433,17 @@ function initMascots() {
 
   // Floating Lumi widget button
   elements.lumiWidgetBtn?.addEventListener("click", () => {
-    if (elements.lumiWidgetBubble) {
-      if (elements.lumiWidgetBubble.classList.contains("hidden")) {
-        elements.lumiWidgetBubble.classList.remove("hidden");
+    if (elements.lumiWidget) {
+      // If widget was minimized, un-minimize it on click
+      if (elements.lumiWidget.classList.contains("minimized")) {
+        elements.lumiWidget.classList.remove("minimized");
+        if (elements.lumiMinimizeBtn) elements.lumiMinimizeBtn.innerHTML = "&minus;";
+        localStorage.setItem("eventease-lumi-minimized", "false");
       }
+    }
+
+    if (elements.lumiWidgetBubble) {
+      elements.lumiWidgetBubble.classList.remove("hidden");
     }
     state.currentTipIndex = (state.currentTipIndex + 1) % planningTips.length;
     if (elements.lumiWidgetText) {
@@ -337,6 +458,30 @@ function initMascots() {
     e.stopPropagation();
     elements.lumiWidgetBubble?.classList.add("hidden");
   });
+
+  // Floating widget minimize toggle button
+  elements.lumiMinimizeBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isMinimized = elements.lumiWidget?.classList.toggle("minimized");
+    if (elements.lumiMinimizeBtn) {
+      elements.lumiMinimizeBtn.innerHTML = isMinimized ? "&#43;" : "&minus;";
+      elements.lumiMinimizeBtn.setAttribute(
+        "aria-label",
+        isMinimized ? "Restore celebration companion" : "Minimize celebration companion"
+      );
+    }
+    localStorage.setItem("eventease-lumi-minimized", isMinimized ? "true" : "false");
+    showToast(isMinimized ? "Lumi minimized 🪄" : "Lumi restored ✨");
+  });
+
+  // Restore saved minimize state
+  if (localStorage.getItem("eventease-lumi-minimized") === "true") {
+    elements.lumiWidget?.classList.add("minimized");
+    if (elements.lumiMinimizeBtn) {
+      elements.lumiMinimizeBtn.innerHTML = "&#43;";
+      elements.lumiMinimizeBtn.setAttribute("aria-label", "Restore celebration companion");
+    }
+  }
 }
 
 /**
@@ -508,7 +653,8 @@ function updateLiveEstimate() {
     const perGuest = budget / guests;
     elements.liveEstimateText.textContent = `${formatCurrency(perGuest, curr)} per guest (${guests} attendees • ${formatCurrency(budget, curr)} total)`;
   } else {
-    elements.liveEstimateText.textContent = "Enter guests and budget to see estimated per-guest allocation";
+    elements.liveEstimateText.textContent =
+      "Enter guests and budget to see estimated per-guest allocation";
   }
 }
 
@@ -542,12 +688,10 @@ async function loadPresets() {
         announceLive(`Loaded preset: ${data.name}`);
         showToast(`Loaded "${data.name}" scenario! 🍷✨`);
 
-        // Update mascot speech
         if (elements.lumiHeroText) {
           elements.lumiHeroText.textContent = `Loaded ${data.name}! Click 'Generate Full Celebration Plan' to calculate! ✨`;
         }
 
-        // Smooth scroll down to intake form
         elements.eventForm?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     };
@@ -558,6 +702,171 @@ async function loadPresets() {
   } catch (err) {
     console.warn("Could not load presets from /api/presets:", err);
   }
+}
+
+/**
+ * LocalStorage Auto-Save & Plan Restoration
+ */
+function savePlanLocally() {
+  if (!state.currentPlan) return;
+
+  try {
+    const payload = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      intake: {
+        eventType: elements.eventType?.value,
+        date: elements.eventDate?.value,
+        city: elements.eventCity?.value,
+        guestCount: elements.guestCount?.value,
+        totalBudget: elements.totalBudget?.value,
+        currency: elements.currency?.value,
+        theme: elements.eventTheme?.value,
+        culturalDietary: elements.culturalDietary?.value,
+        specialNotes: elements.specialNotes?.value,
+      },
+      plan: state.currentPlan,
+      checklistStatusMap: state.checklistStatusMap,
+      vendorNotes: state.vendorNotes,
+      vendorContacts: state.vendorContacts,
+      completedMilestones: Array.from(state.completedMilestones),
+      budgetAllocations: state.budgetAllocations,
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    if (elements.saveStatusText) {
+      elements.saveStatusText.textContent = "Saved locally";
+    }
+    if (elements.saveIndicator) {
+      elements.saveIndicator.classList.remove("saving");
+    }
+  } catch (err) {
+    console.warn("Could not save plan to localStorage:", err);
+  }
+}
+
+function checkSavedPlanOnLoad() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+
+    const data = JSON.parse(raw);
+    if (!data || !data.plan) return;
+
+    if (elements.savedPlanBanner) {
+      elements.savedPlanBanner.classList.remove("hidden");
+    }
+
+    if (elements.savedPlanTimestamp) {
+      const savedDate = new Date(data.savedAt);
+      const timeStr = savedDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const dateStr = savedDate.toLocaleDateString();
+      const city = data.intake?.city || data.plan?.intake?.city || "your city";
+      const eventType = (data.intake?.eventType || data.plan?.intake?.event_type || "event").toUpperCase();
+      elements.savedPlanTimestamp.textContent = `Saved ${dateStr} at ${timeStr} (${eventType} in ${city}).`;
+    }
+
+    elements.btnRestorePlan?.addEventListener("click", () => {
+      restoreSavedPlan(data);
+    });
+
+    elements.btnDiscardPlan?.addEventListener("click", () => {
+      discardSavedPlan();
+    });
+  } catch (err) {
+    console.warn("Error checking saved plan:", err);
+  }
+}
+
+function restoreSavedPlan(data) {
+  // Populate form fields
+  if (data.intake) {
+    if (elements.eventType && data.intake.eventType) elements.eventType.value = data.intake.eventType;
+    if (elements.eventDate && data.intake.date) elements.eventDate.value = data.intake.date;
+    if (elements.eventCity && data.intake.city) elements.eventCity.value = data.intake.city;
+    if (elements.guestCount && data.intake.guestCount) elements.guestCount.value = data.intake.guestCount;
+    if (elements.currency && data.intake.currency) elements.currency.value = data.intake.currency;
+    if (elements.totalBudget && data.intake.totalBudget) elements.totalBudget.value = data.intake.totalBudget;
+    if (elements.eventTheme && data.intake.theme) elements.eventTheme.value = data.intake.theme;
+    if (elements.culturalDietary && data.intake.culturalDietary)
+      elements.culturalDietary.value = data.intake.culturalDietary;
+    if (elements.specialNotes && data.intake.specialNotes) elements.specialNotes.value = data.intake.specialNotes;
+  }
+
+  state.currentPlan = data.plan;
+  state.checklistStatusMap = data.checklistStatusMap || {};
+  state.vendorNotes = data.vendorNotes || {};
+  state.vendorContacts = data.vendorContacts || {};
+  state.completedMilestones = new Set(data.completedMilestones || []);
+  state.budgetAllocations = data.budgetAllocations || [];
+
+  updateLiveEstimate();
+  renderMasterPlan(data.plan);
+
+  elements.resultsContainer.classList.remove("hidden");
+  elements.savedPlanBanner?.classList.add("hidden");
+  elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  showToast("Saved celebration plan restored! 📋✨");
+  announceLive("Saved celebration plan restored successfully.");
+}
+
+function discardSavedPlan() {
+  localStorage.removeItem(STORAGE_KEY);
+  elements.savedPlanBanner?.classList.add("hidden");
+  showToast("Saved plan discarded.");
+  announceLive("Saved celebration plan discarded.");
+}
+
+/**
+ * Handle Start New Plan Modal Flow
+ */
+function setupNewPlanModal() {
+  elements.btnStartNewPlan?.addEventListener("click", () => {
+    if (elements.confirmModal) {
+      if (typeof elements.confirmModal.showModal === "function") {
+        elements.confirmModal.showModal();
+      } else {
+        elements.confirmModal.setAttribute("open", "true");
+      }
+    }
+  });
+
+  elements.btnModalCancel?.addEventListener("click", () => {
+    if (elements.confirmModal) {
+      if (typeof elements.confirmModal.close === "function") {
+        elements.confirmModal.close();
+      } else {
+        elements.confirmModal.removeAttribute("open");
+      }
+    }
+  });
+
+  elements.btnModalConfirm?.addEventListener("click", () => {
+    if (elements.confirmModal) {
+      if (typeof elements.confirmModal.close === "function") {
+        elements.confirmModal.close();
+      } else {
+        elements.confirmModal.removeAttribute("open");
+      }
+    }
+
+    localStorage.removeItem(STORAGE_KEY);
+    state.currentPlan = null;
+    state.checklistStatusMap = {};
+    state.vendorNotes = {};
+    state.vendorContacts = {};
+    state.completedMilestones.clear();
+    state.budgetAllocations = [];
+
+    elements.resultsContainer?.classList.add("hidden");
+    elements.savedPlanBanner?.classList.add("hidden");
+    setStep(1);
+    elements.eventForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    showToast("Ready for a new celebration plan! ✨");
+    announceLive("Reset completed. Started a new celebration plan.");
+  });
 }
 
 /**
@@ -615,20 +924,26 @@ async function handlePlanSubmit(e) {
     const plan = await response.json();
     state.currentPlan = plan;
     state.checklistStatusMap = {};
+    state.vendorNotes = {};
+    state.vendorContacts = {};
     state.completedMilestones.clear();
+    state.budgetAllocations = plan.budget.items.map((i) => ({ ...i }));
 
     renderMasterPlan(plan);
+    savePlanLocally();
 
     elements.resultsContainer.classList.remove("hidden");
+    elements.savedPlanBanner?.classList.add("hidden");
     elements.resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
-    
+
     // Celebration effects
     triggerConfetti();
     showToast("Celebration Plan generated successfully! 🎉✨");
     announceLive("Event plan generated successfully.");
 
     if (elements.lumiHeroText) {
-      elements.lumiHeroText.textContent = "Woohoo! Your celebration blueprint is complete! Check out all 4 deliverables below! 🥳🎉";
+      elements.lumiHeroText.textContent =
+        "Woohoo! Your celebration blueprint is complete! Check out all 4 deliverables below! 🥳🎉";
     }
     if (elements.lumiWidgetText) {
       elements.lumiWidgetText.textContent = "Your master plan is ready! Look at those balanced books! 🌟";
@@ -655,7 +970,8 @@ function renderMasterPlan(plan) {
   // Fallback Notice Banner
   if (plan.ideas.is_fallback) {
     elements.fallbackNoticeBanner.classList.remove("hidden");
-    elements.fallbackReasonText.textContent = plan.ideas.fallback_reason || "Curated offline suggestions are active.";
+    elements.fallbackReasonText.textContent =
+      plan.ideas.fallback_reason || "Curated offline suggestions are active.";
   } else {
     elements.fallbackNoticeBanner.classList.add("hidden");
   }
@@ -679,59 +995,83 @@ function renderMasterPlan(plan) {
 
   // 4. Render Ideas
   renderIdeas(plan.ideas);
+
+  // 5. Update Compact Dashboard Metrics
+  updateDashboard();
 }
 
-function formatCurrency(amount, currencyCode) {
-  return `${currencyCode} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
+/**
+ * Deliverable 1: Editable Budget Planner
+ */
 function renderBudget(budget) {
-  elements.costPerGuestBadge.textContent = `Per-Guest: ${formatCurrency(budget.cost_per_guest, budget.currency)}`;
-  elements.budgetExplanation.textContent = budget.explanation;
-  elements.budgetTotalAmount.textContent = formatCurrency(budget.total_budget, budget.currency);
+  const totalBudget = budget.total_budget;
+  const currency = budget.currency;
 
-  elements.budgetTableBody.textContent = "";
-
-  // Dynamic visual segmented bar
-  if (elements.budgetSegmentedBar) {
-    elements.budgetSegmentedBar.textContent = "";
-    const colorMap = [
-      "#B97D7B", // USU KOUBAI BLOSSOM
-      "#928E5E", // MEADOW MAUVE
-      "#575527", // SOLDIER GREEN
-      "#ECC4C3", // BERRY GOOD
-      "#DDD3C9", // WARM FOG
-      "#a16462", // Deep Blossom
-      "#777443", // Deep Meadow
-      "#3b3917", // Deep Soldier Green
-    ];
-
-    budget.items.forEach((item, idx) => {
-      const seg = document.createElement("div");
-      seg.className = "segment";
-      seg.style.width = `${item.percentage.toFixed(1)}%`;
-      seg.style.backgroundColor = colorMap[idx % colorMap.length];
-      seg.title = `${item.category}: ${item.percentage.toFixed(1)}% (${formatCurrency(item.amount, budget.currency)})`;
-      elements.budgetSegmentedBar.appendChild(seg);
-    });
+  if (!state.budgetAllocations || state.budgetAllocations.length === 0) {
+    state.budgetAllocations = budget.items.map((i) => ({ ...i }));
   }
 
-  budget.items.forEach((item) => {
+  elements.budgetExplanation.textContent = budget.explanation;
+  elements.budgetTableBody.textContent = "";
+
+  state.budgetAllocations.forEach((item, idx) => {
     const tr = document.createElement("tr");
 
+    // Category
     const tdCategory = document.createElement("td");
     tdCategory.textContent = item.category;
 
+    // Allocation (%) Input
     const tdPct = document.createElement("td");
     tdPct.className = "text-right";
-    tdPct.textContent = `${item.percentage.toFixed(1)}%`;
+    const pctInput = document.createElement("input");
+    pctInput.type = "number";
+    pctInput.step = "0.5";
+    pctInput.min = "0";
+    pctInput.max = "100";
+    pctInput.className = "budget-input-pct";
+    pctInput.value = item.percentage.toFixed(1);
+    pctInput.setAttribute("aria-label", `${item.category} percentage allocation`);
 
+    tdPct.appendChild(pctInput);
+
+    // Amount Input
     const tdAmount = document.createElement("td");
     tdAmount.className = "text-right";
-    tdAmount.textContent = formatCurrency(item.amount, budget.currency);
+    const amtInput = document.createElement("input");
+    amtInput.type = "number";
+    amtInput.step = "1";
+    amtInput.min = "0";
+    amtInput.className = "budget-input-amt";
+    amtInput.value = item.amount.toFixed(2);
+    amtInput.setAttribute("aria-label", `${item.category} currency amount`);
 
+    tdAmount.appendChild(amtInput);
+
+    // Description
     const tdDesc = document.createElement("td");
     tdDesc.textContent = item.description;
+
+    // Wire Real-Time Change Handlers
+    pctInput.addEventListener("input", () => {
+      const newPct = parseFloat(pctInput.value);
+      if (!isNaN(newPct) && newPct >= 0) {
+        item.percentage = newPct;
+        item.amount = Math.round(totalBudget * (newPct / 100) * 100) / 100;
+        amtInput.value = item.amount.toFixed(2);
+        recalculateBudgetMetrics();
+      }
+    });
+
+    amtInput.addEventListener("input", () => {
+      const newAmt = parseFloat(amtInput.value);
+      if (!isNaN(newAmt) && newAmt >= 0) {
+        item.amount = newAmt;
+        item.percentage = totalBudget > 0 ? (newAmt / totalBudget) * 100 : 0;
+        pctInput.value = item.percentage.toFixed(1);
+        recalculateBudgetMetrics();
+      }
+    });
 
     tr.appendChild(tdCategory);
     tr.appendChild(tdPct);
@@ -740,8 +1080,144 @@ function renderBudget(budget) {
 
     elements.budgetTableBody.appendChild(tr);
   });
+
+  // Reset Button
+  elements.btnResetBudget?.replaceWith(elements.btnResetBudget.cloneNode(true));
+  elements.btnResetBudget = document.getElementById("btn-reset-budget");
+  elements.btnResetBudget?.addEventListener("click", () => {
+    state.budgetAllocations = budget.items.map((i) => ({ ...i }));
+    renderBudget(budget);
+    showToast("Budget allocations reset to benchmark values! 💰");
+  });
+
+  recalculateBudgetMetrics();
 }
 
+/**
+ * Real-Time Budget Recalculation & Balance Validation
+ */
+function recalculateBudgetMetrics() {
+  if (!state.currentPlan) return;
+
+  const totalBudget = state.currentPlan.budget.total_budget;
+  const currency = state.currentPlan.budget.currency;
+  const guestCount = state.currentPlan.intake.guest_count || 1;
+
+  let totalAllocatedAmt = 0;
+  let totalAllocatedPct = 0;
+
+  state.budgetAllocations.forEach((item) => {
+    totalAllocatedAmt += item.amount;
+    totalAllocatedPct += item.percentage;
+  });
+
+  totalAllocatedAmt = Math.round(totalAllocatedAmt * 100) / 100;
+  totalAllocatedPct = Math.round(totalAllocatedPct * 10) / 10;
+
+  // Find Contingency Item
+  const contingencyItem = state.budgetAllocations.find((i) =>
+    i.category.toLowerCase().includes("contingency")
+  );
+  const contingencyAmt = contingencyItem ? contingencyItem.amount : 0;
+  const contingencyPct = contingencyItem ? contingencyItem.percentage : 0;
+
+  // Header Balance Bar Items
+  if (elements.budgetTotalDisplay) {
+    elements.budgetTotalDisplay.textContent = formatCurrency(totalBudget, currency);
+  }
+  if (elements.budgetAllocatedDisplay) {
+    elements.budgetAllocatedDisplay.textContent = `${formatCurrency(totalAllocatedAmt, currency)} (${totalAllocatedPct.toFixed(1)}%)`;
+  }
+  if (elements.budgetContingencyDisplay) {
+    elements.budgetContingencyDisplay.textContent = `${formatCurrency(contingencyAmt, currency)} (${contingencyPct.toFixed(1)}%)`;
+  }
+
+  // Balance Validation
+  const diffAmt = Math.round((totalAllocatedAmt - totalBudget) * 100) / 100;
+  const isBalanced = Math.abs(diffAmt) < 0.05 || Math.abs(totalAllocatedPct - 100.0) < 0.1;
+
+  if (elements.budgetStatusPill) {
+    elements.budgetStatusPill.className = "badge";
+    if (isBalanced) {
+      elements.budgetStatusPill.classList.add("badge-accent");
+      elements.budgetStatusPill.textContent = "Balanced";
+    } else if (diffAmt > 0) {
+      elements.budgetStatusPill.classList.add("badge-danger");
+      elements.budgetStatusPill.textContent = `Over by ${formatCurrency(diffAmt, currency)}`;
+    } else {
+      elements.budgetStatusPill.classList.add("badge-neutral");
+      elements.budgetStatusPill.textContent = `Under by ${formatCurrency(-diffAmt, currency)}`;
+    }
+  }
+
+  // Table Footer Totals
+  if (elements.budgetFootPct) {
+    elements.budgetFootPct.textContent = `${totalAllocatedPct.toFixed(1)}%`;
+  }
+  if (elements.budgetTotalAmount) {
+    elements.budgetTotalAmount.textContent = formatCurrency(totalAllocatedAmt, currency);
+  }
+  if (elements.budgetFootStatus) {
+    if (isBalanced) {
+      elements.budgetFootStatus.textContent = "Balanced Allocation";
+    } else if (diffAmt > 0) {
+      elements.budgetFootStatus.textContent = `Overallocated by ${formatCurrency(diffAmt, currency)} (adjust amounts)`;
+    } else {
+      elements.budgetFootStatus.textContent = `Underallocated by ${formatCurrency(-diffAmt, currency)} (unassigned buffer)`;
+    }
+  }
+
+  // Recalculate Per-Guest Cost
+  const costPerGuest = totalBudget > 0 ? totalAllocatedAmt / guestCount : 0;
+  if (elements.costPerGuestBadge) {
+    elements.costPerGuestBadge.textContent = `Per-Guest: ${formatCurrency(costPerGuest, currency)}`;
+  }
+
+  // Render Visual Segmented Bar
+  renderSegmentedBar(state.budgetAllocations, currency);
+
+  // Update Progress Dashboard
+  updateDashboard();
+
+  // Save changes locally
+  savePlanLocally();
+}
+
+function renderSegmentedBar(items, currency) {
+  if (!elements.budgetSegmentedBar) return;
+
+  elements.budgetSegmentedBar.textContent = "";
+
+  const colorMap = [
+    "#B97D7B", // USU KOUBAI BLOSSOM
+    "#928E5E", // MEADOW MAUVE
+    "#575527", // SOLDIER GREEN
+    "#ECC4C3", // BERRY GOOD
+    "#DDD3C9", // WARM FOG
+    "#a16462", // Deep Blossom
+    "#777443", // Deep Meadow
+    "#3b3917", // Deep Soldier Green
+  ];
+
+  let sumPct = 0;
+  items.forEach((item, idx) => {
+    sumPct += item.percentage;
+    const seg = document.createElement("div");
+    seg.className = "segment";
+    seg.style.width = `${Math.max(0, item.percentage).toFixed(1)}%`;
+    seg.style.backgroundColor = colorMap[idx % colorMap.length];
+    seg.title = `${item.category}: ${item.percentage.toFixed(1)}% (${formatCurrency(item.amount, currency)})`;
+    elements.budgetSegmentedBar.appendChild(seg);
+  });
+
+  if (elements.budgetBarSummary) {
+    elements.budgetBarSummary.textContent = `${sumPct.toFixed(1)}% Allocated`;
+  }
+}
+
+/**
+ * Deliverable 2: Adaptive Milestone Timeline
+ */
 function updateMilestoneProgress(timeline) {
   if (!elements.milestoneTrackerPill || !timeline.milestones) return;
   const total = timeline.milestones.length;
@@ -752,6 +1228,9 @@ function updateMilestoneProgress(timeline) {
     triggerConfetti();
     showToast("🎉 Amazing! All milestones completed!");
   }
+
+  updateDashboard();
+  savePlanLocally();
 }
 
 function renderTimeline(timeline) {
@@ -773,7 +1252,6 @@ function renderTimeline(timeline) {
     const li = document.createElement("li");
     li.className = "timeline-step";
 
-    // Interactive button toggle for each milestone
     const itemBtn = document.createElement("button");
     itemBtn.type = "button";
     itemBtn.className = "milestone-item-btn";
@@ -830,12 +1308,12 @@ function renderTimeline(timeline) {
         state.completedMilestones.delete(milestoneId);
         itemBtn.classList.remove("completed");
         checkboxSpan.innerHTML = "";
-        showToast(`Milestone marked in progress`);
+        showToast("Milestone marked in progress");
       } else {
         state.completedMilestones.add(milestoneId);
         itemBtn.classList.add("completed");
         checkboxSpan.innerHTML = "&#10004;";
-        showToast(`Milestone completed! 🎉`);
+        showToast("Milestone completed! 🎉");
       }
       updateMilestoneProgress(timeline);
     });
@@ -845,12 +1323,28 @@ function renderTimeline(timeline) {
   });
 }
 
+/**
+ * Deliverable 3: Vendor Checklist & Screening Playbook
+ */
 function updateChecklistSummary() {
   if (!state.currentPlan?.checklist?.tasks) return;
   const tasks = state.currentPlan.checklist.tasks;
-  const bookedCount = tasks.filter(
-    (t) => (state.checklistStatusMap[t.id] || t.status) === "booked"
-  ).length;
+
+  let bookedCount = 0;
+  let contactedCount = 0;
+  let todoCount = 0;
+
+  tasks.forEach((t) => {
+    const st = state.checklistStatusMap[t.id] || t.status || "to-do";
+    if (st === "booked") bookedCount++;
+    else if (st === "contacted") contactedCount++;
+    else todoCount++;
+  });
+
+  if (elements.countAll) elements.countAll.textContent = tasks.length;
+  if (elements.countTodo) elements.countTodo.textContent = todoCount;
+  if (elements.countContacted) elements.countContacted.textContent = contactedCount;
+  if (elements.countBooked) elements.countBooked.textContent = bookedCount;
 
   elements.checklistSummaryBadge.textContent = `${bookedCount} of ${tasks.length} Booked`;
 
@@ -866,16 +1360,22 @@ function updateChecklistSummary() {
     triggerConfetti();
     showToast("🏆 All vendors successfully booked!");
   }
+
+  updateDashboard();
+  savePlanLocally();
 }
 
 function renderChecklist(checklist) {
   elements.checklistContainer.textContent = "";
-  updateChecklistSummary();
 
   checklist.tasks.forEach((task) => {
     const card = document.createElement("div");
     card.className = "checklist-item";
-    const currentStatus = state.checklistStatusMap[task.id] || task.status;
+    card.dataset.taskId = task.id;
+
+    const currentStatus = state.checklistStatusMap[task.id] || task.status || "to-do";
+    card.dataset.status = currentStatus;
+
     if (currentStatus === "booked") {
       card.classList.add("status-booked");
     }
@@ -889,7 +1389,7 @@ function renderChecklist(checklist) {
 
     const select = document.createElement("select");
     select.className = "checklist-status-select";
-    select.setAttribute("aria-label", `Status for ${task.vendor_type}`);
+    select.setAttribute("aria-label", `Booking status for ${task.vendor_type}`);
 
     ["to-do", "contacted", "booked"].forEach((st) => {
       const opt = document.createElement("option");
@@ -904,12 +1404,16 @@ function renderChecklist(checklist) {
     select.addEventListener("change", (e) => {
       const newStatus = e.target.value;
       state.checklistStatusMap[task.id] = newStatus;
+      card.dataset.status = newStatus;
+
       if (newStatus === "booked") {
         card.classList.add("status-booked");
         showToast(`${task.vendor_type} marked as Booked! 🤝`);
       } else {
         card.classList.remove("status-booked");
       }
+
+      applyVendorFilter(state.activeVendorFilter);
       updateChecklistSummary();
       announceLive(`Updated ${task.vendor_type} status to ${newStatus}`);
     });
@@ -917,6 +1421,7 @@ function renderChecklist(checklist) {
     header.appendChild(vendorSpan);
     header.appendChild(select);
 
+    // Screening Questions
     const questionsUl = document.createElement("ul");
     questionsUl.className = "screening-questions-list";
     task.questions_to_ask.forEach((q) => {
@@ -953,10 +1458,82 @@ function renderChecklist(checklist) {
       card.appendChild(notesP);
     }
 
+    // Contact Details & Private Notes Inputs
+    const extraFieldsDiv = document.createElement("div");
+    extraFieldsDiv.className = "vendor-extra-fields";
+
+    // Contact Input
+    const contactInput = document.createElement("input");
+    contactInput.type = "text";
+    contactInput.className = "vendor-contact-input";
+    contactInput.placeholder = "Vendor contact details (Name, Phone, Email, Website)";
+    contactInput.value = state.vendorContacts[task.id] || "";
+    contactInput.setAttribute("aria-label", `Contact information for ${task.vendor_type}`);
+
+    contactInput.addEventListener("input", () => {
+      state.vendorContacts[task.id] = contactInput.value.trim();
+      savePlanLocally();
+    });
+
+    // Notes Textarea
+    const notesInput = document.createElement("textarea");
+    notesInput.className = "vendor-notes-input";
+    notesInput.rows = 2;
+    notesInput.placeholder = "Private booking notes, quotes received, next steps...";
+    notesInput.value = state.vendorNotes[task.id] || "";
+    notesInput.setAttribute("aria-label", `Private notes for ${task.vendor_type}`);
+
+    notesInput.addEventListener("input", () => {
+      state.vendorNotes[task.id] = notesInput.value.trim();
+      savePlanLocally();
+    });
+
+    extraFieldsDiv.appendChild(contactInput);
+    extraFieldsDiv.appendChild(notesInput);
+    card.appendChild(extraFieldsDiv);
+
     elements.checklistContainer.appendChild(card);
+  });
+
+  setupVendorFilters();
+  updateChecklistSummary();
+}
+
+function setupVendorFilters() {
+  if (!elements.vendorFilterBar) return;
+
+  const buttons = elements.vendorFilterBar.querySelectorAll(".filter-pill");
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      buttons.forEach((b) => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
+
+      const filter = btn.dataset.filter || "all";
+      state.activeVendorFilter = filter;
+      applyVendorFilter(filter);
+    });
   });
 }
 
+function applyVendorFilter(filter) {
+  const cards = elements.checklistContainer.querySelectorAll(".checklist-item");
+  cards.forEach((card) => {
+    const status = card.dataset.status || "to-do";
+    if (filter === "all" || status === filter) {
+      card.classList.remove("hidden");
+    } else {
+      card.classList.add("hidden");
+    }
+  });
+}
+
+/**
+ * Deliverable 4: Creative Suggestions
+ */
 function populateList(listEl, items) {
   listEl.textContent = "";
   items.forEach((text) => {
@@ -980,7 +1557,7 @@ function renderIdeas(ideas) {
 }
 
 /**
- * Ideas Tab Switching
+ * Accessible WAI-ARIA Ideas Tab Switching & Keyboard Navigation
  */
 function setupTabs() {
   const tabs = [
@@ -991,31 +1568,156 @@ function setupTabs() {
     { btn: elements.tabTips, panel: elements.panelTips },
   ];
 
-  tabs.forEach(({ btn, panel }) => {
-    btn?.addEventListener("click", () => {
-      tabs.forEach((t) => {
-        t.btn.classList.remove("active");
-        t.btn.setAttribute("aria-selected", "false");
-        t.panel.classList.add("hidden");
-        t.panel.classList.remove("active");
-      });
+  const activateTab = (targetIdx) => {
+    tabs.forEach(({ btn, panel }, idx) => {
+      const isSelected = idx === targetIdx;
+      btn?.classList.toggle("active", isSelected);
+      btn?.setAttribute("aria-selected", isSelected ? "true" : "false");
+      btn?.setAttribute("tabindex", isSelected ? "0" : "-1");
 
-      btn.classList.add("active");
-      btn.setAttribute("aria-selected", "true");
-      panel.classList.remove("hidden");
-      panel.classList.add("active");
+      panel?.classList.toggle("hidden", !isSelected);
+      panel?.classList.toggle("active", isSelected);
+    });
+    tabs[targetIdx].btn?.focus();
+  };
+
+  tabs.forEach(({ btn }, idx) => {
+    btn?.addEventListener("click", () => activateTab(idx));
+
+    // Keyboard Arrow-Key & Home/End Navigation
+    btn?.addEventListener("keydown", (e) => {
+      let nextIdx = idx;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        nextIdx = (idx + 1) % tabs.length;
+        activateTab(nextIdx);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        nextIdx = (idx - 1 + tabs.length) % tabs.length;
+        activateTab(nextIdx);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        activateTab(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        activateTab(tabs.length - 1);
+      }
     });
   });
 }
 
 /**
- * Export Functions: Copy Summary, JSON Download, and Print / PDF View
+ * Update Compact Celebration Dashboard
+ */
+function updateDashboard() {
+  if (!state.currentPlan) return;
+
+  const plan = state.currentPlan;
+  const currency = plan.budget.currency;
+  const totalBudget = plan.budget.total_budget;
+
+  // 1. Budget Balance Metric
+  let totalAllocatedAmt = 0;
+  let totalAllocatedPct = 0;
+  (state.budgetAllocations.length ? state.budgetAllocations : plan.budget.items).forEach((i) => {
+    totalAllocatedAmt += i.amount;
+    totalAllocatedPct += i.percentage;
+  });
+
+  const contingencyItem = (state.budgetAllocations.length ? state.budgetAllocations : plan.budget.items).find(
+    (i) => i.category.toLowerCase().includes("contingency")
+  );
+  const contingencyAmt = contingencyItem ? contingencyItem.amount : totalBudget * 0.08;
+
+  const diffAmt = Math.round((totalAllocatedAmt - totalBudget) * 100) / 100;
+  const isBalanced = Math.abs(diffAmt) < 0.05 || Math.abs(totalAllocatedPct - 100.0) < 0.1;
+
+  if (elements.dashBudgetStatus) {
+    if (isBalanced) {
+      elements.dashBudgetStatus.textContent = "Balanced";
+    } else if (diffAmt > 0) {
+      elements.dashBudgetStatus.textContent = `Over by ${formatCurrency(diffAmt, currency)}`;
+    } else {
+      elements.dashBudgetStatus.textContent = `Under by ${formatCurrency(-diffAmt, currency)}`;
+    }
+  }
+
+  if (elements.dashBudgetMeta) {
+    elements.dashBudgetMeta.textContent = `${totalAllocatedPct.toFixed(1)}% allocated • ${formatCurrency(contingencyAmt, currency)} buffer`;
+  }
+
+  if (elements.dashBudgetFill) {
+    elements.dashBudgetFill.style.width = `${Math.min(100, (totalAllocatedAmt / totalBudget) * 100)}%`;
+  }
+
+  // 2. Milestones Metric
+  const totalMilestones = plan.timeline.milestones?.length || 0;
+  const completedMilestones = state.completedMilestones.size;
+  const milestonePct = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+
+  if (elements.dashMilestonesCount) {
+    elements.dashMilestonesCount.textContent = `${completedMilestones} / ${totalMilestones}`;
+  }
+  if (elements.dashMilestonesMeta) {
+    elements.dashMilestonesMeta.textContent = `${milestonePct}% milestones complete`;
+  }
+  if (elements.dashMilestonesFill) {
+    elements.dashMilestonesFill.style.width = `${milestonePct}%`;
+  }
+
+  // 3. Vendors Metric
+  const totalVendors = plan.checklist.tasks?.length || 0;
+  let bookedVendors = 0;
+  let contactedVendors = 0;
+  plan.checklist.tasks?.forEach((t) => {
+    const st = state.checklistStatusMap[t.id] || t.status;
+    if (st === "booked") bookedVendors++;
+    else if (st === "contacted") contactedVendors++;
+  });
+  const vendorPct = totalVendors > 0 ? Math.round((bookedVendors / totalVendors) * 100) : 0;
+
+  if (elements.dashVendorsCount) {
+    elements.dashVendorsCount.textContent = `${bookedVendors} / ${totalVendors}`;
+  }
+  if (elements.dashVendorsMeta) {
+    elements.dashVendorsMeta.textContent = `${bookedVendors} booked • ${contactedVendors} in progress`;
+  }
+  if (elements.dashVendorsFill) {
+    elements.dashVendorsFill.style.width = `${vendorPct}%`;
+  }
+
+  // 4. Days Remaining & Next Deadline
+  if (elements.dashDaysRemaining) {
+    elements.dashDaysRemaining.textContent = `${plan.timeline.days_remaining} Days`;
+  }
+
+  if (elements.dashNextDeadlineText && plan.timeline.milestones) {
+    const nextMilestone = plan.timeline.milestones.find(
+      (_, idx) => !state.completedMilestones.has(`milestone-${idx}`)
+    );
+    if (nextMilestone) {
+      elements.dashNextDeadlineText.textContent = `Next: ${nextMilestone.period_label} (${nextMilestone.target_date})`;
+    } else {
+      elements.dashNextDeadlineText.textContent = "All milestones completed! 🎉";
+    }
+  }
+}
+
+/**
+ * Export Functions: Copy Summary, JSON, CSV, and .ICS Calendar
  */
 function setupExports() {
-  // Copy formatted textual plan summary
+  // 1. Copy formatted textual plan summary (Contingency calculation fixed)
   elements.btnCopySummary?.addEventListener("click", () => {
     if (!state.currentPlan) return;
     const p = state.currentPlan;
+    const items = state.budgetAllocations.length ? state.budgetAllocations : p.budget.items;
+
+    // Find actual contingency item from allocations
+    const contingencyItem = items.find((i) => i.category.toLowerCase().includes("contingency"));
+    const contingencyAmt = contingencyItem ? contingencyItem.amount : p.budget.total_budget * 0.08;
+    const contingencyPct = contingencyItem ? contingencyItem.percentage : 8.0;
+
     const summary = [
       `🎉 EVENTEASE CELEBRATION MASTER PLAN`,
       `---------------------------------------`,
@@ -1023,10 +1725,25 @@ function setupExports() {
       `Date: ${p.intake.date} (${p.timeline.days_remaining} days remaining)`,
       `Attendees: ${p.intake.guest_count} guests`,
       `Total Budget: ${formatCurrency(p.budget.total_budget, p.budget.currency)} (${formatCurrency(p.budget.cost_per_guest, p.budget.currency)}/guest)`,
-      `Emergency Contingency: ${formatCurrency(p.budget.contingency_reserve, p.budget.currency)} (8.0% safety buffer)`,
+      `Emergency Contingency: ${formatCurrency(contingencyAmt, p.budget.currency)} (${contingencyPct.toFixed(1)}% safety buffer)`,
       ``,
       `BUDGET BREAKDOWN:`,
-      ...p.budget.items.map((i) => `• ${i.category}: ${i.percentage}% (${formatCurrency(i.amount, p.budget.currency)})`),
+      ...items.map(
+        (i) => `• ${i.category}: ${i.percentage.toFixed(1)}% (${formatCurrency(i.amount, p.budget.currency)})`
+      ),
+      ``,
+      `MILESTONES COMPLETED: ${state.completedMilestones.size} of ${p.timeline.milestones.length}`,
+      ...p.timeline.milestones.map((m, idx) => {
+        const mark = state.completedMilestones.has(`milestone-${idx}`) ? "[✓]" : "[ ]";
+        return `${mark} ${m.period_label} (${m.target_date}): ${m.description}`;
+      }),
+      ``,
+      `VENDOR PROGRESS:`,
+      ...p.checklist.tasks.map((t) => {
+        const st = state.checklistStatusMap[t.id] || t.status || "to-do";
+        const contact = state.vendorContacts[t.id] ? ` | Contact: ${state.vendorContacts[t.id]}` : "";
+        return `• [${st.toUpperCase()}] ${t.category} - ${t.vendor_type}${contact}`;
+      }),
       ``,
       `TOP THEMES:`,
       ...p.ideas.themes.slice(0, 3).map((t) => `• ${t}`),
@@ -1040,39 +1757,175 @@ function setupExports() {
     copyToClipboard(summary, "Full celebration summary copied to clipboard! 📋✨");
   });
 
-  // Download JSON
+  // 2. Download JSON
   elements.btnExportJson?.addEventListener("click", () => {
     if (!state.currentPlan) return;
 
     const exportData = structuredClone(state.currentPlan);
+    exportData.budget.items = state.budgetAllocations.length ? state.budgetAllocations : exportData.budget.items;
+
     exportData.checklist.tasks.forEach((t) => {
-      if (state.checklistStatusMap[t.id]) {
-        t.status = state.checklistStatusMap[t.id];
-      }
+      t.status = state.checklistStatusMap[t.id] || t.status || "to-do";
+      if (state.vendorNotes[t.id]) t.local_notes = state.vendorNotes[t.id];
+      if (state.vendorContacts[t.id]) t.local_contact = state.vendorContacts[t.id];
     });
 
-    const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    exportData.timeline.milestones.forEach((m, idx) => {
+      m.completed = state.completedMilestones.has(`milestone-${idx}`);
+    });
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `eventease_plan_${exportData.intake.event_type}_${exportData.intake.date}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    exportData.exported_at = new Date().toISOString();
+
+    const jsonString = JSON.stringify(exportData, null, 2);
+    downloadFile(
+      jsonString,
+      `eventease_plan_${exportData.intake.event_type}_${exportData.intake.date}.json`,
+      "application/json"
+    );
 
     showToast("JSON plan exported! 💾");
     announceLive("Event plan JSON download started.");
   });
 
-  // Print / PDF View
+  // 3. Download CSV Spreadsheet
+  elements.btnExportCsv?.addEventListener("click", () => {
+    if (!state.currentPlan) return;
+    const p = state.currentPlan;
+    const items = state.budgetAllocations.length ? state.budgetAllocations : p.budget.items;
+
+    const escapeCsv = (val) => {
+      const str = String(val ?? "");
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const csvLines = [
+      ["EVENT CELEBRATION PLAN", p.intake.event_type.toUpperCase()],
+      ["Target Date", p.intake.date],
+      ["City", p.intake.city],
+      ["Planned Guests", p.intake.guest_count],
+      ["Total Budget", `${p.budget.currency} ${p.budget.total_budget}`],
+      ["Cost Per Guest", `${p.budget.currency} ${p.budget.cost_per_guest}`],
+      [],
+      ["BUDGET ALLOCATIONS"],
+      ["Category", "Percentage (%)", `Amount (${p.budget.currency})`, "Scope & Description"],
+      ...items.map((i) => [i.category, i.percentage.toFixed(1), i.amount.toFixed(2), i.description]),
+      [],
+      ["TIMELINE MILESTONES"],
+      ["Period", "Target Date", "Status", "Description", "Tasks"],
+      ...p.timeline.milestones.map((m, idx) => [
+        m.period_label,
+        m.target_date,
+        state.completedMilestones.has(`milestone-${idx}`) ? "Completed" : "In Progress",
+        m.description,
+        m.tasks.join(" | "),
+      ]),
+      [],
+      ["VENDOR TRACKING CHECKLIST"],
+      ["Category", "Vendor Type", "Status", "Contact Details", "Private Notes", "Key Interview Questions"],
+      ...p.checklist.tasks.map((t) => [
+        t.category,
+        t.vendor_type,
+        state.checklistStatusMap[t.id] || t.status || "to-do",
+        state.vendorContacts[t.id] || "",
+        state.vendorNotes[t.id] || t.notes || "",
+        t.questions_to_ask.join(" | "),
+      ]),
+    ];
+
+    const csvContent = csvLines.map((row) => row.map(escapeCsv).join(",")).join("\r\n");
+    downloadFile(
+      csvContent,
+      `eventease_budget_${p.intake.event_type}_${p.intake.date}.csv`,
+      "text/csv;charset=utf-8;"
+    );
+
+    showToast("CSV spreadsheet exported! 📊");
+    announceLive("Event plan CSV download started.");
+  });
+
+  // 4. Download .ICS Calendar
+  elements.btnExportIcs?.addEventListener("click", () => {
+    if (!state.currentPlan) return;
+    const p = state.currentPlan;
+
+    const formatDateToIcs = (dateStr) => {
+      // Input is YYYY-MM-DD
+      return dateStr.replace(/-/g, "");
+    };
+
+    const pad = (n) => (n < 10 ? `0${n}` : n);
+    const now = new Date();
+    const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+
+    const events = [];
+
+    // Milestone Deadlines
+    p.timeline.milestones.forEach((m, idx) => {
+      const dt = formatDateToIcs(m.target_date);
+      const isDone = state.completedMilestones.has(`milestone-${idx}`);
+      const summary = `[EventEase] ${m.period_label} - ${p.intake.event_type.toUpperCase()} Prep`;
+      const desc = `${m.description}\\n\\nTasks:\\n- ${m.tasks.join("\\n- ")}`;
+
+      events.push(
+        [
+          "BEGIN:VEVENT",
+          `UID:milestone-${idx}-${p.intake.date}@eventease.app`,
+          `DTSTAMP:${stamp}`,
+          `DTSTART;VALUE=DATE:${dt}`,
+          `DTEND;VALUE=DATE:${dt}`,
+          `SUMMARY:${summary}`,
+          `DESCRIPTION:${desc}`,
+          `STATUS:${isDone ? "COMPLETED" : "CONFIRMED"}`,
+          "END:VEVENT",
+        ].join("\r\n")
+      );
+    });
+
+    // Main Celebration Day Event
+    const eventDt = formatDateToIcs(p.intake.date);
+    events.push(
+      [
+        "BEGIN:VEVENT",
+        `UID:celebration-day-${p.intake.date}@eventease.app`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART;VALUE=DATE:${eventDt}`,
+        `DTEND;VALUE=DATE:${eventDt}`,
+        `SUMMARY:🎉 ${p.intake.event_type.toUpperCase()} Celebration Day!`,
+        `DESCRIPTION:Celebration in ${p.intake.city} with ${p.intake.guest_count} guests! Total budget: ${p.budget.currency} ${p.budget.total_budget}.`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+      ].join("\r\n")
+    );
+
+    const icsContent = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//EventEase//Celebration Planning Prototype//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      ...events,
+      "END:VCALENDAR",
+    ].join("\r\n");
+
+    downloadFile(
+      icsContent,
+      `eventease_schedule_${p.intake.event_type}_${p.intake.date}.ics`,
+      "text/calendar;charset=utf-8;"
+    );
+
+    showToast(".ICS Calendar exported! 🗓️");
+    announceLive("Calendar .ICS export download started.");
+  });
+
+  // 5. Print / PDF View
   elements.btnPrintView?.addEventListener("click", () => {
     window.print();
   });
 
-  // Celebrate button
+  // 6. Celebrate button
   elements.btnCelebrate?.addEventListener("click", () => {
     triggerConfetti();
     showToast("Cheers to your extraordinary celebration! 🥂🎉");
@@ -1080,14 +1933,32 @@ function setupExports() {
 }
 
 /**
+ * Universal browser file download helper
+ */
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
  * Initialize Application
  */
 function init() {
   initTheme();
+  checkAiStatus();
   initMascots();
   setupTabs();
   setupExports();
+  setupNewPlanModal();
   loadPresets();
+  checkSavedPlanOnLoad();
 
   // Multi-step buttons
   elements.btnToStep2?.addEventListener("click", () => {

@@ -1,41 +1,41 @@
-# EventEase - GenAI-Powered Celebration & Event Planning Assistant
+# EventEase - Celebration & Event Planning Prototype
 
-[![CI](https://github.com/example/eventease/actions/workflows/ci.yml/badge.svg)](https://github.com/example/eventease/actions/workflows/ci.yml)
+[![CI](https://github.com/Suhani-Tyagi/EventEase/actions/workflows/ci.yml/badge.svg)](https://github.com/Suhani-Tyagi/EventEase/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Coverage](https://img.shields.io/badge/coverage-96.85%25-brightgreen.svg)]()
+[![Coverage](https://img.shields.io/badge/coverage-94.63%25-brightgreen.svg)]()
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Type Checked: mypy](https://img.shields.io/badge/mypy-strict-blue.svg)](http://mypy-lang.org/)
 [![Accessibility: WCAG 2.1 AA](https://img.shields.io/badge/accessibility-WCAG%202.1%20AA-green.svg)](docs/ACCESSIBILITY.md)
 
-> "A GenAI-powered planning assistant that helps users organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas."
+> "An event planning prototype combining deterministic financial and backward-planned timeline algorithms with curated creative ideas and offline resilience."
 
 ---
 
 ## Table of Contents
-1. [Overview & Solution](#overview--solution)
-2. [Core Deliverables & Features](#core-deliverables--features)
-3. [Architecture Overview](#architecture-overview)
-4. [Quickstart & Installation](#quickstart--installation)
-   - [Running with Gemini API Key](#running-with-gemini-api-key)
+1. [Overview & Solution](#1-overview--solution)
+2. [Core Deliverables & Features](#2-core-deliverables--features)
+3. [Architecture Overview](#3-architecture-overview)
+4. [Quickstart & Installation](#4-quickstart--installation)
+   - [Running Locally with Gemini API Key](#running-locally-with-gemini-api-key)
    - [Running Completely Offline (Fallback Mode)](#running-completely-offline-fallback-mode)
+   - [Deploying to Vercel](#deploying-to-vercel)
    - [Running via Docker](#running-via-docker)
-5. [Environment Variables](#environment-variables)
-6. [API Reference & OpenAPI Docs](#api-reference--openapi-docs)
-7. [Testing & Quality Verification](#testing--quality-verification)
-8. [Design Decisions & Trade-Offs](#design-decisions--trade-offs)
-9. [Security & Threat Model](#security--threat-model)
-10. [Accessibility (WCAG 2.1 AA)](#accessibility-wcag-21-aa)
-11. [Limitations & Future Roadmap](#limitations--future-roadmap)
+5. [Environment Variables](#5-environment-variables)
+6. [API Reference & OpenAPI Docs](#6-api-reference--openapi-docs)
+7. [Testing & Quality Verification](#7-testing--quality-verification)
+8. [Design Decisions & Trade-Offs](#8-design-decisions--trade-offs)
+9. [Security & Threat Model](#9-security--threat-model)
+10. [Accessibility (WCAG 2.1 AA)](#10-accessibility-wcag-21-aa)
 
 ---
 
 ## 1. Overview & Solution
-Planning a major milestone celebration—whether an intimate wedding, a milestone birthday, or a 500-attendee neighborhood festival—requires balancing complex financial allocations, strict backward-planned timelines, and vendor contract vetting. Traditional solutions either present opaque black-box estimates or overwhelm users with static spreadsheets.
+Planning a milestone celebration—whether an intimate wedding, a birthday party, or a neighborhood festival—requires balancing realistic financial allocations, backward-planned timelines, and vendor contract vetting.
 
-**EventEase** solves this by pairing:
-- **Deterministic, pure mathematical engines** for budget allocation and timeline milestones (zero AI hallucinations, 100% explainable derivations).
-- **Curated GenAI inspiration (Gemini 2.5 Flash)** for tailored themes, menus, and cost-saving tips.
-- **Graceful offline resilience**, ensuring the full planning suite operates seamlessly even when disconnected from cloud APIs.
+**EventEase** isolates mathematics and scheduling from creative ideation:
+- **Deterministic, pure mathematical algorithms** calculate budget breakdowns and backward-planned milestone schedules (zero hallucinations, 100% explainable derivations).
+- **Curated GenAI inspiration (Gemini 2.5 Flash)** recommends tailored aesthetic themes, signature menus, and cost-saving tips.
+- **Graceful offline resilience**, ensuring the entire planning prototype operates cleanly even without an internet connection or Gemini API key.
 
 ---
 
@@ -46,28 +46,45 @@ Planning a major milestone celebration—whether an intimate wedding, a mileston
 - Divided into 3 focused stages with progress tracking and real-time inline validation.
 - 3 One-Click Demonstration Scenarios (Napa Vineyard Wedding, 30th Rooftop Glow Party, Eco-Arts Community Festival).
 
-### 2. Deterministic Budget Planner
-- Category breakdowns: Venue, Catering, Decor, Entertainment, Photography, Attire, Misc, and a dedicated **8.0% Contingency Reserve** (within the 5-10% standard).
-- Type-specific baseline templates guaranteeing allocations sum strictly to 100.0%.
-- Calculates per-guest metrics and automatically issues an explicit advisory warning if the budget falls below realistic industry thresholds.
+### 2. Live Editable Budget Planner with Real-Time Balance Validation
+- Interactive category breakdown with an 8.0% dedicated Contingency Buffer.
+- Users can edit any category percentage or currency amount; the engine immediately updates category totals, validates whether allocations stay balanced, recalculates the per-guest cost, and updates the visual segmented bar.
+- One-click "Reset Allocation" restores the benchmark distribution.
 
 ### 3. Adaptive Milestone Timeline Generator
-- Backward-planned milestone schedule derived from the scheduled event date down to Event Day.
-- **Adaptive Compression Algorithm**: Automatically scales intervals when planning horizons are compressed (<90 days, <30 days, or <7 days express blitz), guaranteeing feasible deadlines.
+- Backward-planned milestone schedule derived from the scheduled celebration date down to Event Day.
+- **Adaptive Compression Algorithm**: Automatically scales intervals when planning horizons are compressed (<90 days, <30 days, or express blitz), guaranteeing feasible deadlines.
+- Interactive completion checkboxes update progress and trigger celebration milestones.
 
-### 4. Categorized Vendor Checklist
-- Tailored supplier questions to ask prospective venues, caterers, photographers, entertainers, and safety authorities before signing contracts.
-- Interactive status toggles (`to-do`, `contacted`, `booked`) with dynamic booking counters.
+### 4. Categorized Vendor Checklist with Filters, Notes & Contacts
+- Tailored screening questions to ask prospective venues, caterers, photographers, and entertainers before signing contracts.
+- Interactive status dropdowns (`to-do`, `contacted`, `booked`) with live counters.
+- Filter pills (`All`, `To-Do`, `Contacted`, `Booked`) to focus on active vendor workflows.
+- Local contact inputs and private notes fields auto-saved to browser storage.
 
-### 5. Personalized GenAI Inspiration
-- Tailored themes, decor concepts, menus, activities, and actionable budget-saving tips generated via the official `google-genai` SDK with strict JSON schema validation.
+### 5. Compact Celebration Progress Dashboard
+- 4 real-time progress cards:
+  1. **Budget Balance**: Balance status, total allocated percentage, and contingency buffer.
+  2. **Milestones Done**: Completed milestones count, completion percentage, and progress bar.
+  3. **Vendors Booked**: Booked vs in-progress counts and booking progress bar.
+  4. **Event Countdown**: Days remaining and next upcoming deadline reminder.
 
-### 6. Graceful Offline Fallback
-- If the Gemini API key is omitted, or if network timeouts or API errors occur, EventEase automatically falls back to curated template-based ideas with a clear status notice. The app never crashes or hangs.
+### 6. LocalStorage Persistence
+- The current celebration plan, customized budget allocations, completed milestones, vendor statuses, contacts, and notes are automatically saved to `localStorage`.
+- On return or page refresh, a saved plan notification banner allows users to restore their ongoing plan.
+- A modal-guarded "Start New Plan" flow resets saved state safely without accidental data loss.
 
-### 7. Dual Export Capability
+### 7. Multi-Format Exports
+- **Copy Summary**: Generates a clean text summary calculating contingency from actual allocations (fixing any undefined field issues).
 - **JSON Export**: Downloads the complete state as an indented JSON file.
-- **Printable / PDF View**: Formatted with a clean print stylesheet (`@media print`) that removes web navigation and formats the plan for physical printing or PDF saving.
+- **CSV Spreadsheet**: Formats event details, budget allocations, milestones, and vendor checklists into an RFC 4180 compliant CSV file.
+- **.ICS Calendar Export**: Exports all milestone deadlines and the celebration day into standard RFC 5545 iCalendar format for Google Calendar, Apple Calendar, or Outlook.
+- **Print / PDF View**: Formatted with a clean print stylesheet (`@media print`) that removes web navigation for physical printing or PDF generation.
+
+### 8. Accessible UI & Mascot Companions
+- **Lumi Companion Widget**: Floating celebration assistant that never obscures content or controls; includes a collapse/minimize toggle.
+- **Reduced Motion**: Full support for `prefers-reduced-motion: reduce` in CSS, and confetti particle generation is suppressed in JavaScript.
+- **WAI-ARIA Tabs**: Creative ideas tabs support full keyboard navigation (`ArrowLeft`, `ArrowRight`, `Home`, `End`).
 
 ---
 
@@ -82,7 +99,7 @@ graph TD
     subgraph "FastAPI Application"
         Router["API Router (/api/plan, /api/budget, /api/timeline, /api/ideas)"]
         SecMid["Security Headers & 1MB Body Limit Middleware"]
-        RateMid["SlowAPI Rate Limiter (20 req/min/IP)"]
+        RateMid["SlowAPI Rate Limiter (Serverless Proxy IP Resolution)"]
         
         subgraph "Deterministic Core Services"
             BudgetSvc["Budget Service (Pure Math, Sums 100%)"]
@@ -91,7 +108,7 @@ graph TD
         end
         
         subgraph "AI & Fallback Tier"
-            IdeasSvc["Ideas Service (TTL Memory Cache)"]
+            IdeasSvc["Ideas Service (Bounded Memory Cache & Eviction)"]
             LLMClient["GeminiClient (google-genai SDK, Retries & Timeouts)"]
             FallbackData["Curated Offline Ideas (fallback_ideas.json)"]
         end
@@ -114,60 +131,6 @@ graph TD
     FallbackData -.-> IdeasSvc
 ```
 
-### Directory Structure
-```text
-eventease/
-├── app/
-│   ├── api/
-│   │   ├── __init__.py
-│   │   └── routes.py           # REST endpoints & dependency injection
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── config.py           # Pydantic-settings configuration
-│   │   └── security.py         # Prompt-injection sanitization & security middleware
-│   ├── data/
-│   │   ├── budget_templates.json
-│   │   ├── checklist_templates.json
-│   │   ├── fallback_ideas.json
-│   │   └── timeline_templates.json
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── budget.py           # Pure budget allocation
-│   │   ├── checklist.py        # Vendor checklist service
-│   │   ├── ideas.py            # Ideas orchestrator, caching & fallback
-│   │   ├── llm_client.py       # LLM Protocol, google-genai & Mock client
-│   │   └── timeline.py         # Adaptive milestone generator
-│   ├── main.py                 # Application factory & exception handlers
-│   └── schemas.py              # Pydantic v2 strict models
-├── docs/
-│   └── ACCESSIBILITY.md        # WCAG 2.1 AA audit & report
-├── static/
-│   ├── css/
-│   │   └── style.css           # Single CSS file with dark mode & print styles
-│   └── js/
-│       └── app.js              # Vanilla ES module frontend
-├── templates/
-│   └── index.html              # Semantic HTML5 template with ARIA landmarks
-├── tests/
-│   ├── conftest.py             # Test fixtures & mocked LLM clients
-│   ├── test_api.py             # Integration & HTTP status tests
-│   ├── test_budget.py          # Budget unit tests (sum 100%, edge cases)
-│   ├── test_checklist.py       # Checklist & status override tests
-│   ├── test_ideas.py           # Caching & prompt delimiter tests
-│   ├── test_llm_client.py      # LLM error, retry, and fallback tests
-│   ├── test_schemas.py         # Pydantic validation & boundary tests
-│   ├── test_security.py        # Injection sanitization & security header tests
-│   └── test_timeline.py        # Timeline compression tests
-├── .env.example
-├── .gitignore
-├── Dockerfile                  # Non-root container specification
-├── Makefile                    # Standard make targets (run, test, lint, format)
-├── pyproject.toml              # Tool configuration (Ruff, MyPy, PyTest)
-├── requirements.txt            # Pinned dependencies
-├── SECURITY.md                 # Threat model & mitigation strategies
-└── README.md
-```
-
 ---
 
 ## 4. Quickstart & Installation
@@ -179,8 +142,8 @@ eventease/
 ### Local Setup
 ```bash
 # 1. Clone repository
-git clone https://github.com/example/eventease.git
-cd eventease
+git clone https://github.com/Suhani-Tyagi/EventEase.git
+cd EventEase
 
 # 2. Create and activate virtual environment
 python -m venv venv
@@ -189,11 +152,11 @@ python -m venv venv
 # On Linux/macOS:
 source venv/bin/activate
 
-# 3. Install pinned dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
 
-### Running with Gemini API Key
+### Running Locally with Gemini API Key
 To enable live GenAI suggestions:
 ```bash
 # Copy example configuration
@@ -212,10 +175,20 @@ If `GEMINI_API_KEY` is not set or left empty in `.env`:
 ```bash
 uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000
 ```
-The application will operate in **curated offline mode**, serving template-based ideas with a clear badge indicating offline operation.
+The application will operate in **curated offline mode**, serving template-based ideas with an "Offline Fallback (Curated)" status badge.
+
+### Deploying to Vercel
+EventEase is configured for zero-friction serverless deployment on **Vercel** via [`vercel.json`](vercel.json) and [`api/index.py`](api/index.py):
+
+1. **Push to GitHub**: Connect your repository (`https://github.com/Suhani-Tyagi/EventEase.git`) to Vercel.
+2. **Environment Variables**:
+   - `GEMINI_API_KEY` (Optional: if omitted, EventEase runs in offline fallback mode).
+   - `APP_ENV`: `production`
+3. **Deploy**:
+   - Vercel automatically detects the Python runtime from `requirements.txt` and routes HTTP requests to `api/index.py`.
+   - In the event of an unhandled exception or startup issue, `api/index.py` logs privately and returns a generic 500 error response without exposing stack traces.
 
 ### Running via Docker
-The provided Dockerfile builds a secure image running as non-root user `appuser`:
 ```bash
 # Build Docker image
 docker build -t eventease:latest .
@@ -223,16 +196,6 @@ docker build -t eventease:latest .
 # Run container
 docker run -p 8000:8000 -e GEMINI_API_KEY=your_api_key eventease:latest
 ```
-
-### Deploying to Vercel
-EventEase is pre-configured for zero-friction serverless deployment on **Vercel** via [`vercel.json`](vercel.json) and [`api/index.py`](api/index.py):
-
-1. **Push to GitHub**: Connect your GitHub repository (`https://github.com/Suhani-Tyagi/EventEase.git`) to Vercel.
-2. **Configure Environment Variables in Vercel Project Settings**:
-   - `GEMINI_API_KEY` (Optional: if omitted, EventEase seamlessly runs in curated offline fallback mode).
-   - `APP_ENV`: `production`
-3. **Deploy**:
-   - Vercel automatically detects the Python runtime from `requirements.txt` and routes all HTTP requests to `api/index.py`. Static assets under `static/` are served with high-performance edge caching.
 
 ---
 
@@ -259,7 +222,7 @@ EventEase is pre-configured for zero-friction serverless deployment on **Vercel*
 The interactive OpenAPI documentation is available at `http://127.0.0.1:8000/docs`.
 
 ### Core Endpoints
-- `GET /api/health`: Health status check.
+- `GET /api/health`: Health status reporting service health, rate limits, and AI mode (`live` vs `offline_fallback`).
 - `GET /api/presets`: Pre-configured demo scenarios (wedding, birthday, community).
 - `POST /api/budget`: Pure mathematical budget allocation breakdown.
 - `POST /api/timeline`: Adaptive milestone schedule backward-planned from event date.
@@ -271,64 +234,63 @@ The interactive OpenAPI documentation is available at `http://127.0.0.1:8000/doc
 
 ## 7. Testing & Quality Verification
 
-EventEase enforces strict linting, type-checking, and a minimum **90% test coverage** threshold.
+EventEase enforces strict linting, strict static typing, and automated testing across both backend and frontend layers.
 
 ### Running Quality Checks
 ```bash
 # 1. Run Ruff Linter
-ruff check app tests
+ruff check app tests api
 
 # 2. Run MyPy Strict Type Checker
-mypy app tests
+mypy app api
 
 # 3. Run Pytest Suite with Coverage Enforcement
 pytest
+
+# 4. Run Browser-Level DOM Integration Tests
+npm run test:browser
 ```
 
-### Coverage Report
-```text
-Name                         Stmts   Miss  Cover   Missing
-----------------------------------------------------------
-app/api/routes.py               49      3    94%   32, 202-203
-app/core/config.py              22      0   100%
-app/core/security.py            42      0   100%
-app/main.py                     59      5    92%   76-77, 123-126
-app/schemas.py                  54      0   100%
-app/services/budget.py          31      0   100%
-app/services/checklist.py       20      0   100%
-app/services/ideas.py           62      3    95%   158-160
-app/services/llm_client.py      56      3    95%   68, 106, 113
-app/services/timeline.py        49      0   100%
-----------------------------------------------------------
-TOTAL                          444     14    97%
-Total Coverage: 96.85% (Passing --cov-fail-under=90)
-```
+### Verified Test Results
+- **Backend Tests**: 79 tests passing with **94.63% statement coverage** across `app`:
+  - `app/api/routes.py`: 94%
+  - `app/core/config.py`: 100%
+  - `app/core/security.py`: 100%
+  - `app/main.py`: 91%
+  - `app/schemas.py`: 100%
+  - `app/services/budget.py`: 91%
+  - `app/services/checklist.py`: 88%
+  - `app/services/ideas.py`: 93%
+  - `app/services/llm_client.py`: 95%
+  - `app/services/timeline.py`: 94%
+- **Frontend DOM Integration Tests**: 50 tests passing (0 failures), covering form intake, preset loading, editable budget balancing, milestone completion, vendor status filtering, notes and contacts persistence, CSV and .ICS export formatting, and accessible WAI-ARIA tab navigation.
 
 ---
 
 ## 8. Design Decisions & Trade-Offs
 
 1. **Separation of Deterministic Logic vs. AI Generation**:
-   - *Decision*: Financial allocation and milestone timelines are computed through pure Python functions without LLM involvement.
-   - *Rationale*: Budgets and legal countdowns require 100% accuracy, reproducibility, and explainability. LLMs are reserved strictly for creative recommendations (decor, themes, catering concepts).
+   - Financial allocation and milestone timelines are computed through pure Python functions without LLM involvement.
+   - Budgets and legal countdowns require 100% accuracy, reproducibility, and explainability. LLMs are reserved strictly for creative recommendations (decor, themes, catering concepts).
 2. **Vanilla Frontend with ES Modules (Zero Build Step)**:
-   - *Decision*: Plain semantic HTML5, a single stylesheet, and standard ES module JS without Webpack, Vite, or React.
-   - *Rationale*: Guarantees instant startup, eliminates NPM vulnerability rot, and ensures compatibility across low-end mobile devices.
-3. **In-Memory TTL Caching**:
-   - *Decision*: A normalized SHA256 key caches identical idea requests in memory.
-   - *Rationale*: Drastically reduces redundant Gemini API invocations, cuts latency to <5ms on cache hits, and saves API quotas.
+   - Plain semantic HTML5, a single stylesheet, and standard ES module JS without heavy frameworks.
+   - Guarantees instant startup, eliminates NPM vulnerability rot, and ensures broad compatibility.
+3. **Bounded In-Memory Caching & Purging**:
+   - A normalized SHA256 key caches identical idea requests in memory with automatic expiration purging and capacity-based eviction (`max_cache_entries = 256`).
+   - Reduces redundant Gemini API invocations, cuts latency to <5ms on cache hits, and prevents unbounded memory growth.
 4. **Resilient Dual-Tier Architecture**:
-   - *Decision*: Curated offline fallback templates activate immediately on missing API keys or request timeouts.
-   - *Rationale*: A planning assistant must remain dependable under poor connectivity or external API outages.
+   - Curated offline fallback templates activate immediately on missing API keys or request timeouts.
+   - A planning assistant must remain dependable under poor connectivity or external API outages.
 
 ---
 
 ## 9. Security & Threat Model
-For comprehensive details, review [`SECURITY.md`](SECURITY.md). Key defenses include:
+For comprehensive details, review [`SECURITY.md`](SECURITY.md). Key verified defenses include:
 - Prompt-injection defense using delimiter isolation (`<<<EVENT_INTAKE_DATA_START>>>`) and control-character stripping.
-- Output encoding via `textContent` exclusively in the DOM.
+- Public serverless error sanitization (`api/index.py`) returning generic 500 responses without tracebacks.
+- Rate limiting wired into configuration with reverse proxy IP resolution (`X-Forwarded-For`, `X-Real-IP`).
+- Output encoding via `textContent` in the DOM.
 - Strict Content Security Policy (`script-src 'self'`) disallowing inline scripts.
-- Rate limiting per client IP (20 requests/minute).
 - Non-root Docker execution (`appuser:10001`).
 
 ---
@@ -337,13 +299,7 @@ For comprehensive details, review [`SECURITY.md`](SECURITY.md). Key defenses inc
 For verification results and criteria breakdown, see [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md).
 - Landmarks: `<header role="banner">`, `<main role="main">`, `<footer role="contentinfo">`.
 - Visible focus outlines (`:focus-visible`) and skip-to-content bypass link.
-- Color contrast >= 4.5:1 across both Light and Dark themes.
+- High-contrast color palette (Warm Fog, Berry Good, Usu Koubai Blossom, Meadow Mauve, Soldier Green) verified >= 4.5:1 across Light and Dark themes.
 - Form controls paired with visible `<label>`, `aria-describedby` hints, and `aria-live` error alerts.
-- Respects `prefers-reduced-motion` and `prefers-color-scheme`.
-
----
-
-## 11. Limitations & Future Roadmap
-- **Multi-Currency Dynamic Conversion**: Current budget conversions apply nominal ISO currency codes; future releases could integrate live FX rate lookups.
-- **Calendar Synchronization**: Future versions can generate `.ics` iCalendar files to synchronize backward-planned milestones directly with Google Calendar or Apple Calendar.
-- **Collaborative Real-Time Planning**: Adding WebSockets and persistent database storage to allow multiple family or committee members to update vendor statuses in real-time.
+- Fully accessible WAI-ARIA tab navigation supporting `ArrowLeft`, `ArrowRight`, `Home`, and `End` keys.
+- Complete support for `prefers-reduced-motion` in CSS and JavaScript confetti suppression.

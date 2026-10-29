@@ -7,12 +7,34 @@ from typing import Any
 
 from fastapi import Request, Response
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
-# Shared Rate Limiter using client IP
-limiter = Limiter(key_func=get_remote_address)
+
+def get_client_ip(request: Request) -> str:
+    """Retrieve client IP address, respecting serverless reverse proxy headers."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        # First IP in comma-separated proxy list is the original client
+        return forwarded.split(",")[0].strip()
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip.strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return "127.0.0.1"
+
+
+def get_rate_limit_value() -> str:
+    """Dynamically resolve configured rate limit string from application settings."""
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    return f"{settings.rate_limit_per_minute}/minute"
+
+
+# Shared Rate Limiter using serverless-aware client IP
+limiter = Limiter(key_func=get_client_ip)
 
 # Prompt Injection Defense Delimiters
 USER_DATA_START_DELIMITER = "<<<EVENT_INTAKE_DATA_START>>>"

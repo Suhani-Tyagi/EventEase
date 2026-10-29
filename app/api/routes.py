@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.config import Settings, get_settings
-from app.core.security import limiter
+from app.core.security import get_rate_limit_value, limiter
 from app.schemas import (
     BudgetPlan,
     EventIntakeRequest,
@@ -47,9 +47,18 @@ def get_ideas_service(
 
 
 @router.get("/health", summary="Service health status")
-async def health_check() -> dict[str, str]:
-    """Health check endpoint for Docker and monitoring."""
-    return {"status": "healthy", "service": "EventEase"}
+async def health_check(
+    settings: Settings = Depends(get_settings),
+) -> dict[str, Any]:
+    """Health check reporting service status, rate limits, and AI mode."""
+    has_gemini = bool(settings.gemini_api_key and settings.gemini_api_key.strip())
+    return {
+        "status": "healthy",
+        "service": "EventEase",
+        "ai_mode": "live" if has_gemini else "offline_fallback",
+        "gemini_configured": has_gemini,
+        "rate_limit": f"{settings.rate_limit_per_minute}/minute",
+    }
 
 
 @router.get("/presets", summary="Get sample demonstration scenarios")
@@ -151,7 +160,7 @@ async def checklist_endpoint(event_type: EventType) -> VendorChecklist:
     response_model=PersonalizedIdeas,
     summary="Generate personalized ideas with GenAI and offline fallback",
 )
-@limiter.limit("20/minute")
+@limiter.limit(get_rate_limit_value)
 async def ideas_endpoint(
     request: Request,
     payload: EventIntakeRequest,
@@ -167,7 +176,7 @@ async def ideas_endpoint(
     response_model=FullEventPlan,
     summary="Generate full comprehensive celebration plan",
 )
-@limiter.limit("20/minute")
+@limiter.limit(get_rate_limit_value)
 async def full_plan_endpoint(
     request: Request,
     payload: EventIntakeRequest,

@@ -1,0 +1,11 @@
+{
+  "name": "eventease",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test:browser": "node tests/test_browser_flow.js"
+  },
+  "devDependencies": {
+    "jsdom": "^22.1.0"
+  }
+}
