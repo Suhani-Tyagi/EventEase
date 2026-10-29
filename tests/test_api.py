@@ -132,6 +132,25 @@ async def test_root_serves_html(async_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("route", ["/index.html", "/api/index.py", "/api/index"])
+async def test_serverless_index_aliases(async_client: AsyncClient, route: str) -> None:
+    """Ensure serverless root aliases serve index.html."""
+    response = await async_client.get(route)
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+
+
+@pytest.mark.asyncio
+async def test_api_root(async_client: AsyncClient) -> None:
+    """Ensure /api returns service metadata."""
+    response = await async_client.get("/api")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["service"] == "EventEase API"
+    assert data["status"] == "active"
+
+
+@pytest.mark.asyncio
 async def test_http_404_error_handler(async_client: AsyncClient) -> None:
     """Ensure 404 responses return standardized JSON error format."""
     response = await async_client.get("/api/nonexistent-route")

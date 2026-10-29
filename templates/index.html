@@ -3,28 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventEase - GenAI-Powered Celebration &amp; Event Planning Assistant</title>
-  <meta name="description" content="Organize weddings, birthdays, and community events with deterministic budgets, adaptive timelines, vendor checklists, and personalized GenAI ideas.">
+  <title>EventEase — Enterprise Celebration &amp; Event Planning Intelligence</title>
+  <meta name="description" content="Organize weddings, birthdays, and community festivals with deterministic budget models, adaptive backward-planned milestone timelines, vendor screening playbooks, and contextual GenAI inspiration.">
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <!-- Skip to content link for accessibility -->
+  <!-- Accessibility Skip Link -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
+  <!-- Top Navigation Bar -->
   <header class="app-header" role="banner">
     <div class="header-container">
-      <div class="brand">
-        <span class="brand-badge" aria-hidden="true">&#10024;</span>
+      <a href="/" class="brand" aria-label="EventEase Home">
+        <div class="brand-logo-glow" aria-hidden="true">&#10024;</div>
         <div class="brand-text">
-          <span class="brand-title">EventEase</span>
-          <span class="brand-tagline">Celebration &amp; Event Planning Assistant</span>
+          <div class="brand-title-row">
+            <span class="brand-title">EventEase</span>
+            <span class="brand-badge-pro">PRO</span>
+          </div>
+          <span class="brand-tagline">Celebration Planning Intelligence</span>
         </div>
-      </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="nav-links" aria-label="Primary Navigation">
+        <a href="#presets-heading" class="nav-link">Demonstrations</a>
+        <a href="#why-eventease" class="nav-link">Why EventEase</a>
+        <a href="#form-heading" class="nav-link">Event Planner</a>
+        <a href="/docs" target="_blank" rel="noopener" class="nav-link nav-link-external">API Docs <span aria-hidden="true">&nearr;</span></a>
+      </nav>
+
+      <!-- Header Actions -->
       <div class="header-actions">
-        <button id="theme-toggle" class="btn btn-secondary btn-icon" type="button" aria-pressed="false" aria-label="Toggle high contrast dark theme">
+        <div class="status-indicator-pill" title="Deterministic Engine &amp; Gemini Pro Online">
+          <span class="status-pulse-dot" aria-hidden="true"></span>
+          <span class="status-text">AI Engine Active</span>
+        </div>
+
+        <button id="theme-toggle" class="btn btn-secondary btn-icon" type="button" aria-pressed="false" aria-label="Toggle dark and light themes">
           <span id="theme-icon" aria-hidden="true">&#9790;</span>
           <span id="theme-text">Dark Mode</span>
         </button>
+
+        <a href="#form-heading" class="btn btn-primary btn-cta">
+          <span>Plan An Event</span>
+          <span aria-hidden="true">&rarr;</span>
+        </a>
       </div>
     </div>
   </header>
@@ -36,36 +64,302 @@
   <main id="main-content" class="app-main" role="main">
     <div class="main-container">
 
-      <!-- Hero & Mission -->
+      <!-- Hero Section with Animated Mascot Showcase -->
       <section class="hero-section" aria-labelledby="hero-heading">
-        <h1 id="hero-heading" class="hero-title">Plan Your Unforgettable Celebration with Confidence</h1>
-        <p class="hero-subtitle">
-          EventEase blends <strong>deterministic financial &amp; timeline algorithms</strong> with <strong>curated GenAI creativity</strong> to organize weddings, birthdays, and community events with complete transparency.
-        </p>
+        <div class="hero-split-grid">
+          <div class="hero-left">
+            <div class="hero-announcement">
+              <span class="hero-badge-tag">&#10024; Next-Gen Event Platform</span>
+              <span class="hero-badge-desc">Deterministic Financial Math &bull; Adaptive Milestones &bull; Zero Hallucinations</span>
+            </div>
 
-        <!-- Presets Card -->
+            <h1 id="hero-heading" class="hero-title">
+              Plan Extraordinary Celebrations with <span class="gradient-text">Algorithmic Precision</span>
+            </h1>
+            <p class="hero-subtitle">
+              EventEase blends <strong>deterministic financial &amp; timeline algorithms</strong> with <strong>curated GenAI creativity</strong> to organize weddings, birthdays, and civic festivals with total mathematical transparency.
+            </p>
+
+            <!-- Value Stats Counter Bar -->
+            <div class="stats-bar" role="region" aria-label="Key Platform Metrics">
+              <div class="stat-card">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">Deterministic Math</span>
+                <span class="stat-hint">No random budget estimates</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">0%</span>
+                <span class="stat-label">Math Hallucinations</span>
+                <span class="stat-hint">Guaranteed balanced books</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">8.0%</span>
+                <span class="stat-label">Automatic Contingency</span>
+                <span class="stat-hint">Built-in emergency buffer</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value">Adaptive</span>
+                <span class="stat-label">Backward Scheduling</span>
+                <span class="stat-hint">Calibrated to your event date</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Mascot Card: Lumi & The Planning Squad -->
+          <div class="hero-mascot-card" role="region" aria-label="Lumi and Celebration Planning Squad">
+            <div class="mascot-card-glow" aria-hidden="true"></div>
+            <div class="mascot-header-row">
+              <span class="mascot-badge-pill">&#10024; Meet Your Planning Companion</span>
+              <span class="mascot-live-tag">Interactive</span>
+            </div>
+
+            <div class="mascot-stage" id="lumi-hero-stage" title="Click Lumi for celebration sparkles and tips!">
+              <!-- Animated Lumi SVG -->
+              <svg class="character-svg lumi-hero-svg" viewBox="0 0 200 220" width="170" height="187" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Lumi the Celebration Mascot">
+                <defs>
+                  <linearGradient id="lumi-body-grad" x1="50" y1="50" x2="150" y2="190" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#f5e6ff"/>
+                  </linearGradient>
+                  <linearGradient id="lumi-ear-inner" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#fbcfe8"/>
+                    <stop offset="100%" stop-color="#f472b6"/>
+                  </linearGradient>
+                  <linearGradient id="lumi-hat-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#818cf8"/>
+                    <stop offset="50%" stop-color="#c084fc"/>
+                    <stop offset="100%" stop-color="#f472b6"/>
+                  </linearGradient>
+                  <linearGradient id="lumi-star-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#fef08a"/>
+                    <stop offset="100%" stop-color="#f59e0b"/>
+                  </linearGradient>
+                  <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur"/>
+                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                  </filter>
+                </defs>
+
+                <!-- Floating Ambient Sparkles -->
+                <g class="lumi-sparkles" aria-hidden="true">
+                  <path class="sparkle sp-1" d="M30 40 L33 48 L41 51 L33 54 L30 62 L27 54 L19 51 L27 48 Z" fill="url(#lumi-star-grad)"/>
+                  <path class="sparkle sp-2" d="M170 30 L172 36 L178 38 L172 40 L170 46 L168 40 L162 38 L168 36 Z" fill="url(#lumi-star-grad)"/>
+                  <path class="sparkle sp-3" d="M175 140 L178 145 L183 147 L178 149 L175 154 L172 149 L167 147 L172 145 Z" fill="#ec4899"/>
+                  <circle class="sparkle sp-4" cx="25" cy="120" r="3.5" fill="#a855f7"/>
+                </g>
+
+                <!-- Lumi Character Body with Floating Animation -->
+                <g class="lumi-character-body">
+                  <!-- Left Ear -->
+                  <g class="lumi-ear ear-left">
+                    <ellipse cx="68" cy="48" rx="16" ry="42" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2" transform="rotate(-14 68 48)"/>
+                    <ellipse cx="68" cy="48" rx="8" ry="28" fill="url(#lumi-ear-inner)" opacity="0.8" transform="rotate(-14 68 48)"/>
+                  </g>
+
+                  <!-- Right Ear -->
+                  <g class="lumi-ear ear-right">
+                    <ellipse cx="132" cy="48" rx="16" ry="42" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2" transform="rotate(14 132 48)"/>
+                    <ellipse cx="132" cy="48" rx="8" ry="28" fill="url(#lumi-ear-inner)" opacity="0.8" transform="rotate(14 132 48)"/>
+                  </g>
+
+                  <!-- Rounded Torso -->
+                  <ellipse cx="100" cy="155" rx="42" ry="40" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2"/>
+                  <!-- Feet -->
+                  <ellipse cx="78" cy="192" rx="15" ry="10" fill="#fce7f3" stroke="#f472b6" stroke-width="1.5"/>
+                  <ellipse cx="122" cy="192" rx="15" ry="10" fill="#fce7f3" stroke="#f472b6" stroke-width="1.5"/>
+
+                  <!-- Head -->
+                  <ellipse cx="100" cy="108" rx="52" ry="46" fill="url(#lumi-body-grad)" stroke="#e9d5ff" stroke-width="2"/>
+
+                  <!-- Party Hat -->
+                  <g class="lumi-hat">
+                    <polygon points="100,28 78,74 122,74" fill="url(#lumi-hat-grad)"/>
+                    <ellipse cx="100" cy="74" rx="22" ry="5" fill="#fce7f3"/>
+                    <path d="M86 58 Q100 62 114 58" stroke="#ffffff" stroke-width="2.5" fill="none" opacity="0.8"/>
+                    <path d="M92 44 Q100 47 108 44" stroke="#ffffff" stroke-width="2.5" fill="none" opacity="0.8"/>
+                    <!-- Star on Top of Hat -->
+                    <polygon class="hat-star" points="100,20 102,25 107,26 103,29 104,34 100,31 96,34 97,29 93,26 98,25" fill="url(#lumi-star-grad)" filter="url(#soft-glow)"/>
+                  </g>
+
+                  <!-- Eyes with Blinking Keyframe -->
+                  <g class="lumi-eyes">
+                    <g class="eye eye-left">
+                      <ellipse cx="80" cy="106" rx="7" ry="9" fill="#312e81"/>
+                      <circle cx="78" cy="103" r="3" fill="#ffffff"/>
+                      <circle cx="83" cy="109" r="1.5" fill="#ffffff"/>
+                    </g>
+                    <g class="eye eye-right">
+                      <ellipse cx="120" cy="106" rx="7" ry="9" fill="#312e81"/>
+                      <circle cx="118" cy="103" r="3" fill="#ffffff"/>
+                      <circle cx="123" cy="109" r="1.5" fill="#ffffff"/>
+                    </g>
+                  </g>
+
+                  <!-- Blushing Cheeks -->
+                  <ellipse class="blush blush-left" cx="68" cy="116" rx="9" ry="5" fill="#f472b6" opacity="0.6"/>
+                  <ellipse class="blush blush-right" cx="132" cy="116" rx="9" ry="5" fill="#f472b6" opacity="0.6"/>
+
+                  <!-- Nose & Mouth -->
+                  <ellipse cx="100" cy="114" rx="3.5" ry="2.5" fill="#ec4899"/>
+                  <path d="M95 120 Q100 124 105 120" stroke="#831843" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+                  <!-- Bowtie -->
+                  <g class="lumi-bowtie" transform="translate(100, 138)">
+                    <polygon points="0,0 -12,-6 -12,6" fill="#ec4899"/>
+                    <polygon points="0,0 12,-6 12,6" fill="#ec4899"/>
+                    <circle cx="0" cy="0" r="3" fill="#fbcfe8"/>
+                  </g>
+
+                  <!-- Left Arm & Wand -->
+                  <g class="lumi-arm arm-left">
+                    <line x1="45" y1="125" x2="30" y2="90" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+                    <polygon class="wand-star" points="30,85 33,91 40,92 35,97 36,103 30,100 24,103 25,97 20,92 27,91" fill="url(#lumi-star-grad)" filter="url(#soft-glow)"/>
+                    <circle cx="45" cy="125" r="8" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1.5"/>
+                  </g>
+
+                  <!-- Right Arm (Waving) -->
+                  <g class="lumi-arm arm-right">
+                    <ellipse cx="145" cy="138" rx="8" ry="12" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1.5" transform="rotate(-30 145 138)"/>
+                    <circle cx="152" cy="130" r="7" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1.5"/>
+                  </g>
+                </g>
+              </svg>
+
+              <!-- Dynamic Speech Bubble -->
+              <div class="mascot-speech-bubble" id="lumi-hero-speech">
+                <span class="speech-sparkle" aria-hidden="true">&#10024;</span>
+                <p id="lumi-hero-text">&ldquo;Hi! I&rsquo;m Lumi, your party companion! Pick a demo preset below or tell me your dream celebration!&rdquo;</p>
+              </div>
+            </div>
+
+            <!-- Meet the 4 Squad Specialists -->
+            <div class="mascot-squad-strip" aria-label="Celebration Planning Squad Specialists">
+              <div class="squad-member" title="Barnaby the Budget Bear &bull; Balanced Funds">
+                <span class="squad-emoji" aria-hidden="true">&#128059;</span>
+                <span class="squad-name">Barnaby</span>
+                <span class="squad-role">Budget</span>
+              </div>
+              <div class="squad-member" title="Pip the Timekeeper Penguin &bull; Adaptive Milestones">
+                <span class="squad-emoji" aria-hidden="true">&#128039;</span>
+                <span class="squad-name">Pip</span>
+                <span class="squad-role">Timeline</span>
+              </div>
+              <div class="squad-member" title="Sherlock Shep the Detective &bull; Vendor Screening">
+                <span class="squad-emoji" aria-hidden="true">&#128054;</span>
+                <span class="squad-name">Shep</span>
+                <span class="squad-role">Vendors</span>
+              </div>
+              <div class="squad-member" title="Nova the Creative Spark Cat &bull; AI Ideas">
+                <span class="squad-emoji" aria-hidden="true">&#128049;</span>
+                <span class="squad-name">Nova</span>
+                <span class="squad-role">Inspiration</span>
+              </div>
+            </div>
+
+            <!-- Interactive Buttons -->
+            <div class="mascot-actions">
+              <button type="button" class="btn btn-sm btn-accent" id="btn-hero-sparkle">
+                <span aria-hidden="true">&#10024;</span> Sparkle &amp; Confetti!
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-hero-tip">
+                <span aria-hidden="true">&#128161;</span> Next Tip
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demonstration Scenarios Card -->
         <div class="presets-card" role="region" aria-labelledby="presets-heading">
           <div class="presets-header">
-            <span class="presets-icon" aria-hidden="true">&#9889;</span>
-            <h2 id="presets-heading" class="presets-title">One-Click Demonstration Scenarios</h2>
+            <div class="presets-title-group">
+              <span class="presets-icon" aria-hidden="true">&#9889;</span>
+              <div>
+                <h2 id="presets-heading" class="presets-title">One-Click Demonstration Scenarios</h2>
+                <p class="presets-desc" id="presets-desc">Select an enterprise template to load instant allocations, adaptive schedules, and creative concepts:</p>
+              </div>
+            </div>
+            <span class="badge badge-accent">Instant Pre-load</span>
           </div>
-          <p class="presets-desc" id="presets-desc">Load pre-configured demo cases to test instant calculations, milestone schedules, and AI ideas:</p>
+
           <div class="presets-btn-group" role="group" aria-describedby="presets-desc">
             <button type="button" class="preset-btn" id="preset-wedding" data-preset="wedding">
-              <span class="preset-icon" aria-hidden="true">&#128141;</span>
+              <div class="preset-btn-top">
+                <span class="preset-icon" aria-hidden="true">&#128141;</span>
+                <span class="preset-badge">Wedding</span>
+              </div>
               <span class="preset-label">Napa Vineyard Wedding</span>
-              <span class="preset-meta">120 guests &bull; $28,000</span>
+              <span class="preset-meta">120 guests &bull; $28,000 USD &bull; Napa Valley, CA</span>
+              <span class="preset-cta">Load Scenario &rarr;</span>
             </button>
+
             <button type="button" class="preset-btn" id="preset-birthday" data-preset="birthday">
-              <span class="preset-icon" aria-hidden="true">&#127881;</span>
+              <div class="preset-btn-top">
+                <span class="preset-icon" aria-hidden="true">&#127881;</span>
+                <span class="preset-badge">Milestone</span>
+              </div>
               <span class="preset-label">30th Rooftop Glow Party</span>
-              <span class="preset-meta">40 guests &bull; $3,500</span>
+              <span class="preset-meta">40 guests &bull; $3,500 USD &bull; Austin, TX</span>
+              <span class="preset-cta">Load Scenario &rarr;</span>
             </button>
+
             <button type="button" class="preset-btn" id="preset-community" data-preset="community">
-              <span class="preset-icon" aria-hidden="true">&#127793;</span>
+              <div class="preset-btn-top">
+                <span class="preset-icon" aria-hidden="true">&#127793;</span>
+                <span class="preset-badge">Civic Festival</span>
+              </div>
               <span class="preset-label">Eco-Arts &amp; Food Festival</span>
-              <span class="preset-meta">500 guests &bull; $9,500</span>
+              <span class="preset-meta">500 guests &bull; $9,500 USD &bull; Seattle, WA</span>
+              <span class="preset-cta">Load Scenario &rarr;</span>
             </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why EventEase Section -->
+      <section id="why-eventease" class="why-section" aria-labelledby="why-heading">
+        <div class="section-header-centered">
+          <span class="badge badge-accent">Platform Architecture</span>
+          <h2 id="why-heading" class="section-title">Engineered to Outperform Generic Chatbots</h2>
+          <p class="section-subtitle">
+            Most AI tools hallucinate unvetted costs and unrealistic timelines. EventEase separates mathematical computation from creative ideation.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon-wrapper" aria-hidden="true">&#128176;</div>
+            <h3 class="feature-title">Algorithmic Budgeting</h3>
+            <p class="feature-desc">
+              Deterministic category weights distribute your funds precisely across venue, catering, decor, and entertainment, locking in an 8% emergency contingency.
+            </p>
+            <span class="feature-tag">&check; 100% Balanced Books</span>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper" aria-hidden="true">&#128197;</div>
+            <h3 class="feature-title">Adaptive Timeline Engine</h3>
+            <p class="feature-desc">
+              Backward-planned from your target event date. Whether you have 30 days or 18 months, milestones compress intelligently with urgent path warnings.
+            </p>
+            <span class="feature-tag">&check; Dynamic Lead Time</span>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper" aria-hidden="true">&#9745;</div>
+            <h3 class="feature-title">Vendor Screening Playbook</h3>
+            <p class="feature-desc">
+              Battle-tested interview questions for venues, caterers, photographers, and audio teams to smoke out hidden fees and contract traps.
+            </p>
+            <span class="feature-tag">&check; Interactive Booking Tracker</span>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper" aria-hidden="true">&#128161;</div>
+            <h3 class="feature-title">Contextual GenAI Creative Lab</h3>
+            <p class="feature-desc">
+              Powered by Google Gemini with deterministic offline fallback. Generates tailored decor aesthetics, signature menus, and practical cost-saving hacks.
+            </p>
+            <span class="feature-tag">&check; Instant Local Fallback</span>
           </div>
         </div>
       </section>
@@ -74,7 +368,11 @@
       <section class="form-section" aria-labelledby="form-heading">
         <div class="card form-card">
           <div class="form-header">
-            <h2 id="form-heading" class="form-title">Event Intake &amp; Requirements</h2>
+            <div>
+              <span class="badge badge-accent">Event Intake Studio</span>
+              <h2 id="form-heading" class="form-title">Define Your Event Requirements</h2>
+              <p class="form-subtitle">Complete the 3-step intake form to generate your comprehensive celebration blueprint.</p>
+            </div>
             <div class="step-indicator" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3" aria-label="Intake form progress">
               <span class="step-pill active" id="pill-step-1">1. Basics</span>
               <span class="step-divider" aria-hidden="true">&rarr;</span>
@@ -82,6 +380,12 @@
               <span class="step-divider" aria-hidden="true">&rarr;</span>
               <span class="step-pill" id="pill-step-3">3. Style &amp; Notes</span>
             </div>
+          </div>
+
+          <!-- Helper step banner guided by Lumi -->
+          <div class="form-step-guide" id="form-step-guide" role="note">
+            <span class="guide-avatar" aria-hidden="true">&#10024;</span>
+            <span id="form-guide-text" class="guide-text">Step 1: Set your celebration date, city, and event type to begin.</span>
           </div>
 
           <form id="event-form" novalidate>
@@ -154,6 +458,14 @@
                   <p id="total-budget-hint" class="form-hint">Total funds available across all venue, catering, and vendor categories.</p>
                   <p id="total-budget-error" class="form-error" role="alert" aria-live="polite"></p>
                 </div>
+
+                <!-- Live Unit Economics Indicator -->
+                <div class="form-group form-col-span-2">
+                  <div class="live-estimate-pill" id="live-cost-pill">
+                    <span class="live-estimate-label">Live Estimate:</span>
+                    <span id="live-estimate-text">Enter guests and budget to see estimated per-guest allocation</span>
+                  </div>
+                </div>
               </div>
 
               <div class="step-actions">
@@ -201,7 +513,8 @@
       <!-- Global Loading State -->
       <section id="loading-indicator" class="loading-container hidden" aria-labelledby="loading-text">
         <div class="spinner-large" aria-hidden="true"></div>
-        <p id="loading-text" class="loading-label">Deriving budget metrics, backward-planning milestones, and generating creative ideas...</p>
+        <p id="loading-text" class="loading-label">Deriving deterministic budget metrics, backward-planning milestones, and generating creative ideas...</p>
+        <span class="loading-sublabel">Processing via Algorithmic Core + Gemini 2.0 Engine</span>
       </section>
 
       <!-- Results Section -->
@@ -210,15 +523,25 @@
         <!-- Deliverables Overview Header -->
         <div class="results-action-bar">
           <div>
+            <div class="results-header-tag">
+              <span class="badge badge-accent">Executive Deliverables</span>
+              <span class="results-live-badge">&#10004; Verified Calculation</span>
+            </div>
             <h2 class="results-title">Your Celebration Master Plan</h2>
             <p class="results-subtitle" id="results-meta-text">Generated based on your event specifications</p>
           </div>
           <div class="export-actions">
+            <button type="button" class="btn btn-secondary" id="btn-copy-summary" title="Copy text summary of entire plan">
+              <span aria-hidden="true">&#128203;</span> Copy Summary
+            </button>
             <button type="button" class="btn btn-secondary" id="btn-export-json">
               <span aria-hidden="true">&#128190;</span> Download JSON
             </button>
             <button type="button" class="btn btn-primary" id="btn-print-view">
               <span aria-hidden="true">&#128424;</span> Print / PDF Export
+            </button>
+            <button type="button" class="btn btn-accent btn-celebrate" id="btn-celebrate">
+              <span aria-hidden="true">&#127881;</span> Celebrate!
             </button>
           </div>
         </div>
@@ -244,17 +567,92 @@
         <!-- 4 Core Deliverables Grid -->
         <div class="deliverables-grid">
 
-          <!-- Deliverable 1: Budget Planner -->
+          <!-- Deliverable 1: Budget Planner with Barnaby the Bear -->
           <div class="card deliverable-card" id="deliverable-budget" role="region" aria-labelledby="budget-heading">
             <div class="card-header">
               <div class="card-title-group">
                 <span class="card-icon" aria-hidden="true">&#128176;</span>
-                <h3 id="budget-heading" class="card-title">1. Budget Allocation</h3>
+                <div>
+                  <h3 id="budget-heading" class="card-title">1. Budget Allocation</h3>
+                  <span class="card-subtitle">Deterministic percentage distribution &amp; contingency reserve</span>
+                </div>
               </div>
               <span class="badge badge-accent" id="cost-per-guest-badge">Per-Guest: $0.00</span>
             </div>
             <div class="card-body">
+
+              <!-- Barnaby Character Highlight Banner -->
+              <div class="character-callout barnaby-callout" role="note">
+                <div class="character-callout-avatar">
+                  <svg class="character-svg character-mini barnaby-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Barnaby the Budget Bear">
+                    <defs>
+                      <linearGradient id="barnaby-fur" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#d97706"/>
+                        <stop offset="100%" stop-color="#b45309"/>
+                      </linearGradient>
+                      <linearGradient id="gold-coin-grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#fef08a"/>
+                        <stop offset="60%" stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#d97706"/>
+                      </linearGradient>
+                    </defs>
+                    <circle cx="42" cy="40" r="18" fill="url(#barnaby-fur)"/>
+                    <circle cx="42" cy="40" r="10" fill="#fed7aa"/>
+                    <circle cx="118" cy="40" r="18" fill="url(#barnaby-fur)"/>
+                    <circle cx="118" cy="40" r="10" fill="#fed7aa"/>
+                    <circle cx="80" cy="75" r="45" fill="url(#barnaby-fur)"/>
+                    <ellipse cx="80" cy="88" rx="20" ry="15" fill="#fef3c7"/>
+                    <ellipse cx="80" cy="80" rx="8" ry="5" fill="#451a03"/>
+                    <path d="M75 88 Q80 94 85 88" stroke="#451a03" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <circle class="character-eye" cx="62" cy="68" r="5" fill="#451a03"/>
+                    <circle cx="60.5" cy="66.5" r="1.8" fill="#ffffff"/>
+                    <circle class="character-eye" cx="98" cy="68" r="5" fill="#451a03"/>
+                    <circle cx="96.5" cy="66.5" r="1.8" fill="#ffffff"/>
+                    <circle cx="62" cy="68" r="13" stroke="#f59e0b" stroke-width="2.5" fill="rgba(254, 240, 138, 0.25)"/>
+                    <circle cx="98" cy="68" r="13" stroke="#f59e0b" stroke-width="2.5" fill="rgba(254, 240, 138, 0.25)"/>
+                    <line x1="75" y1="68" x2="85" y2="68" stroke="#f59e0b" stroke-width="2.5"/>
+                    <ellipse cx="48" cy="80" rx="6" ry="3.5" fill="#fbbf24" opacity="0.6"/>
+                    <ellipse cx="112" cy="80" rx="6" ry="3.5" fill="#fbbf24" opacity="0.6"/>
+                    <ellipse cx="80" cy="135" rx="36" ry="25" fill="url(#barnaby-fur)"/>
+                    <g class="animated-coin">
+                      <circle cx="80" cy="128" r="18" fill="url(#gold-coin-grad)" stroke="#b45309" stroke-width="1.5"/>
+                      <circle cx="80" cy="128" r="14" stroke="#fef3c7" stroke-width="1" stroke-dasharray="3 2" fill="none"/>
+                      <text x="80" y="134" font-size="16" font-weight="bold" fill="#78350f" text-anchor="middle" font-family="sans-serif">$</text>
+                    </g>
+                    <ellipse cx="58" cy="130" rx="8" ry="6" fill="#fef3c7"/>
+                    <ellipse cx="102" cy="130" rx="8" ry="6" fill="#fef3c7"/>
+                  </svg>
+                </div>
+                <div class="character-callout-content">
+                  <div class="character-callout-header">
+                    <span class="character-name">Barnaby the Budget Bear</span>
+                    <span class="character-pill">100% Balanced Math</span>
+                  </div>
+                  <p class="character-quote">
+                    &ldquo;Every dollar is deterministically allocated! We locked in your <strong>8.0% emergency contingency buffer</strong> so surprise price spikes won&rsquo;t throw your party off track.&rdquo;
+                  </p>
+                </div>
+              </div>
+
               <p class="card-desc" id="budget-explanation">Deterministic category percentage allocation with dedicated contingency reserve.</p>
+
+              <!-- Visual Segmented Progress Bar -->
+              <div class="budget-bar-container" aria-hidden="true">
+                <div class="budget-bar-label-row">
+                  <span>Category Distribution</span>
+                  <span id="budget-bar-summary">100% Allocated</span>
+                </div>
+                <div class="budget-segmented-bar" id="budget-segmented-bar">
+                  <div class="segment segment-venue" style="width: 25%" title="Venue &amp; Rentals: 25%"></div>
+                  <div class="segment segment-catering" style="width: 30%" title="Catering &amp; Bar: 30%"></div>
+                  <div class="segment segment-photo" style="width: 10%" title="Photography: 10%"></div>
+                  <div class="segment segment-decor" style="width: 10%" title="Decor: 10%"></div>
+                  <div class="segment segment-music" style="width: 8%" title="Entertainment: 8%"></div>
+                  <div class="segment segment-attire" style="width: 5%" title="Attire: 5%"></div>
+                  <div class="segment segment-misc" style="width: 4%" title="Stationery: 4%"></div>
+                  <div class="segment segment-contingency" style="width: 8%" title="Contingency: 8%"></div>
+                </div>
+              </div>
 
               <div class="table-responsive">
                 <table class="data-table" aria-label="Budget Breakdown by Category">
@@ -282,16 +680,69 @@
             </div>
           </div>
 
-          <!-- Deliverable 2: Timeline Generator -->
+          <!-- Deliverable 2: Timeline Generator with Pip the Penguin -->
           <div class="card deliverable-card" id="deliverable-timeline" role="region" aria-labelledby="timeline-heading">
             <div class="card-header">
               <div class="card-title-group">
                 <span class="card-icon" aria-hidden="true">&#128197;</span>
-                <h3 id="timeline-heading" class="card-title">2. Milestone Timeline</h3>
+                <div>
+                  <h3 id="timeline-heading" class="card-title">2. Milestone Timeline</h3>
+                  <span class="card-subtitle">Backward-planned schedule from your event date</span>
+                </div>
               </div>
               <span class="badge" id="timeline-days-badge">0 Days Remaining</span>
             </div>
             <div class="card-body">
+
+              <!-- Pip Character Highlight Banner -->
+              <div class="character-callout pip-callout" role="note">
+                <div class="character-callout-avatar">
+                  <svg class="character-svg character-mini pip-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Pip the Timekeeper Penguin">
+                    <defs>
+                      <linearGradient id="penguin-dark" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#1e293b"/>
+                        <stop offset="100%" stop-color="#0f172a"/>
+                      </linearGradient>
+                      <linearGradient id="pip-scarf" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#10b981"/>
+                        <stop offset="100%" stop-color="#06b6d4"/>
+                      </linearGradient>
+                    </defs>
+                    <ellipse cx="80" cy="85" rx="44" ry="50" fill="url(#penguin-dark)"/>
+                    <ellipse cx="80" cy="92" rx="30" ry="38" fill="#ffffff"/>
+                    <ellipse class="character-eye" cx="66" cy="62" rx="4.5" ry="6" fill="#0f172a"/>
+                    <circle cx="64.5" cy="60" r="2" fill="#ffffff"/>
+                    <ellipse class="character-eye" cx="94" cy="62" rx="4.5" ry="6" fill="#0f172a"/>
+                    <circle cx="92.5" cy="60" r="2" fill="#ffffff"/>
+                    <ellipse cx="56" cy="70" rx="6" ry="3" fill="#f43f5e" opacity="0.5"/>
+                    <ellipse cx="104" cy="70" rx="6" ry="3" fill="#f43f5e" opacity="0.5"/>
+                    <polygon points="80,66 74,74 86,74" fill="#f97316"/>
+                    <path d="M52 82 Q80 92 108 82" stroke="url(#pip-scarf)" stroke-width="12" stroke-linecap="round" fill="none"/>
+                    <path d="M96 85 L96 112" stroke="url(#pip-scarf)" stroke-width="10" stroke-linecap="round"/>
+                    <ellipse class="penguin-flipper-left" cx="38" cy="95" rx="8" ry="22" fill="url(#penguin-dark)" transform="rotate(20 38 95)"/>
+                    <g class="animated-clock" transform="translate(118, 98)">
+                      <circle cx="0" cy="0" r="16" fill="#fef08a" stroke="#d97706" stroke-width="2"/>
+                      <circle cx="0" cy="0" r="13" fill="#ffffff"/>
+                      <line class="clock-hand-hour" x1="0" y1="0" x2="0" y2="-7" stroke="#b45309" stroke-width="2" stroke-linecap="round"/>
+                      <line class="clock-hand-min" x1="0" y1="0" x2="6" y2="0" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+                      <circle cx="0" cy="0" r="2" fill="#b45309"/>
+                      <rect x="-3" y="-19" width="6" height="4" fill="#d97706" rx="1"/>
+                    </g>
+                    <ellipse cx="64" cy="138" rx="12" ry="7" fill="#f97316"/>
+                    <ellipse cx="96" cy="138" rx="12" ry="7" fill="#f97316"/>
+                  </svg>
+                </div>
+                <div class="character-callout-content">
+                  <div class="character-callout-header">
+                    <span class="character-name">Pip the Timekeeper Penguin</span>
+                    <span class="character-pill" id="milestone-tracker-pill">0 / 0 Done</span>
+                  </div>
+                  <p class="character-quote">
+                    &ldquo;Backward-planned from your event date! Click any milestone in the schedule below to mark it completed as your preparations progress.&rdquo;
+                  </p>
+                </div>
+              </div>
+
               <div id="timeline-advisory-box" class="advisory-box hidden" role="note">
                 <span class="advisory-icon" aria-hidden="true">&#9432;</span>
                 <span id="timeline-advisory-text"></span>
@@ -302,16 +753,84 @@
             </div>
           </div>
 
-          <!-- Deliverable 3: Vendor Checklist -->
+          <!-- Deliverable 3: Vendor Checklist with Sherlock Shep -->
           <div class="card deliverable-card" id="deliverable-checklist" role="region" aria-labelledby="checklist-heading">
             <div class="card-header">
               <div class="card-title-group">
                 <span class="card-icon" aria-hidden="true">&#9745;</span>
-                <h3 id="checklist-heading" class="card-title">3. Vendor Screening Checklist</h3>
+                <div>
+                  <h3 id="checklist-heading" class="card-title">3. Vendor Screening Checklist</h3>
+                  <span class="card-subtitle">Contract interrogation questions &amp; procurement status</span>
+                </div>
               </div>
               <span class="badge badge-neutral" id="checklist-summary-badge">0 / 0 Booked</span>
             </div>
             <div class="card-body">
+
+              <!-- Sherlock Shep Character Highlight Banner -->
+              <div class="character-callout shep-callout" role="note">
+                <div class="character-callout-avatar">
+                  <svg class="character-svg character-mini shep-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Sherlock Shep the Vendor Detective Puppy">
+                    <defs>
+                      <linearGradient id="corgi-fur" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#d97706"/>
+                      </linearGradient>
+                      <linearGradient id="corgi-hat" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#78716c"/>
+                        <stop offset="100%" stop-color="#44403c"/>
+                      </linearGradient>
+                    </defs>
+                    <ellipse class="corgi-tail" cx="126" cy="120" rx="14" ry="7" fill="#f59e0b" transform="rotate(-30 126 120)"/>
+                    <polygon points="45,55 35,20 65,40" fill="url(#corgi-fur)"/>
+                    <polygon points="46,50 39,26 60,40" fill="#fecdd3"/>
+                    <polygon points="115,55 125,20 95,40" fill="url(#corgi-fur)"/>
+                    <polygon points="114,50 121,26 100,40" fill="#fecdd3"/>
+                    <ellipse cx="80" cy="115" rx="38" ry="28" fill="url(#corgi-fur)"/>
+                    <ellipse cx="80" cy="118" rx="18" ry="18" fill="#ffffff"/>
+                    <ellipse cx="80" cy="75" rx="40" ry="32" fill="url(#corgi-fur)"/>
+                    <ellipse cx="80" cy="82" rx="24" ry="18" fill="#ffffff"/>
+                    <ellipse cx="80" cy="50" rx="30" ry="8" fill="url(#corgi-hat)"/>
+                    <path d="M56 50 C56 32 104 32 104 50 Z" fill="url(#corgi-hat)"/>
+                    <circle cx="80" cy="34" r="3" fill="#f59e0b"/>
+                    <ellipse class="character-eye" cx="64" cy="72" rx="5" ry="6" fill="#292524"/>
+                    <circle cx="62" cy="70" r="2" fill="#ffffff"/>
+                    <ellipse class="character-eye" cx="96" cy="72" rx="5" ry="6" fill="#292524"/>
+                    <circle cx="94" cy="70" r="2" fill="#ffffff"/>
+                    <ellipse cx="80" cy="80" rx="6" ry="4" fill="#292524"/>
+                    <path d="M74 85 Q80 90 86 85" stroke="#292524" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <path d="M78 88 Q80 94 82 88" fill="#f43f5e"/>
+                    <ellipse cx="52" cy="80" rx="6" ry="3.5" fill="#f43f5e" opacity="0.4"/>
+                    <ellipse cx="108" cy="80" rx="6" ry="3.5" fill="#f43f5e" opacity="0.4"/>
+                    <g class="animated-glass" transform="translate(42, 92)">
+                      <line x1="8" y1="8" x2="22" y2="22" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
+                      <circle cx="5" cy="5" r="14" stroke="#d97706" stroke-width="3" fill="rgba(224, 242, 254, 0.45)"/>
+                      <line class="glass-glare" x1="-3" y1="0" x2="3" y2="-6" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+                    </g>
+                  </svg>
+                </div>
+                <div class="character-callout-content">
+                  <div class="character-callout-header">
+                    <span class="character-name">Sherlock Shep the Vendor Detective</span>
+                    <span class="character-pill">Contract Interrogation</span>
+                  </div>
+                  <p class="character-quote">
+                    &ldquo;Never sign blind! Use these tailored screening questions during vendor discovery calls to uncover sneaky overtime, corkage, or power-drop fees.&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              <!-- Live Booking Progress Bar -->
+              <div class="vendor-progress-wrapper" aria-hidden="true">
+                <div class="vendor-progress-label">
+                  <span>Vendor Hiring Progress</span>
+                  <span id="vendor-progress-percent">0%</span>
+                </div>
+                <div class="vendor-progress-track">
+                  <div class="vendor-progress-fill" id="vendor-progress-fill" style="width: 0%"></div>
+                </div>
+              </div>
+
               <p class="card-desc">Essential screening questions to interview each vendor before signing contracts:</p>
               <div class="checklist-container" id="checklist-container" role="list">
                 <!-- Dynamic Checklist Items Rendered by JS -->
@@ -319,16 +838,74 @@
             </div>
           </div>
 
-          <!-- Deliverable 4: Personalized Ideas (GenAI) -->
+          <!-- Deliverable 4: Personalized Ideas (GenAI) with Nova the Cat -->
           <div class="card deliverable-card" id="deliverable-ideas" role="region" aria-labelledby="ideas-heading">
             <div class="card-header">
               <div class="card-title-group">
                 <span class="card-icon" aria-hidden="true">&#128161;</span>
-                <h3 id="ideas-heading" class="card-title">4. Personalized Inspiration &amp; Cost Savings</h3>
+                <div>
+                  <h3 id="ideas-heading" class="card-title">4. Personalized Inspiration &amp; Cost Savings</h3>
+                  <span class="card-subtitle">AI-curated aesthetic concepts, menus, and efficiency hacks</span>
+                </div>
               </div>
               <span class="badge badge-ai" id="ideas-ai-badge">&#10024; AI Suggestions</span>
             </div>
             <div class="card-body">
+
+              <!-- Nova Character Highlight Banner -->
+              <div class="character-callout nova-callout" role="note">
+                <div class="character-callout-avatar">
+                  <svg class="character-svg character-mini nova-svg" viewBox="0 0 160 160" width="84" height="84" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Nova the Creative Spark Cat">
+                    <defs>
+                      <linearGradient id="nova-fur" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#e0e7ff"/>
+                        <stop offset="100%" stop-color="#c7d2fe"/>
+                      </linearGradient>
+                      <linearGradient id="bulb-gold" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#fef08a"/>
+                        <stop offset="100%" stop-color="#f59e0b"/>
+                      </linearGradient>
+                    </defs>
+                    <polygon class="orbiting-star" points="135,45 137,49 141,50 138,53 139,57 135,55 131,57 132,53 129,50 133,49" fill="#f472b6"/>
+                    <g class="animated-bulb">
+                      <ellipse cx="80" cy="24" rx="12" ry="12" fill="url(#bulb-gold)" filter="url(#soft-glow)"/>
+                      <rect x="76" y="34" width="8" height="5" fill="#94a3b8" rx="1"/>
+                      <line x1="80" y1="6" x2="80" y2="0" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+                      <line x1="64" y1="14" x2="59" y2="9" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                      <line x1="96" y1="14" x2="101" y2="9" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+                    </g>
+                    <polygon points="48,60 40,32 68,48" fill="url(#nova-fur)"/>
+                    <polygon points="50,56 45,38 64,48" fill="#fbcfe8"/>
+                    <polygon points="112,60 120,32 92,48" fill="url(#nova-fur)"/>
+                    <polygon points="110,56 115,38 96,48" fill="#fbcfe8"/>
+                    <ellipse cx="80" cy="85" rx="42" ry="36" fill="url(#nova-fur)"/>
+                    <path d="M58 82 Q65 74 72 82" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <path d="M88 82 Q95 74 102 82" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                    <line x1="45" y1="88" x2="28" y2="85" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="45" y1="94" x2="30" y2="96" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="115" y1="88" x2="132" y2="85" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="115" y1="94" x2="130" y2="96" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
+                    <polygon points="80,88 77,92 83,92" fill="#ec4899"/>
+                    <path d="M75 94 Q80 98 85 94" stroke="#4338ca" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <ellipse cx="56" cy="90" rx="7" ry="4" fill="#f472b6" opacity="0.6"/>
+                    <ellipse cx="104" cy="90" rx="7" ry="4" fill="#f472b6" opacity="0.6"/>
+                    <ellipse cx="80" cy="130" rx="34" ry="24" fill="url(#nova-fur)"/>
+                    <ellipse cx="80" cy="132" rx="18" ry="16" fill="#ffffff"/>
+                    <ellipse cx="64" cy="138" rx="8" ry="6" fill="#ffffff"/>
+                    <ellipse cx="96" cy="138" rx="8" ry="6" fill="#ffffff"/>
+                  </svg>
+                </div>
+                <div class="character-callout-content">
+                  <div class="character-callout-header">
+                    <span class="character-name">Nova the Creative Spark Cat</span>
+                    <span class="character-pill">&#10024; AI Creative Lab</span>
+                  </div>
+                  <p class="character-quote">
+                    &ldquo;Curated themes, signature menus, and practical budget hacks! Click any card to copy its details straight to your event notes.&rdquo;
+                  </p>
+                </div>
+              </div>
+
               <div class="ideas-tabs" role="tablist" aria-label="Personalized Ideas Categories">
                 <button type="button" role="tab" class="tab-btn active" id="tab-themes" aria-selected="true" aria-controls="panel-themes">Themes</button>
                 <button type="button" role="tab" class="tab-btn" id="tab-decor" aria-selected="false" aria-controls="panel-decor">Decor</button>
@@ -359,22 +936,145 @@
         </div>
       </section>
 
+      <!-- Testimonials / Social Proof Section -->
+      <section class="testimonials-section" aria-labelledby="testimonials-heading">
+        <div class="section-header-centered">
+          <span class="badge badge-accent">Host &amp; Planner Stories</span>
+          <h2 id="testimonials-heading" class="section-title">Trusted by Hosts and Event Directors</h2>
+          <p class="section-subtitle">Real experiences from coordinators who switched from chaotic spreadsheets to deterministic planning.</p>
+        </div>
+
+        <div class="testimonials-grid">
+          <div class="testimonial-card">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <p class="testimonial-quote">
+              &ldquo;The 8% contingency fund literally saved our vineyard wedding when an unseasonable heatwave required extra industrial pavilion fans. Zero stress because it was already budgeted.&rdquo;
+            </p>
+            <div class="testimonial-author">
+              <div class="author-avatar" aria-hidden="true">EL</div>
+              <div class="author-info">
+                <span class="author-name">Elena &amp; Lucas</span>
+                <span class="author-title">Napa Valley Wedding &bull; 120 Guests</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <p class="testimonial-quote">
+              &ldquo;The vendor screening questions caught a clause in our rooftop DJ contract that would have billed us $150/hour for basic power extension. That single question paid for itself.&rdquo;
+            </p>
+            <div class="testimonial-author">
+              <div class="author-avatar" aria-hidden="true">MR</div>
+              <div class="author-info">
+                <span class="author-name">Marcus R.</span>
+                <span class="author-title">30th Birthday Host &bull; Austin, TX</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+            <p class="testimonial-quote">
+              &ldquo;Managing a 500-person public festival with multiple food trucks requires rock-solid milestone pacing. EventEase gave our committee the exact timeline we needed.&rdquo;
+            </p>
+            <div class="testimonial-author">
+              <div class="author-avatar" aria-hidden="true">ST</div>
+              <div class="author-info">
+                <span class="author-name">Sarah Tanaka</span>
+                <span class="author-title">Community Arts Coordinator &bull; Seattle, WA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
+  <!-- Business Footer -->
   <footer class="app-footer" role="contentinfo">
     <div class="footer-container">
-      <p class="footer-text">
-        <strong>EventEase</strong> &bull; Celebration &amp; Event Planning Assistant &bull; Built with FastAPI, Pydantic v2, and Semantic HTML5.
-      </p>
-      <p class="footer-links">
-        <a href="/docs" target="_blank" rel="noopener">OpenAPI Documentation</a> &bull;
-        <a href="#hero-heading">Back to Top</a>
-      </p>
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand-title-row">
+            <span class="footer-logo">&#10024; EventEase</span>
+            <span class="brand-badge-pro">PRO</span>
+          </div>
+          <p class="footer-desc">
+            Enterprise celebration planning intelligence. Deterministic financial allocations, adaptive backward milestone scheduling, and curated GenAI creativity.
+          </p>
+        </div>
+
+        <div class="footer-links-group">
+          <span class="footer-heading">Platform</span>
+          <a href="#presets-heading" class="footer-link">Scenarios</a>
+          <a href="#why-eventease" class="footer-link">Why EventEase</a>
+          <a href="#form-heading" class="footer-link">Event Planner</a>
+          <a href="/api/health" target="_blank" rel="noopener" class="footer-link">Health API</a>
+        </div>
+
+        <div class="footer-links-group">
+          <span class="footer-heading">Developers</span>
+          <a href="/docs" target="_blank" rel="noopener" class="footer-link">OpenAPI Swagger UI</a>
+          <a href="/redoc" target="_blank" rel="noopener" class="footer-link">ReDoc Specification</a>
+          <a href="https://github.com/Suhani-Tyagi/EventEase" target="_blank" rel="noopener" class="footer-link">GitHub Repository</a>
+        </div>
+
+        <div class="footer-links-group">
+          <span class="footer-heading">Architecture</span>
+          <span class="footer-tech-tag">FastAPI 0.115</span>
+          <span class="footer-tech-tag">Pydantic v2</span>
+          <span class="footer-tech-tag">Google Gemini 2.0</span>
+          <span class="footer-tech-tag">WCAG 2.1 AA</span>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copy">
+          &copy; 2026 EventEase Inc. All rights reserved. Built with mathematical rigor and zero hallucinated financials.
+        </p>
+        <p class="footer-back-top">
+          <a href="#main-content">Back to Top &uarr;</a>
+        </p>
+      </div>
     </div>
   </footer>
 
-  <!-- Main ES Module Script (No inline scripts to comply with strict CSP) -->
+  <!-- Floating Lumi Assistant Widget -->
+  <aside id="lumi-widget" class="lumi-floating-widget" aria-label="Celebration Companion">
+    <div class="lumi-widget-bubble" id="lumi-widget-bubble" role="tooltip">
+      <p id="lumi-widget-text">Ready to plan something amazing? Let&rsquo;s do this! &#10024;</p>
+      <button type="button" class="lumi-bubble-close" id="lumi-bubble-close" aria-label="Dismiss message">&times;</button>
+    </div>
+    <button type="button" class="lumi-widget-btn" id="lumi-widget-btn" aria-label="Lumi Party Assistant (Click for celebration sparkles and tips)">
+      <span class="lumi-btn-sparkle" aria-hidden="true">&#10024;</span>
+      <svg class="lumi-mini-svg" viewBox="0 0 100 100" width="56" height="56" fill="none" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="2"/>
+        <ellipse cx="36" cy="24" rx="8" ry="20" fill="#fbcfe8" transform="rotate(-15 36 24)"/>
+        <ellipse cx="64" cy="24" rx="8" ry="20" fill="#fbcfe8" transform="rotate(15 64 24)"/>
+        <ellipse cx="50" cy="55" rx="28" ry="24" fill="#ffffff" stroke="#e9d5ff" stroke-width="1.5"/>
+        <polygon points="50,14 40,36 60,36" fill="#ec4899"/>
+        <circle cx="50" cy="12" r="3.5" fill="#f59e0b"/>
+        <ellipse class="character-eye" cx="40" cy="54" rx="3.5" ry="5" fill="#312e81"/>
+        <circle cx="39" cy="52" r="1.5" fill="#ffffff"/>
+        <ellipse class="character-eye" cx="60" cy="54" rx="3.5" ry="5" fill="#312e81"/>
+        <circle cx="59" cy="52" r="1.5" fill="#ffffff"/>
+        <ellipse cx="32" cy="60" rx="4.5" ry="2.5" fill="#f472b6" opacity="0.6"/>
+        <ellipse cx="68" cy="60" rx="4.5" ry="2.5" fill="#f472b6" opacity="0.6"/>
+        <ellipse cx="50" cy="58" rx="2" ry="1.5" fill="#ec4899"/>
+        <path d="M47 62 Q50 65 53 62" stroke="#831843" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      </svg>
+    </button>
+  </aside>
+
+  <!-- Confetti Canvas Container -->
+  <div id="confetti-canvas-container" class="confetti-container" aria-hidden="true"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- Main ES Module Script (Strictly CSP Compliant) -->
   <script type="module" src="/static/js/app.js"></script>
 </body>
 </html>

@@ -131,7 +131,12 @@ def create_app() -> FastAPI:
         )
 
     # Mount static assets if directory exists
-    static_paths = [STATIC_DIR, Path.cwd() / "static"]
+    static_paths = [
+        STATIC_DIR,
+        Path.cwd() / "static",
+        Path(__file__).resolve().parent.parent / "static",
+        Path("/var/task/static"),
+    ]
     for s_path in static_paths:
         if s_path.exists():
             app.mount(
@@ -143,23 +148,32 @@ def create_app() -> FastAPI:
 
     # Serve index.html with serverless fallback search
     @app.get("/", include_in_schema=False)
+    @app.get("/index.html", include_in_schema=False)
+    @app.get("/api/index.py", include_in_schema=False)
+    @app.get("/api/index", include_in_schema=False)
     async def index() -> HTMLResponse:
         possible_paths = [
             TEMPLATES_DIR / "index.html",
             Path.cwd() / "templates" / "index.html",
             Path(__file__).resolve().parent.parent / "templates" / "index.html",
+            Path("/var/task/templates/index.html"),
+            Path("/var/task/index.html"),
         ]
         for path in possible_paths:
             if path.exists():
                 content = path.read_text(encoding="utf-8")
                 return HTMLResponse(
                     content=content,
-                    headers={"Cache-Control": "public, max-age=3600"},
+                    headers={"Cache-Control": "no-cache, must-revalidate"},
                 )
         return HTMLResponse(
             content="<h1>EventEase: templates/index.html not found</h1>",
             status_code=500,
         )
+
+    @app.get("/api", include_in_schema=False)
+    async def api_root() -> dict[str, str]:
+        return {"service": "EventEase API", "status": "active", "docs": "/docs"}
 
     # Include API routes
     app.include_router(api_router)
