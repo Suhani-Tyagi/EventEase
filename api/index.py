@@ -16,6 +16,7 @@ logger = logging.getLogger("eventease.serverless")
 
 app: Any
 
+
 def create_fallback_app(exc: Exception | None = None) -> Any:
     """Create a minimal fallback ASGI application that returns sanitized 500 errors."""
     if exc:
@@ -24,6 +25,7 @@ def create_fallback_app(exc: Exception | None = None) -> Any:
             f"CRITICAL [eventease.serverless] Startup failed: {exc}\n"
             f"{traceback.format_exc()}\n"
         )
+        sys.stderr.flush()
 
     from fastapi import FastAPI
     from fastapi.responses import JSONResponse
@@ -40,8 +42,7 @@ def create_fallback_app(exc: Exception | None = None) -> Any:
             content={
                 "error": "Internal Server Error",
                 "detail": (
-                    "The service is temporarily unavailable. "
-                    "Please try again later."
+                    "The service is temporarily unavailable. Please try again later."
                 ),
             },
         )
