@@ -84,7 +84,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
         allow_headers=["*"],
     )
 
@@ -115,7 +115,7 @@ def create_app() -> FastAPI:
             loc = " -> ".join(str(item) for item in err.get("loc", []))
             errors.append({"field": loc, "message": str(err.get("msg"))})
         return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content={
                 "error": "Validation Error",
                 "detail": "Invalid input provided.",

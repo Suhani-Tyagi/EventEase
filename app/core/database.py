@@ -37,6 +37,7 @@ def get_engine_args(database_url: str) -> dict[str, object]:
             args["poolclass"] = StaticPool
     else:
         args["pool_pre_ping"] = True
+        args["pool_recycle"] = 300
     return args
 
 

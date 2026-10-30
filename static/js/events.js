@@ -139,13 +139,13 @@ export function renderSavedEventsWorkspace(events, { onOpen, onDuplicate, onDele
       <div class="saved-event-footer">
         <span class="event-timestamp">Updated: ${updatedDate}</span>
         <div class="saved-event-actions">
-          <button type="button" class="btn btn-sm btn-primary btn-open-event" data-id="${ev.id}">
+          <button type="button" class="btn btn-sm btn-primary btn-open-event" data-id="${ev.id}" aria-label="Reopen ${escapeHtml(ev.name)}">
             Reopen
           </button>
-          <button type="button" class="btn btn-sm btn-secondary btn-dup-event" data-id="${ev.id}" title="Duplicate event">
+          <button type="button" class="btn btn-sm btn-secondary btn-dup-event" data-id="${ev.id}" title="Duplicate event" aria-label="Duplicate ${escapeHtml(ev.name)}">
             Duplicate
           </button>
-          <button type="button" class="btn btn-sm btn-danger btn-del-event" data-id="${ev.id}" title="Delete event">
+          <button type="button" class="btn btn-sm btn-danger btn-del-event" data-id="${ev.id}" title="Delete event" aria-label="Delete ${escapeHtml(ev.name)}">
             Delete
           </button>
         </div>
