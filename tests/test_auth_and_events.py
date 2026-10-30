@@ -104,6 +104,50 @@ async def test_auth_signin_and_signout_flow(async_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_delete_account_flow(async_client: AsyncClient) -> None:
+    """Verify authenticated user can delete their account and associated sessions."""
+    # Register user
+    signup_res = await async_client.post(
+        "/api/auth/signup",
+        json={"email": "deleteme@example.com", "password": "Password123!"},
+    )
+    assert signup_res.status_code == 201
+    session_cookie = signup_res.cookies.get("eventease_session")
+    csrf_token = signup_res.json()["csrf_token"]
+    cookie_header = f"eventease_session={session_cookie}"
+
+    # Attempt delete without CSRF -> 403 Forbidden
+    no_csrf = await async_client.delete(
+        "/api/auth/me",
+        headers={"Cookie": cookie_header},
+    )
+    assert no_csrf.status_code == 403
+
+    # Delete with valid CSRF token -> 200 OK
+    del_res = await async_client.delete(
+        "/api/auth/me",
+        headers={"Cookie": cookie_header, "X-CSRF-Token": csrf_token},
+    )
+    assert del_res.status_code == 200
+    assert "deleted" in del_res.json()["message"]
+
+    # Verify /api/auth/me returns unauthenticated
+    me_after = await async_client.get(
+        "/api/auth/me",
+        headers={"Cookie": cookie_header},
+    )
+    assert me_after.status_code == 200
+    assert me_after.json()["authenticated"] is False
+
+    # Attempt to sign in again -> 401 because user no longer exists
+    signin_res = await async_client.post(
+        "/api/auth/signin",
+        json={"email": "deleteme@example.com", "password": "Password123!"},
+    )
+    assert signin_res.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_auth_recovery_and_reset(async_client: AsyncClient) -> None:
     """Verify recovery does not reveal email existence and resets password."""
     # Register user

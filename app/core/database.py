@@ -2,6 +2,7 @@
 
 import logging
 import os
+import threading
 from collections.abc import Generator
 from functools import lru_cache
 
@@ -12,6 +13,9 @@ from sqlalchemy.pool import StaticPool
 from app.core.config import get_settings
 
 logger = logging.getLogger("eventease.database")
+
+_db_init_lock = threading.Lock()
+_db_initialized: bool = False
 
 
 class DatabaseUnavailableError(RuntimeError):
@@ -53,6 +57,8 @@ def get_engine() -> Engine:
     # psycopg2 driver (which this project does not install).
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+    elif db_url.startswith("postgresql+psycopg2://"):
+        db_url = db_url.replace("postgresql+psycopg2://", "postgresql+psycopg://", 1)
     elif db_url.startswith("postgresql://"):
         db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
@@ -79,12 +85,14 @@ def get_session_factory(engine: Engine | None = None) -> sessionmaker[Session]:
 
 def init_db(engine: Engine | None = None) -> None:
     """Initialize database tables from declarative metadata."""
+    global _db_initialized
     eng = engine or get_engine()
     # Import models to ensure they are registered with Base.metadata
     from app.models.models import EventPlanModel, User, UserSession  # noqa: F401
 
     try:
         Base.metadata.create_all(bind=eng)
+        _db_initialized = True
         logger.info("Database tables initialized successfully.")
     except Exception as exc:
         logger.error(
@@ -93,8 +101,18 @@ def init_db(engine: Engine | None = None) -> None:
         raise
 
 
+def ensure_db_initialized(engine: Engine | None = None) -> None:
+    """Ensure database schema is initialized at least once idempotently."""
+    global _db_initialized
+    if not _db_initialized:
+        with _db_init_lock:
+            if not _db_initialized:
+                init_db(engine)
+
+
 def get_db() -> Generator[Session, None, None]:
     """FastAPI dependency yielding a transactional database session."""
+    ensure_db_initialized()
     factory = get_session_factory()
     session = factory()
     try:

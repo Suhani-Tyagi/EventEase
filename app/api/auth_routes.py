@@ -7,10 +7,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_auth_service
+from app.api.deps import get_auth_service, get_current_user, require_csrf_token
 from app.core.config import Settings, get_settings
 from app.core.database import DatabaseUnavailableError, get_db
 from app.core.security import get_auth_rate_limit_value, get_client_ip, limiter
+from app.models.models import User
 from app.schemas import (
     AuthMessageResponse,
     AuthStatusResponse,
@@ -245,6 +246,27 @@ async def get_current_user_status(
         ),
         csrf_token=csrf_token,
     )
+
+
+@router.delete(
+    "/me",
+    response_model=AuthMessageResponse,
+    summary="Delete current user account",
+    dependencies=[Depends(require_csrf_token)],
+)
+async def delete_current_user(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> AuthMessageResponse:
+    """Delete authenticated user account, associated sessions, and stored plans."""
+    _ = request
+    db.delete(current_user)
+    db.commit()
+    clear_auth_cookies(response, settings)
+    return AuthMessageResponse(message="Account successfully deleted.")
 
 
 @router.post(

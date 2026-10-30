@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -39,7 +39,12 @@ class Settings(BaseSettings):
     )
 
     # Database & Sessions
-    database_url: str = Field(default="sqlite:///./eventease.db", alias="DATABASE_URL")
+    database_url: str = Field(
+        default="sqlite:///./eventease.db",
+        validation_alias=AliasChoices(
+            "DATABASE_URL", "POSTGRES_URL", "POSTGRES_PRISMA_URL"
+        ),
+    )
     session_secret_key: str = Field(
         default="dev-secret-key-change-in-production-must-be-32-chars",
         alias="SESSION_SECRET_KEY",
