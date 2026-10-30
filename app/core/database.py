@@ -1,6 +1,7 @@
 """Database connection and session management using SQLAlchemy."""
 
 import logging
+import os
 from collections.abc import Generator
 from functools import lru_cache
 
@@ -37,9 +38,19 @@ def get_engine() -> Engine:
     settings = get_settings()
     db_url = settings.database_url
 
-    # Normalize older postgres:// prefixes to postgresql://
+    if os.getenv("VERCEL") and db_url.startswith("sqlite"):
+        raise RuntimeError(
+            "Vercel deployments require a persistent PostgreSQL DATABASE_URL; "
+            "SQLite files are not durable across serverless invocations."
+        )
+
+    # Use psycopg 3 explicitly: Vercel/Postgres connection strings commonly use
+    # postgres:// or postgresql://, while SQLAlchemy otherwise defaults to the
+    # psycopg2 driver (which this project does not install).
     if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
+        db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+    elif db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
     engine_args = get_engine_args(db_url)
     try:

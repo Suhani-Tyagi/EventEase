@@ -164,16 +164,16 @@ By default, EventEase initializes a local SQLite database at `sqlite:///./evente
   ```env
   DATABASE_URL=postgresql://user:password@host:5432/eventease_db
   ```
-  The database engine normalizes URLs (e.g., handles `postgres://` -> `postgresql://`) and applies connection pooling suited for web workloads.
+  The database engine supports PostgreSQL URLs from Vercel, Neon, or Supabase and uses the psycopg 3 driver.
 
 ### Deploying to Vercel with PostgreSQL
-1. Link your repository to Vercel.
-2. In the Vercel Dashboard under **Settings > Environment Variables**, add:
+1. Create or connect a PostgreSQL database (Vercel Marketplace, Neon, or Supabase), then link this repository to Vercel.
+2. In the Vercel Dashboard under **Settings > Environment Variables**, add these for **Production, Preview, and Development** as needed:
    - `DATABASE_URL`: Connection string to your PostgreSQL instance (e.g., Supabase, Neon, AWS RDS, or Vercel Postgres).
-   - `SESSION_SECRET_KEY`: A cryptographically secure random secret (e.g. generated via `openssl rand -hex 32`).
+   - `SESSION_SECRET_KEY`: A cryptographically secure random secret of at least 32 characters.
    - `GEMINI_API_KEY`: (Optional) Your Google Gemini API key.
    - `APP_ENV`: `production`
-3. Deploy! Vercel runs `api/index.py` serverless functions, connecting securely to your PostgreSQL database.
+3. Redeploy after saving the variables. Vercel runs `api/index.py` as a Python serverless function. SQLite is rejected on Vercel because its local files do not persist across serverless invocations. Account creation and saved plans require the PostgreSQL `DATABASE_URL` to be set.
 
 ### Running via Docker
 ```bash
@@ -190,7 +190,7 @@ docker run -p 8000:8000 -e GEMINI_API_KEY=your_api_key -e SESSION_SECRET_KEY=you
 
 | Variable | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `DATABASE_URL` | `string` | `sqlite:///./eventease.db` | SQLAlchemy database URL (SQLite for local dev, PostgreSQL for production). |
+| `DATABASE_URL` | `string` | `sqlite:///./eventease.db` | SQLAlchemy database URL (SQLite for local dev, PostgreSQL required on Vercel). |
 | `SESSION_SECRET_KEY` | `string` | `eventease-default-dev-secret-key-change-in-production` | Secret used for cryptographically secure session cookie generation. |
 | `SESSION_COOKIE_NAME` | `string` | `eventease_session` | Name of the HTTP-only session cookie. |
 | `CSRF_COOKIE_NAME` | `string` | `eventease_csrf` | Name of the CSRF token cookie. |

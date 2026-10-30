@@ -163,6 +163,8 @@ export function setupAuthUI() {
   const btnClose = document.getElementById('btn-close-auth-modal');
   const btnHeaderSignin = document.getElementById('btn-header-signin');
   const btnHeaderSignup = document.getElementById('btn-header-signup');
+  const btnLandingSignin = document.getElementById('btn-landing-signin');
+  const btnLandingSignup = document.getElementById('btn-landing-signup');
   const btnHeaderSignout = document.getElementById('btn-header-signout');
 
   if (btnHeaderSignin) {
@@ -170,6 +172,12 @@ export function setupAuthUI() {
   }
   if (btnHeaderSignup) {
     btnHeaderSignup.addEventListener('click', () => openAuthModal('signup'));
+  }
+  if (btnLandingSignin) {
+    btnLandingSignin.addEventListener('click', () => openAuthModal('signin'));
+  }
+  if (btnLandingSignup) {
+    btnLandingSignup.addEventListener('click', () => openAuthModal('signup'));
   }
   if (btnHeaderSignout) {
     btnHeaderSignout.addEventListener('click', async () => {
@@ -228,6 +236,30 @@ export function setupAuthUI() {
         const password = document.getElementById('signup-password').value;
         if (signupAlert) signupAlert.classList.add('hidden');
 
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          if (signupAlert) {
+            signupAlert.textContent = 'Enter a valid email address to create your account.';
+            signupAlert.classList.remove('hidden');
+          }
+          document.getElementById('signup-email').focus();
+          return;
+        }
+        if (password.length < 8) {
+          if (signupAlert) {
+            signupAlert.textContent = 'Choose a password with at least 8 characters.';
+            signupAlert.classList.remove('hidden');
+          }
+          document.getElementById('signup-password').focus();
+          return;
+        }
+
+        const submitButton = document.getElementById('btn-submit-signup');
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.dataset.originalLabel = submitButton.textContent;
+          submitButton.textContent = 'Creating your account…';
+        }
+
         try {
           await signup(email, password);
           closeAuthModal();
@@ -237,6 +269,11 @@ export function setupAuthUI() {
           if (signupAlert) {
             signupAlert.textContent = err.message || 'Unable to create account.';
             signupAlert.classList.remove('hidden');
+          }
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = submitButton.dataset.originalLabel || 'Create Account & Start Planning';
           }
         }
       });
@@ -311,6 +348,8 @@ export function setupAuthUI() {
     const unauthView = document.getElementById('auth-unauth-view');
     const userView = document.getElementById('auth-user-view');
     const navUserEmail = document.getElementById('nav-user-email');
+
+    document.body.classList.toggle('is-authenticated', Boolean(user));
 
     if (user) {
       if (unauthView) unauthView.classList.add('hidden');

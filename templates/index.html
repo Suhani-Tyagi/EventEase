@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventEase — Celebration Planning Prototype</title>
+  <title>EventEase — Celebration Planning</title>
   <meta name="description" content="Organize celebrations with deterministic budget allocations, adaptive backward milestone timelines, vendor screening checklists, and offline-ready creative concepts.">
   <!-- Google Fonts: Inter & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,14 +19,7 @@
   <header class="app-header" role="banner">
     <div class="header-container">
       <a href="/" class="brand" aria-label="EventEase Home">
-        <div class="brand-logo-glow" aria-hidden="true">&#10024;</div>
-        <div class="brand-text">
-          <div class="brand-title-row">
-            <span class="brand-title">EventEase</span>
-            <span class="brand-badge-pro">PROTOTYPE</span>
-          </div>
-          <span class="brand-tagline">Celebration Planning Intelligence</span>
-        </div>
+        <img class="brand-logo-image" src="/static/img/eventease-logo.png" alt="EventEase" width="180" height="64">
       </a>
 
       <!-- Desktop Navigation Links -->
@@ -91,12 +84,28 @@
   <main id="main-content" class="app-main" role="main">
     <div class="main-container">
 
+      <section id="welcome-landing" class="welcome-landing" aria-labelledby="welcome-heading">
+        <div class="welcome-card">
+          <img class="welcome-logo" src="/static/img/eventease-logo.png" alt="EventEase — celebration planning made joyful" width="640" height="360">
+          <p class="welcome-eyebrow">A little more joy, a lot less juggling</p>
+          <h1 id="welcome-heading">Make room for the moments that matter.</h1>
+          <p class="welcome-copy">Plan your celebration with a clear budget, thoughtful timelines, and a friendly team keeping every detail in place.</p>
+          <div class="welcome-actions">
+            <button type="button" class="btn btn-primary" id="btn-landing-signup">Create your free account <span aria-hidden="true">&rarr;</span></button>
+            <button type="button" class="btn btn-secondary" id="btn-landing-signin">I already have an account</button>
+          </div>
+          <p class="welcome-footnote"><span aria-hidden="true">&#10024;</span> Your plans stay saved to your account, ready whenever you are.</p>
+        </div>
+        <div class="welcome-orbit welcome-orbit-one" aria-hidden="true">&#10022;</div>
+        <div class="welcome-orbit welcome-orbit-two" aria-hidden="true">&#10047;</div>
+      </section>
+
       <!-- Hero Section with Animated Mascot Showcase -->
       <section class="hero-section" aria-labelledby="hero-heading">
         <div class="hero-split-grid">
           <div class="hero-left">
             <div class="hero-announcement">
-              <span class="hero-badge-tag">&#10024; Event Planning Prototype</span>
+              <span class="hero-badge-tag">&#10024; Celebration Planning Studio</span>
               <span class="hero-badge-desc">Deterministic Financial Math &bull; Adaptive Milestones &bull; Offline Fallback Ready</span>
             </div>
 
@@ -108,7 +117,7 @@
             </p>
 
             <!-- Value Stats Counter Bar (Core Prototype Features) -->
-            <div class="stats-bar" role="region" aria-label="Prototype Core Capabilities">
+            <div class="stats-bar" role="region" aria-label="Celebration Planning Tools">
               <div class="stat-card">
                 <span class="stat-value">100%</span>
                 <span class="stat-label">Balanced Math</span>
@@ -1362,7 +1371,7 @@
 
       <!-- Create Account Panel -->
       <div id="auth-panel-signup" class="auth-tab-panel hidden" role="tabpanel" aria-labelledby="tab-auth-signup">
-        <form id="form-auth-signup" class="auth-form" novalidate>
+        <form id="form-auth-signup" class="auth-form">
           <div id="signup-alert" class="alert-box alert-danger hidden" role="alert"></div>
           <div class="form-group">
             <label for="signup-email" class="form-label">Email Address <span class="required-star">*</span></label>
