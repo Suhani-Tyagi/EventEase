@@ -167,13 +167,13 @@ By default, EventEase initializes a local SQLite database at `sqlite:///./evente
   The database engine supports PostgreSQL URLs from Vercel, Neon, or Supabase and uses the psycopg 3 driver.
 
 ### Deploying to Vercel with PostgreSQL
-1. Create or connect a PostgreSQL database (Vercel Marketplace, Neon, or Supabase), then link this repository to Vercel.
+1. Create or connect a PostgreSQL database (Vercel Marketplace, Neon, or Supabase), then import this GitHub repository into Vercel. The repository pins Vercel builds to Python 3.12 and routes requests through `api/index.py`.
 2. In the Vercel Dashboard under **Settings > Environment Variables**, add these for **Production, Preview, and Development** as needed:
    - `DATABASE_URL`: Connection string to your PostgreSQL instance (e.g., Supabase, Neon, AWS RDS, or Vercel Postgres).
    - `SESSION_SECRET_KEY`: A cryptographically secure random secret of at least 32 characters.
    - `GEMINI_API_KEY`: (Optional) Your Google Gemini API key.
    - `APP_ENV`: `production`
-3. Redeploy after saving the variables. Vercel runs `api/index.py` as a Python serverless function. SQLite is rejected on Vercel because its local files do not persist across serverless invocations. Account creation and saved plans require the PostgreSQL `DATABASE_URL` to be set.
+3. Redeploy after saving the variables. Once the repository is connected, pushes to the production branch trigger a Vercel deployment. Vercel runs `api/index.py` as a Python serverless function and packages the templates, static assets, and bundled data. SQLite is rejected on Vercel because its local files do not persist across serverless invocations. Account creation and saved plans require the PostgreSQL `DATABASE_URL` to be set.
 
 ### Running via Docker
 ```bash

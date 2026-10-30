@@ -1237,6 +1237,31 @@ async function runTests() {
     assert(motionToggle.getAttribute("aria-pressed") === "false", "aria-pressed is false when re-enabled");
   }
 
+  // =========================================================================
+  // Test 18: Accessible names and document structure
+  // =========================================================================
+  {
+    console.log("\n[Test 18] Accessibility Structure");
+    const { window } = createTestDOM();
+    const { document } = window;
+    const ids = [...document.querySelectorAll("[id]")].map((element) => element.id);
+    const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+    assert(duplicateIds.length === 0, "Document has no duplicate IDs");
+    assert(document.querySelectorAll("h1").length === 1, "Document has exactly one main heading");
+
+    const unlabeledControls = [...document.querySelectorAll("input, select, textarea")].filter(
+      (control) => !control.labels?.length && !control.getAttribute("aria-label") && !control.getAttribute("aria-labelledby"),
+    );
+    assert(unlabeledControls.length === 0, `All form controls have accessible names (found ${unlabeledControls.length})`);
+
+    const idSet = new Set(ids);
+    const missingLabelTargets = [...document.querySelectorAll("[aria-labelledby], [aria-describedby]")]
+      .flatMap((element) => ["aria-labelledby", "aria-describedby"]
+        .flatMap((attribute) => (element.getAttribute(attribute) || "").split(/\s+/)))
+      .filter((id) => id && !idSet.has(id));
+    assert(missingLabelTargets.length === 0, "ARIA label and description references resolve to existing elements");
+  }
+
   // Summary Report
   console.log("\n=======================================================");
   console.log(`Browser-Level DOM Tests: ${passed} Passed, ${failed} Failed`);
