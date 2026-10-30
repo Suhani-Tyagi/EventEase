@@ -179,16 +179,23 @@ export function setupAuthUI() {
   if (btnLandingSignup) {
     btnLandingSignup.addEventListener('click', () => openAuthModal('signup'));
   }
+  const btnWorkspaceSignout = document.getElementById('btn-workspace-signout');
+
+  const handleSignout = async () => {
+    try {
+      await signout();
+      const liveRegion = document.getElementById('live-region');
+      if (liveRegion) liveRegion.textContent = 'You have logged out successfully.';
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
   if (btnHeaderSignout) {
-    btnHeaderSignout.addEventListener('click', async () => {
-      try {
-        await signout();
-        const liveRegion = document.getElementById('live-region');
-        if (liveRegion) liveRegion.textContent = 'You have signed out successfully.';
-      } catch (err) {
-        console.error('Signout failed:', err);
-      }
-    });
+    btnHeaderSignout.addEventListener('click', handleSignout);
+  }
+  if (btnWorkspaceSignout) {
+    btnWorkspaceSignout.addEventListener('click', handleSignout);
   }
   if (btnClose) {
     btnClose.addEventListener('click', closeAuthModal);
@@ -351,13 +358,16 @@ export function setupAuthUI() {
 
     document.body.classList.toggle('is-authenticated', Boolean(user));
 
+    const btnWsSignout = document.getElementById('btn-workspace-signout');
     if (user) {
       if (unauthView) unauthView.classList.add('hidden');
       if (userView) userView.classList.remove('hidden');
       if (navUserEmail) navUserEmail.textContent = user.email;
+      if (btnWsSignout) btnWsSignout.classList.remove('hidden');
     } else {
       if (unauthView) unauthView.classList.remove('hidden');
       if (userView) userView.classList.add('hidden');
+      if (btnWsSignout) btnWsSignout.classList.add('hidden');
     }
   });
 }
