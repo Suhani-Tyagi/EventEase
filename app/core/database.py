@@ -14,6 +14,10 @@ from app.core.config import get_settings
 logger = logging.getLogger("eventease.database")
 
 
+class DatabaseUnavailableError(RuntimeError):
+    """Raised when account storage cannot be used by this deployment."""
+
+
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy declarative models."""
 
@@ -39,7 +43,7 @@ def get_engine() -> Engine:
     db_url = settings.database_url
 
     if os.getenv("VERCEL") and db_url.startswith("sqlite"):
-        raise RuntimeError(
+        raise DatabaseUnavailableError(
             "Vercel deployments require a persistent PostgreSQL DATABASE_URL; "
             "SQLite files are not durable across serverless invocations."
         )

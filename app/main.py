@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.exc import SQLAlchemyError
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -19,7 +20,7 @@ from app.api.auth_routes import router as auth_router
 from app.api.event_routes import router as event_router
 from app.api.routes import router as api_router
 from app.core.config import get_settings
-from app.core.database import init_db
+from app.core.database import DatabaseUnavailableError, init_db
 from app.core.security import (
     RequestSizeLimitMiddleware,
     SecurityHeadersMiddleware,
@@ -141,6 +142,18 @@ def create_app() -> FastAPI:
     ) -> JSONResponse:
         _ = request
         logger.error("Unhandled server exception: %s", str(exc), exc_info=True)
+        if isinstance(exc, (DatabaseUnavailableError, SQLAlchemyError)):
+            return JSONResponse(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content={
+                    "error": "Account storage unavailable",
+                    "detail": (
+                        "Account storage is unavailable. On Vercel, configure "
+                        "DATABASE_URL with a reachable PostgreSQL database, then "
+                        "redeploy."
+                    ),
+                },
+            )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={

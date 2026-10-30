@@ -4,11 +4,12 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_auth_service
 from app.core.config import Settings, get_settings
-from app.core.database import get_db
+from app.core.database import DatabaseUnavailableError, get_db
 from app.core.security import get_auth_rate_limit_value, get_client_ip, limiter
 from app.schemas import (
     AuthMessageResponse,
@@ -96,6 +97,15 @@ async def signup(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
+        ) from exc
+    except (DatabaseUnavailableError, SQLAlchemyError) as exc:
+        logger.error("Signup storage error: %s", str(exc), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Account storage is unavailable. On Vercel, configure "
+                "DATABASE_URL with a reachable PostgreSQL database, then redeploy."
+            ),
         ) from exc
     except Exception as exc:
         logger.error("Signup error: %s", str(exc), exc_info=True)
