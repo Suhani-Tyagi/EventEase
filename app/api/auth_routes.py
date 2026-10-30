@@ -34,7 +34,7 @@ def set_auth_cookies(
     csrf_token: str,
 ) -> None:
     """Set secure HTTP-only session cookie and client-readable CSRF cookie."""
-    is_prod = settings.app_env.lower() == "production"
+    is_prod = settings.is_production
 
     response.set_cookie(
         key=settings.session_cookie_name,
@@ -58,7 +58,7 @@ def set_auth_cookies(
 
 def clear_auth_cookies(response: Response, settings: Settings) -> None:
     """Clear session and CSRF cookies."""
-    is_prod = settings.app_env.lower() == "production"
+    is_prod = settings.is_production
     response.delete_cookie(
         key=settings.session_cookie_name,
         httponly=True,

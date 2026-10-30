@@ -774,9 +774,17 @@ async function runTests() {
     const cards = grid.querySelectorAll(".plan-item-card");
     assert(cards.length === 1, `1 plan card rendered in library grid (got: ${cards.length})`);
     assert(cards[0].textContent.includes("Suhani's Napa Gala"), "Plan card shows custom saved plan name");
+    assert(
+      cards[0].querySelector(".btn-primary").getAttribute("aria-label") === "Open Suhani's Napa Gala",
+      "Plan card open button has accessible contextual aria-label"
+    );
 
     // Duplicate Plan
     const dupBtn = cards[0].querySelector(".btn-secondary");
+    assert(
+      dupBtn.getAttribute("aria-label") === "Duplicate Suhani's Napa Gala",
+      "Plan card duplicate button has accessible contextual aria-label"
+    );
     dupBtn.click();
 
     const dupCards = grid.querySelectorAll(".plan-item-card");
@@ -785,6 +793,10 @@ async function runTests() {
 
     // Delete duplicated plan with modal confirmation
     const delBtn = dupCards[0].querySelector(".btn-danger");
+    assert(
+      delBtn.getAttribute("aria-label").includes("Delete"),
+      "Plan card delete button has accessible contextual aria-label"
+    );
     delBtn.click();
 
     // Confirm modal should be open

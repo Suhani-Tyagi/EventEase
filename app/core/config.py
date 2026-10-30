@@ -1,5 +1,6 @@
 """Application configuration using pydantic-settings."""
 
+import os
 from functools import lru_cache
 
 from pydantic import AliasChoices, Field
@@ -18,13 +19,19 @@ class Settings(BaseSettings):
 
     # API Keys & Environment
     gemini_api_key: str | None = Field(default=None, alias="GEMINI_API_KEY")
-    app_env: str = Field(default="development", alias="APP_ENV")
+    app_env: str = Field(
+        default="development",
+        validation_alias=AliasChoices("APP_ENV", "VERCEL_ENV", "ENVIRONMENT", "ENV"),
+    )
     host: str = Field(default="127.0.0.1", alias="HOST")
     port: int = Field(default=8000, alias="PORT")
 
     # Security & CORS
     cors_allowed_origins: str = Field(
-        default="http://localhost:8000,http://127.0.0.1:8000",
+        default=(
+            "http://localhost:8000,http://127.0.0.1:8000,http://localhost:3000,"
+            "https://event-ease-three-xi.vercel.app"
+        ),
         alias="CORS_ALLOWED_ORIGINS",
     )
     rate_limit_per_minute: int = Field(default=20, alias="RATE_LIMIT_PER_MINUTE")
@@ -74,6 +81,15 @@ class Settings(BaseSettings):
             for origin in self.cors_allowed_origins.split(",")
             if origin.strip()
         ]
+
+    @property
+    def is_production(self) -> bool:
+        """Check if environment is production or running in Vercel cloud."""
+        return (
+            self.app_env.lower() in ("production", "prod")
+            or bool(os.getenv("VERCEL"))
+            or os.getenv("VERCEL_ENV") in ("production", "preview")
+        )
 
 
 @lru_cache

@@ -56,10 +56,13 @@ def test_database_engine_sqlite_args() -> None:
 
 
 def test_database_engine_postgres_args() -> None:
-    """Verify engine arguments for PostgreSQL include pool_pre_ping and pool_recycle."""
+    """Verify engine arguments for PostgreSQL include pool controls."""
     pg_args = get_engine_args("postgresql://user:pass@localhost:5432/db")
     assert pg_args.get("pool_pre_ping") is True
     assert pg_args.get("pool_recycle") == 300
+    assert pg_args.get("pool_size") == 5
+    assert pg_args.get("max_overflow") == 5
+    assert pg_args.get("pool_timeout") == 30
 
 
 def test_database_get_engine_sqlite_memory() -> None:
@@ -330,6 +333,56 @@ def test_cors_origins_list_property() -> None:
         "http://localhost:3000",
         "https://app.example.com",
     ]
+
+
+def test_settings_is_production() -> None:
+    """Verify is_production property behavior."""
+    dev_settings = Settings.model_validate({"app_env": "development"})
+    assert dev_settings.is_production is False
+
+    prod_settings = Settings.model_validate({"app_env": "production"})
+    assert prod_settings.is_production is True
+
+    with patch.dict(os.environ, {"VERCEL": "1"}, clear=False):
+        assert Settings.model_validate({"app_env": "development"}).is_production is True
+
+
+def test_set_auth_cookies_secure_flag() -> None:
+    """Verify secure attribute on auth cookies in production vs development."""
+    from fastapi import Response
+
+    from app.api.auth_routes import set_auth_cookies
+
+    # Development: secure=False
+    dev_resp = Response()
+    dev_settings = Settings.model_validate({"app_env": "development"})
+    set_auth_cookies(dev_resp, dev_settings, "token123", "csrf123")
+    assert "secure" not in dev_resp.headers.get("set-cookie", "").lower()
+
+    # Production: secure=True
+    prod_resp = Response()
+    prod_settings = Settings.model_validate({"app_env": "production"})
+    set_auth_cookies(prod_resp, prod_settings, "token123", "csrf123")
+    assert "secure" in prod_resp.headers.get("set-cookie", "").lower()
+
+
+@pytest.mark.asyncio
+async def test_cors_preflight_put(async_client: AsyncClient) -> None:
+    """Verify CORS preflight OPTIONS request permits PUT with Vercel origin."""
+    res = await async_client.options(
+        "/api/events/test-id",
+        headers={
+            "Origin": "https://event-ease-three-xi.vercel.app",
+            "Access-Control-Request-Method": "PUT",
+            "Access-Control-Request-Headers": "content-type,x-csrf-token",
+        },
+    )
+    assert res.status_code == 200
+    assert "PUT" in res.headers.get("access-control-allow-methods", "")
+    assert (
+        res.headers.get("access-control-allow-origin")
+        == "https://event-ease-three-xi.vercel.app"
+    )
 
 
 def test_trusted_proxy_checks() -> None:

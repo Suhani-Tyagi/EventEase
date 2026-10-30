@@ -38,6 +38,9 @@ def get_engine_args(database_url: str) -> dict[str, object]:
     else:
         args["pool_pre_ping"] = True
         args["pool_recycle"] = 300
+        args["pool_size"] = 5
+        args["max_overflow"] = 5
+        args["pool_timeout"] = 30
     return args
 
 

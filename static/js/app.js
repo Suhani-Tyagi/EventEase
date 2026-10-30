@@ -749,12 +749,14 @@ async function loadPresets() {
 }
 
 let pendingModalAction = null;
+let lastFocusedModalTrigger = null;
 
 function showConfirmationModal({ title, message, confirmText = "Confirm", onConfirm }) {
   if (elements.modalTitle) elements.modalTitle.textContent = title;
   if (elements.modalDesc) elements.modalDesc.textContent = message;
   if (elements.btnModalConfirm) elements.btnModalConfirm.textContent = confirmText;
   pendingModalAction = onConfirm;
+  lastFocusedModalTrigger = document.activeElement;
 
   if (elements.confirmModal) {
     if (typeof elements.confirmModal.showModal === "function") {
@@ -1005,10 +1007,13 @@ function renderPlanLibrary() {
     const actionsDiv = document.createElement("div");
     actionsDiv.className = "plan-card-actions";
 
+    const planName = item.name || "Untitled Plan";
+
     const openBtn = document.createElement("button");
     openBtn.type = "button";
     openBtn.className = "btn btn-sm btn-primary";
     openBtn.textContent = "Open";
+    openBtn.setAttribute("aria-label", `Open ${planName}`);
     openBtn.addEventListener("click", () => openPlanFromLibrary(item.id));
     actionsDiv.appendChild(openBtn);
 
@@ -1016,6 +1021,7 @@ function renderPlanLibrary() {
     dupBtn.type = "button";
     dupBtn.className = "btn btn-sm btn-secondary";
     dupBtn.textContent = "Duplicate";
+    dupBtn.setAttribute("aria-label", `Duplicate ${planName}`);
     dupBtn.addEventListener("click", () => duplicatePlanInLibrary(item.id));
     actionsDiv.appendChild(dupBtn);
 
@@ -1023,6 +1029,7 @@ function renderPlanLibrary() {
     delBtn.type = "button";
     delBtn.className = "btn btn-sm btn-secondary btn-danger";
     delBtn.textContent = "Delete";
+    delBtn.setAttribute("aria-label", `Delete ${planName}`);
     delBtn.addEventListener("click", () => deletePlanFromLibrary(item.id));
     actionsDiv.appendChild(delBtn);
 
@@ -1222,6 +1229,15 @@ function setupNewPlanModal() {
       } else {
         elements.confirmModal.removeAttribute("open");
       }
+    }
+    if (lastFocusedModalTrigger && typeof lastFocusedModalTrigger.focus === "function") {
+      lastFocusedModalTrigger.focus();
+    }
+  });
+
+  elements.confirmModal?.addEventListener("click", (e) => {
+    if (e.target === elements.confirmModal) {
+      elements.btnModalCancel?.click();
     }
   });
 
