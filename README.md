@@ -200,7 +200,8 @@ docker run -p 8000:8000 -e GEMINI_API_KEY=your_api_key -e SESSION_SECRET_KEY=you
 | `APP_ENV` | `string` | `development` | Runtime environment (`development`, `production`, `test`). |
 | `HOST` | `string` | `127.0.0.1` | Server host address. |
 | `PORT` | `int` | `8000` | Server listening port. |
-| `CORS_ALLOWED_ORIGINS` | `string` | `http://localhost:8000,http://127.0.0.1:8000` | Comma-separated CORS origin allowlist. |
+| `CORS_ALLOWED_ORIGINS` | `string` | Local origins and the EventEase production URL | Comma-separated CORS origin allowlist for custom frontend hosts. |
+| `VERCEL_PROJECT_SLUG` | `string` | `event-ease` | Restricts dynamic Vercel preview CORS origins to deployments of this project. |
 | `RATE_LIMIT_PER_MINUTE` | `int` | `20` | Max requests per IP per minute on AI endpoints. |
 | `REDIS_URL` | `string` | `None` | Optional Redis connection URI (e.g. `redis://localhost:6379`) for shared rate limiting. |
 | `TRUSTED_PROXIES` | `string` | `127.0.0.1,::1` | Comma-separated trusted reverse proxy IP addresses or CIDR ranges. |

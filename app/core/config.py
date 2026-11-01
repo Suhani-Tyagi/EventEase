@@ -1,6 +1,7 @@
 """Application configuration using pydantic-settings."""
 
 import os
+import re
 from functools import lru_cache
 
 from pydantic import AliasChoices, Field
@@ -33,6 +34,11 @@ class Settings(BaseSettings):
             "https://event-ease-three-xi.vercel.app"
         ),
         alias="CORS_ALLOWED_ORIGINS",
+    )
+    vercel_project_slug: str = Field(
+        default="event-ease",
+        alias="VERCEL_PROJECT_SLUG",
+        pattern=r"^[a-z0-9-]+$",
     )
     rate_limit_per_minute: int = Field(default=20, alias="RATE_LIMIT_PER_MINUTE")
     redis_url: str | None = Field(default=None, alias="REDIS_URL")
@@ -81,6 +87,12 @@ class Settings(BaseSettings):
             for origin in self.cors_allowed_origins.split(",")
             if origin.strip()
         ]
+
+    @property
+    def vercel_origin_regex(self) -> str:
+        """Allow this Vercel project's deployment hostnames only."""
+        project_slug = re.escape(self.vercel_project_slug)
+        return rf"^https://{project_slug}(?:-[a-z0-9-]+)?\.vercel\.app$"
 
     @property
     def is_production(self) -> bool:

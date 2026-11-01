@@ -12,6 +12,7 @@ from fastapi import Request, Response
 from slowapi import Limiter
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 
 def hash_password(plain_password: str) -> str:
@@ -236,24 +237,85 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
-class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
-    """Enforces maximum allowed request body size to prevent payload bloating."""
+class _PayloadTooLarge(Exception):
+    """Raised when the streamed request body exceeds the configured limit."""
 
-    def __init__(self, app: Callable[..., Any], max_bytes: int = 1_048_576) -> None:
-        super().__init__(app)
+
+class RequestSizeLimitMiddleware:
+    """Enforce the request body limit from both headers and streamed bytes."""
+
+    def __init__(self, app: ASGIApp, max_bytes: int = 1_048_576) -> None:
+        self.app = app
         self.max_bytes = max_bytes
 
-    async def dispatch(
-        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
-        content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > self.max_bytes:
-            return JSONResponse(
-                status_code=413,
-                content={
-                    "error": "Payload Too Large",
-                    "detail": f"Request size exceeds limit of {self.max_bytes} bytes",
-                },
-            )
-        response: Response = await call_next(request)
-        return response
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        content_lengths = [
+            value
+            for name, value in scope.get("headers", [])
+            if name.lower() == b"content-length"
+        ]
+        if len(content_lengths) > 1:
+            await self._send_error(scope, receive, send, 400, "Invalid Content-Length")
+            return
+        if content_lengths:
+            try:
+                content_length = int(content_lengths[0])
+            except (TypeError, ValueError):
+                await self._send_error(
+                    scope, receive, send, 400, "Invalid Content-Length"
+                )
+                return
+            if content_length < 0:
+                await self._send_error(
+                    scope, receive, send, 400, "Invalid Content-Length"
+                )
+                return
+            if content_length > self.max_bytes:
+                await self._send_too_large(scope, receive, send)
+                return
+
+        received_bytes = 0
+
+        async def limited_receive() -> Message:
+            nonlocal received_bytes
+            message = await receive()
+            if message["type"] == "http.request":
+                received_bytes += len(message.get("body", b""))
+                if received_bytes > self.max_bytes:
+                    raise _PayloadTooLarge
+            return message
+
+        try:
+            await self.app(scope, limited_receive, send)
+        except _PayloadTooLarge:
+            await self._send_too_large(scope, receive, send)
+
+    async def _send_too_large(self, scope: Scope, receive: Receive, send: Send) -> None:
+        await self._send_error(
+            scope,
+            receive,
+            send,
+            413,
+            f"Request size exceeds limit of {self.max_bytes} bytes",
+        )
+
+    @staticmethod
+    async def _send_error(
+        scope: Scope,
+        receive: Receive,
+        send: Send,
+        status_code: int,
+        detail: str,
+    ) -> None:
+        response = JSONResponse(
+            status_code=status_code,
+            content={
+                "error": "Payload Too Large" if status_code == 413 else "Bad Request",
+                "detail": detail,
+            },
+        )
+        await response(scope, receive, send)

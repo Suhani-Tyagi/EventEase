@@ -1,6 +1,7 @@
 """Comprehensive unit tests for database, middleware, lifespan, and resilience."""
 
 import os
+import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -238,6 +239,35 @@ async def test_request_size_limit_middleware() -> None:
         assert too_large_res.status_code == 413
         assert "exceeds limit" in too_large_res.json()["detail"]
 
+        async def body_chunks() -> Any:
+            yield b"a" * 75
+            yield b"b" * 50
+
+        # Chunked requests and understated lengths must be checked by actual bytes.
+        chunked_res = await client.post(
+            "/test-size",
+            content=body_chunks(),
+            headers={"Content-Type": "application/octet-stream"},
+        )
+        assert chunked_res.status_code == 413
+
+        understated_res = await client.post(
+            "/test-size",
+            content=body_chunks(),
+            headers={
+                "Content-Type": "application/octet-stream",
+                "Content-Length": "1",
+            },
+        )
+        assert understated_res.status_code == 413
+
+        malformed_res = await client.post(
+            "/test-size",
+            content=b"a",
+            headers={"Content-Length": "invalid"},
+        )
+        assert malformed_res.status_code == 400
+
 
 @pytest.mark.asyncio
 async def test_unhandled_exception_handler() -> None:
@@ -335,6 +365,17 @@ def test_cors_origins_list_property() -> None:
     ]
 
 
+def test_vercel_origin_regex_is_scoped_to_this_project() -> None:
+    """Allow EventEase deployment hosts without trusting every Vercel tenant."""
+    settings = Settings.model_validate({"vercel_project_slug": "event-ease"})
+    pattern = re.compile(settings.vercel_origin_regex)
+
+    assert pattern.fullmatch("https://event-ease-three-xi.vercel.app")
+    assert pattern.fullmatch("https://event-ease-git-main-team.vercel.app")
+    assert not pattern.fullmatch("https://attacker-project.vercel.app")
+    assert not pattern.fullmatch("https://event-ease.attacker.example")
+
+
 def test_settings_is_production() -> None:
     """Verify is_production property behavior."""
     dev_settings = Settings.model_validate({"app_env": "development"})
@@ -383,6 +424,20 @@ async def test_cors_preflight_put(async_client: AsyncClient) -> None:
         res.headers.get("access-control-allow-origin")
         == "https://event-ease-three-xi.vercel.app"
     )
+
+
+@pytest.mark.asyncio
+async def test_cors_rejects_other_vercel_projects(async_client: AsyncClient) -> None:
+    """Reject cross-origin preflights from unrelated Vercel tenants."""
+    response = await async_client.options(
+        "/api/events/test-id",
+        headers={
+            "Origin": "https://attacker-project.vercel.app",
+            "Access-Control-Request-Method": "DELETE",
+        },
+    )
+    assert response.status_code == 400
+    assert "access-control-allow-origin" not in response.headers
 
 
 def test_trusted_proxy_checks() -> None:
