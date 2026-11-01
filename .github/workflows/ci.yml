@@ -37,6 +37,9 @@ jobs:
       - name: Run Ruff Lint
         run: ruff check app tests
 
+      - name: Check Ruff Formatting
+        run: ruff format --check app tests
+
       - name: Run MyPy Type Checking
         run: mypy app tests
 

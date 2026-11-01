@@ -172,9 +172,14 @@ def test_ensure_db_initialized(test_engine: Engine) -> None:
 def test_init_db_error_handling() -> None:
     """Verify init_db logs and re-raises exceptions on metadata creation failure."""
     mock_eng = MagicMock(spec=Engine)
-    with patch.object(
-        Base.metadata, "create_all", side_effect=SQLAlchemyError("Schema lock error")
-    ), pytest.raises(SQLAlchemyError):
+    with (
+        patch.object(
+            Base.metadata,
+            "create_all",
+            side_effect=SQLAlchemyError("Schema lock error"),
+        ),
+        pytest.raises(SQLAlchemyError),
+    ):
         init_db(mock_eng)
 
 
