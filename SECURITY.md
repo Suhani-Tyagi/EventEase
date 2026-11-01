@@ -153,3 +153,9 @@ Calendar event exports (`.ics`) conform strictly to the RFC 5545 specification:
   - This storage is not encrypted and is readable by any script executing on the same origin.
 - **Export Privacy Notice**:
   - Users are warned prior to downloading CSV or JSON exports that the files include private vendor notes and contact details.
+
+### 3.11 Supabase Database Access
+- Row Level Security is enabled on `public.users`, `public.user_sessions`, and `public.event_plans`.
+- Supabase `anon` and `authenticated` roles have no direct table privileges on these application tables. No client-facing RLS policies are defined, so direct PostgREST access remains denied.
+- The application accesses these tables through its server-side `DATABASE_URL` connection. Keep that credential server-side and never expose it to browser code.
+- The migration is tracked in `supabase/migrations/20261101094129_enable_rls_revoke_public_app_table_access.sql`.
