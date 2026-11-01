@@ -4,7 +4,7 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -19,7 +19,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.auth_routes import router as auth_router
 from app.api.event_routes import router as event_router
 from app.api.routes import router as api_router
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.database import DatabaseUnavailableError, init_db
 from app.core.security import (
     RequestSizeLimitMiddleware,
@@ -27,7 +27,6 @@ from app.core.security import (
     limiter,
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -41,7 +40,7 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Application lifespan manager to initialize database schema on startup."""
+    """Initialize database schema when the application starts."""
     _ = app
     try:
         init_db()
@@ -52,34 +51,93 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-def create_app() -> FastAPI:
-    """Create and configure the FastAPI application instance."""
-    settings = get_settings()
-
-    app = FastAPI(
-        title="EventEase API",
-        description=(
-            "GenAI-powered Celebration & Event Planning Assistant for weddings, "
-            "birthdays, and community events."
-        ),
-        version="1.0.0",
-        docs_url="/docs",
-        redoc_url="/redoc",
-        lifespan=lifespan,
+async def rate_limit_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Return a stable API response when a client exceeds its request limit."""
+    _ = (request, exc)
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "error": "Too Many Requests",
+            "detail": (
+                "Rate limit exceeded. Please wait before submitting another request."
+            ),
+        },
     )
 
-    # Attach rate limiter to app state
-    app.state.limiter = limiter
 
-    # Security & compression middleware
+async def validation_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    """Return field-level validation details without echoing submitted values."""
+    _ = request
+    validation_error = cast(RequestValidationError, exc)
+    errors = [
+        {
+            "field": " -> ".join(str(item) for item in error.get("loc", [])),
+            "message": str(error.get("msg")),
+        }
+        for error in validation_error.errors()
+    ]
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        content={
+            "error": "Validation Error",
+            "detail": "Invalid input provided.",
+            "errors": errors,
+        },
+    )
+
+
+async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Serialize framework HTTP errors consistently."""
+    _ = request
+    http_error = cast(StarletteHTTPException, exc)
+    return JSONResponse(
+        status_code=http_error.status_code,
+        content={"error": "HTTP Error", "detail": http_error.detail},
+    )
+
+
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Log internal errors and return sanitized API responses."""
+    _ = request
+    logger.error("Unhandled server exception: %s", str(exc), exc_info=True)
+    if isinstance(exc, (DatabaseUnavailableError, SQLAlchemyError)):
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "error": "Account storage unavailable",
+                "detail": (
+                    "Account storage is unavailable. On Vercel, configure "
+                    "DATABASE_URL with a reachable PostgreSQL database, then redeploy."
+                ),
+            },
+        )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "Internal Server Error",
+            "detail": "An unexpected error occurred. Please try again later.",
+        },
+    )
+
+
+def _register_exception_handlers(app: FastAPI) -> None:
+    """Register API error serializers on the application."""
+    app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+    app.add_exception_handler(Exception, unhandled_exception_handler)
+
+
+def _configure_middleware(app: FastAPI, settings: Settings) -> None:
+    """Install security, request-size, compression, and CORS middleware."""
     app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         RequestSizeLimitMiddleware,
         max_bytes=settings.max_request_body_bytes,
     )
     app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-    # CORS configuration
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
@@ -89,114 +147,43 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Exception Handlers
-    @app.exception_handler(RateLimitExceeded)
-    async def rate_limit_handler(
-        request: Request, exc: RateLimitExceeded
-    ) -> JSONResponse:
-        _ = (request, exc)
-        return JSONResponse(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            content={
-                "error": "Too Many Requests",
-                "detail": (
-                    "Rate limit exceeded. "
-                    "Please wait before submitting another request."
-                ),
-            },
-        )
 
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(
-        request: Request, exc: RequestValidationError
-    ) -> JSONResponse:
-        _ = request
-        errors: list[dict[str, Any]] = []
-        for err in exc.errors():
-            loc = " -> ".join(str(item) for item in err.get("loc", []))
-            errors.append({"field": loc, "message": str(err.get("msg"))})
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            content={
-                "error": "Validation Error",
-                "detail": "Invalid input provided.",
-                "errors": errors,
-            },
-        )
-
-    @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(
-        request: Request, exc: StarletteHTTPException
-    ) -> JSONResponse:
-        _ = request
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={
-                "error": "HTTP Error",
-                "detail": exc.detail,
-            },
-        )
-
-    @app.exception_handler(Exception)
-    async def unhandled_exception_handler(
-        request: Request, exc: Exception
-    ) -> JSONResponse:
-        _ = request
-        logger.error("Unhandled server exception: %s", str(exc), exc_info=True)
-        if isinstance(exc, (DatabaseUnavailableError, SQLAlchemyError)):
-            return JSONResponse(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                content={
-                    "error": "Account storage unavailable",
-                    "detail": (
-                        "Account storage is unavailable. On Vercel, configure "
-                        "DATABASE_URL with a reachable PostgreSQL database, then "
-                        "redeploy."
-                    ),
-                },
-            )
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "error": "Internal Server Error",
-                "detail": "An unexpected error occurred. Please try again later.",
-            },
-        )
-
-    # Mount static assets if directory exists
-    static_paths = [
+def _mount_static_assets(app: FastAPI) -> None:
+    """Mount static files from local and serverless deployment paths."""
+    static_paths = (
         STATIC_DIR,
         Path.cwd() / "static",
-        Path(__file__).resolve().parent.parent / "static",
+        BASE_DIR / "static",
         Path("/var/task/static"),
-    ]
-    for s_path in static_paths:
-        if s_path.exists():
-            app.mount(
-                "/static",
-                StaticFiles(directory=str(s_path), html=False),
-                name="static",
-            )
-            break
+    )
+    static_path = next((path for path in static_paths if path.exists()), None)
+    if static_path is not None:
+        app.mount(
+            "/static",
+            StaticFiles(directory=str(static_path), html=False),
+            name="static",
+        )
 
-    # Serve index.html with serverless fallback search
+
+def _register_page_routes(app: FastAPI) -> None:
+    """Register the frontend and API root routes."""
+
     @app.get("/", include_in_schema=False)
     @app.get("/index.html", include_in_schema=False)
     @app.get("/api/index.py", include_in_schema=False)
     @app.get("/api/index", include_in_schema=False)
     async def index() -> HTMLResponse:
-        possible_paths = [
+        candidates = (
             TEMPLATES_DIR / "index.html",
             Path.cwd() / "templates" / "index.html",
-            Path(__file__).resolve().parent.parent / "templates" / "index.html",
+            BASE_DIR / "templates" / "index.html",
             Path("/var/task/templates/index.html"),
             Path("/var/task/index.html"),
-        ]
-        for path in possible_paths:
+        )
+        for path in candidates:
             if path.exists():
-                content = path.read_text(encoding="utf-8")
                 return HTMLResponse(
-                    content=content,
+                    content=path.read_text(encoding="utf-8"),
                     headers={"Cache-Control": "no-cache, must-revalidate"},
                 )
         return HTMLResponse(
@@ -208,11 +195,35 @@ def create_app() -> FastAPI:
     async def api_root() -> dict[str, str]:
         return {"service": "EventEase API", "status": "active", "docs": "/docs"}
 
-    # Include API routes
+
+def _register_api_routes(app: FastAPI) -> None:
+    """Attach application API routers."""
     app.include_router(auth_router)
     app.include_router(event_router)
     app.include_router(api_router)
 
+
+def create_app() -> FastAPI:
+    """Build the configured EventEase ASGI application."""
+    settings = get_settings()
+    app = FastAPI(
+        title="EventEase API",
+        description=(
+            "GenAI-powered Celebration & Event Planning Assistant for weddings, "
+            "birthdays, and community events."
+        ),
+        version="1.0.0",
+        docs_url="/docs",
+        redoc_url="/redoc",
+        lifespan=lifespan,
+    )
+    app.state.limiter = limiter
+
+    _configure_middleware(app, settings)
+    _register_exception_handlers(app)
+    _mount_static_assets(app)
+    _register_page_routes(app)
+    _register_api_routes(app)
     return app
 
 

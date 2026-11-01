@@ -241,6 +241,10 @@ class _PayloadTooLarge(Exception):
     """Raised when the streamed request body exceeds the configured limit."""
 
 
+class _InvalidContentLength(Exception):
+    """Raised when a request contains an invalid Content-Length header."""
+
+
 class RequestSizeLimitMiddleware:
     """Enforce the request body limit from both headers and streamed bytes."""
 
@@ -248,35 +252,39 @@ class RequestSizeLimitMiddleware:
         self.app = app
         self.max_bytes = max_bytes
 
+    @staticmethod
+    def _get_content_length(scope: Scope) -> int | None:
+        """Parse and validate Content-Length when the client provides it."""
+        values = [
+            value
+            for name, value in scope.get("headers", [])
+            if name.lower() == b"content-length"
+        ]
+        if len(values) > 1:
+            raise _InvalidContentLength
+        if not values:
+            return None
+        try:
+            content_length = int(values[0])
+        except (TypeError, ValueError) as exc:
+            raise _InvalidContentLength from exc
+        if content_length < 0:
+            raise _InvalidContentLength
+        return content_length
+
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
-        content_lengths = [
-            value
-            for name, value in scope.get("headers", [])
-            if name.lower() == b"content-length"
-        ]
-        if len(content_lengths) > 1:
+        try:
+            content_length = self._get_content_length(scope)
+        except _InvalidContentLength:
             await self._send_error(scope, receive, send, 400, "Invalid Content-Length")
             return
-        if content_lengths:
-            try:
-                content_length = int(content_lengths[0])
-            except (TypeError, ValueError):
-                await self._send_error(
-                    scope, receive, send, 400, "Invalid Content-Length"
-                )
-                return
-            if content_length < 0:
-                await self._send_error(
-                    scope, receive, send, 400, "Invalid Content-Length"
-                )
-                return
-            if content_length > self.max_bytes:
-                await self._send_too_large(scope, receive, send)
-                return
+        if content_length is not None and content_length > self.max_bytes:
+            await self._send_too_large(scope, receive, send)
+            return
 
         received_bytes = 0
 

@@ -28,6 +28,7 @@ from app.core.database import (
 )
 from app.core.security import (
     RequestSizeLimitMiddleware,
+    _InvalidContentLength,
     create_limiter,
     is_trusted_proxy,
 )
@@ -158,6 +159,22 @@ def test_database_session_lifecycle(test_engine: Engine) -> None:
         assert isinstance(sess, Session)
         with pytest.raises(StopIteration):
             next(db_gen)
+
+
+def test_request_content_length_validation() -> None:
+    """Validate absent, valid, malformed, negative, and duplicate length headers."""
+    parse_length = RequestSizeLimitMiddleware._get_content_length
+    assert parse_length({"headers": []}) is None
+    assert parse_length({"headers": [(b"content-length", b"25")]}) == 25
+
+    invalid_headers = (
+        [(b"content-length", b"invalid")],
+        [(b"content-length", b"-1")],
+        [(b"content-length", b"1"), (b"content-length", b"1")],
+    )
+    for headers in invalid_headers:
+        with pytest.raises(_InvalidContentLength):
+            parse_length({"headers": headers})
 
 
 def test_ensure_db_initialized(test_engine: Engine) -> None:

@@ -34,7 +34,7 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Run Ruff Lint
+      - name: Run Ruff Lint and Complexity Checks
         run: ruff check app tests
 
       - name: Check Ruff Formatting
