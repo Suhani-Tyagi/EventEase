@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "test:exports": "node tests/test_exports.js",
     "test:browser": "node tests/test_browser_flow.js"
   },
   "devDependencies": {

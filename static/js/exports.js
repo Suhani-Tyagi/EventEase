@@ -1,132 +1,247 @@
 /**
- * Multi-format exports module for EventEase.
- * Implements CSV formula injection defense and RFC 5545 iCalendar compliance.
+ * Pure export builders for EventEase.
+ * Keeps CSV and RFC 5545 formatting independent from DOM event handlers.
  */
 
-export function sanitizeCsvCell(value) {
-  if (value === null || value === undefined) return '';
-  const str = String(value);
-  const trimmed = str.trimStart();
-  const formulaTriggers = ['=', '+', '-', '@', '\t', '\r', '|', '%'];
+const CSV_FORMULA_TRIGGERS = new Set(["=", "+", "-", "@", "\t", "\r", "|", "%"]);
 
-  if (trimmed.length > 0 && formulaTriggers.includes(trimmed[0])) {
-    const isPureNumber = !isNaN(Number(trimmed)) && !['=', '@', '\t', '\r', '|'].some((c) => trimmed.includes(c));
-    if (!isPureNumber || ['+', '@', '=', '\t', '\r', '|'].includes(trimmed[0])) {
-      return `'${str}`;
+export function sanitizeCsvCell(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+
+  const raw = String(value);
+  const trimmed = raw.trimStart();
+  if (trimmed && CSV_FORMULA_TRIGGERS.has(trimmed[0])) {
+    const isNumericValue = /^-?\d+(?:\.\d+)?$/.test(trimmed);
+    if (!isNumericValue) {
+      return quoteCsvCell(`'${raw}`);
     }
   }
 
-  if (/[",\n\r]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
+  return quoteCsvCell(raw);
 }
 
-export function escapeIcsText(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/\\/g, '\\\\')
-    .replace(/;/g, '\\;')
-    .replace(/,/g, '\\,')
-    .replace(/\r?\n/g, '\\n');
+function quoteCsvCell(value) {
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
 }
 
-export function getByteLength(str) {
-  if (typeof TextEncoder !== 'undefined') {
-    return new TextEncoder().encode(str).length;
+export function escapeIcsText(value) {
+  if (value === null || value === undefined || value === "") return "";
+  return String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r\n|\r|\n/g, "\\n");
+}
+
+export function getByteLength(value) {
+  if (typeof TextEncoder !== "undefined") {
+    return new TextEncoder().encode(value).length;
   }
-  return unescape(encodeURIComponent(str)).length;
+  return unescape(encodeURIComponent(value)).length;
 }
 
 export function foldIcsLine(line, maxOctets = 75) {
-  if (getByteLength(line) <= maxOctets) {
-    return line;
-  }
+  const segments = [];
+  let segment = "";
+  let segmentLimit = maxOctets;
 
-  const chars = Array.from(line);
-  const foldedLines = [];
-  let currentSegment = '';
-
-  for (let i = 0; i < chars.length; i++) {
-    const nextChar = chars[i];
-    const candidate = currentSegment + nextChar;
-    const limit = foldedLines.length === 0 ? maxOctets : maxOctets - 1;
-
-    if (getByteLength(candidate) <= limit) {
-      currentSegment = candidate;
+  for (const character of line) {
+    if (getByteLength(segment + character) > segmentLimit && segment) {
+      segments.push(segment);
+      segment = character;
+      segmentLimit = maxOctets - 1;
     } else {
-      if (currentSegment.length > 0) {
-        foldedLines.push(currentSegment);
-      }
-      currentSegment = nextChar;
+      segment += character;
     }
   }
+  if (segment) segments.push(segment);
+  return segments.join("\r\n ");
+}
 
-  if (currentSegment.length > 0) {
-    foldedLines.push(currentSegment);
+export function getNextDayIcs(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+export function generateCopySummary(plan, state, formatCurrency) {
+  if (!plan) return "";
+  const items = state.budgetAllocations.length
+    ? state.budgetAllocations
+    : plan.budget.items;
+  const contingency = items.find((item) =>
+    item.category.toLowerCase().includes("contingency"),
+  );
+  const contingencyAmount = contingency
+    ? contingency.amount
+    : plan.budget.total_budget * 0.08;
+  const contingencyPercent = contingency ? contingency.percentage : 8;
+
+  const summary = [
+    "🎉 EVENTEASE CELEBRATION MASTER PLAN",
+    "---------------------------------------",
+    `Plan Name: ${state.activePlanName || `${plan.intake.event_type.toUpperCase()} in ${plan.intake.city}`}`,
+    `Event: ${plan.intake.event_type.toUpperCase()} in ${plan.intake.city}`,
+    `Date: ${plan.intake.date} (${plan.timeline.days_remaining} days remaining)`,
+    `Attendees: ${plan.intake.guest_count} guests`,
+    `Total Budget: ${formatCurrency(plan.budget.total_budget, plan.budget.currency)} (${formatCurrency(plan.budget.cost_per_guest, plan.budget.currency)}/guest)`,
+    `Emergency Contingency: ${formatCurrency(contingencyAmount, plan.budget.currency)} (${contingencyPercent.toFixed(1)}% safety buffer)`,
+    "",
+    "BUDGET BREAKDOWN:",
+    ...items.map(
+      (item) =>
+        `• ${item.category}: ${item.percentage.toFixed(1)}% (${formatCurrency(item.amount, plan.budget.currency)})`,
+    ),
+    "",
+    `MILESTONES COMPLETED: ${state.completedMilestones.size} of ${plan.timeline.milestones.length}`,
+    ...plan.timeline.milestones.map((milestone, index) => {
+      const completed = state.completedMilestones.has(`milestone-${index}`);
+      return `${completed ? "[✓]" : "[ ]"} ${milestone.period_label} (${milestone.target_date}): ${milestone.description}`;
+    }),
+    "",
+    "VENDOR PROGRESS:",
+    ...plan.checklist.tasks.map((task) => {
+      const status = state.checklistStatusMap[task.id] || task.status || "to-do";
+      const contact = state.vendorContacts[task.id]
+        ? ` | Contact: ${state.vendorContacts[task.id]}`
+        : "";
+      return `• [${status.toUpperCase()}] ${task.category} - ${task.vendor_type}${contact}`;
+    }),
+  ];
+
+  if (state.vendorQuotes.length) {
+    summary.push("", "VENDOR QUOTES (USER RECORDS):");
+    state.vendorQuotes.forEach((quote) => {
+      summary.push(
+        `• [${quote.status.toUpperCase()}] ${quote.category} - ${quote.vendorName}: Total ${formatCurrency(Number(quote.totalAmount), plan.budget.currency)} (Base: ${formatCurrency(Number(quote.baseAmount), plan.budget.currency)} + Fees: ${formatCurrency(Number(quote.extraFees || 0), plan.budget.currency)}) | Terms: ${quote.paymentTerms || "N/A"}`,
+      );
+    });
   }
 
-  return foldedLines.join('\r\n ');
+  summary.push(
+    "",
+    "TOP THEMES:",
+    ...plan.ideas.themes.slice(0, 3).map((theme) => `• ${theme}`),
+    "",
+    "SAVINGS HACKS:",
+    ...plan.ideas.budget_saving_tips.slice(0, 3).map((tip) => `• ${tip}`),
+    "---------------------------------------",
+    "Generated by EventEase Algorithmic Core",
+  );
+  return summary.join("\n");
 }
 
-export function downloadFile(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+export function generateCsvContent(plan, state) {
+  if (!plan) return "";
+  const items = state.budgetAllocations.length
+    ? state.budgetAllocations
+    : plan.budget.items;
+  const rows = [
+    ["EVENT CELEBRATION PLAN", plan.intake.event_type.toUpperCase()],
+    ["Plan Name", state.activePlanName || `${plan.intake.event_type.toUpperCase()} in ${plan.intake.city}`],
+    ["Target Date", plan.intake.date],
+    ["City", plan.intake.city],
+    ["Planned Guests", plan.intake.guest_count],
+    ["Total Budget", `${plan.budget.currency} ${plan.budget.total_budget}`],
+    ["Cost Per Guest", `${plan.budget.currency} ${plan.budget.cost_per_guest}`],
+    [],
+    ["BUDGET ALLOCATIONS"],
+    ["Category", "Percentage (%)", `Amount (${plan.budget.currency})`, "Scope & Description"],
+    ...items.map((item) => [item.category, item.percentage.toFixed(1), item.amount.toFixed(2), item.description]),
+    [],
+    ["TIMELINE MILESTONES"],
+    ["Period", "Target Date", "Status", "Description", "Tasks"],
+    ...plan.timeline.milestones.map((milestone, index) => [
+      milestone.period_label,
+      milestone.target_date,
+      state.completedMilestones.has(`milestone-${index}`) ? "Completed" : "In Progress",
+      milestone.description,
+      milestone.tasks.join(" | "),
+    ]),
+    [],
+    ["VENDOR TRACKING CHECKLIST (PRIVATE NOTES & CONTACTS)"],
+    ["Category", "Vendor Type", "Status", "Contact Details", "Private Notes", "Key Interview Questions"],
+    ...plan.checklist.tasks.map((task) => [
+      task.category,
+      task.vendor_type,
+      state.checklistStatusMap[task.id] || task.status || "to-do",
+      state.vendorContacts[task.id] || "",
+      state.vendorNotes[task.id] || task.notes || "",
+      task.questions_to_ask.join(" | "),
+    ]),
+  ];
+
+  if (state.vendorQuotes.length) {
+    rows.push(
+      [],
+      ["VENDOR QUOTE COMPARISON (USER-PROVIDED RECORDS)"],
+      ["Category", "Vendor / Company Name", "Status", `Base Quote (${plan.budget.currency})`, `Extra Fees (${plan.budget.currency})`, `Total Cost (${plan.budget.currency})`, "Included Services & Scope", "Payment Terms"],
+      ...state.vendorQuotes.map((quote) => [
+        quote.category,
+        quote.vendorName,
+        quote.status,
+        Number(quote.baseAmount).toFixed(2),
+        Number(quote.extraFees || 0).toFixed(2),
+        Number(quote.totalAmount).toFixed(2),
+        quote.includedServices || "",
+        quote.paymentTerms || "",
+      ]),
+    );
+  }
+
+  return rows.map((row) => row.map(sanitizeCsvCell).join(",")).join("\r\n");
 }
 
-export function getNextDayIcs(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const dateObj = new Date(Date.UTC(y, m - 1, d));
-  dateObj.setUTCDate(dateObj.getUTCDate() + 1);
-  return dateObj.toISOString().slice(0, 10).replace(/-/g, '');
-}
-
-/**
- * Generate Copy Summary string calculating actual contingency.
- */
-export function generateCopySummary(currentPlan) {
-  if (!currentPlan) return '';
-  const p = currentPlan;
-  const items = p.budget?.items || [];
-  const contingencyItem = items.find((it) => it.is_contingency) || null;
-  const contingencyAmount = contingencyItem ? contingencyItem.amount : 0;
-  const contingencyPct = contingencyItem ? contingencyItem.percentage : 8.0;
-
-  const currency = p.intake.currency || 'USD';
-  const totalBudget = Number(p.intake.total_budget || 0);
-
-  let text = `======================================================\n`;
-  text += `EVENT SUMMARY: ${p.intake.event_type.toUpperCase()} CELEBRATION\n`;
-  text += `======================================================\n\n`;
-  text += `Date: ${p.intake.date}\n`;
-  text += `City: ${p.intake.city || 'TBD'}\n`;
-  text += `Headcount: ${p.intake.guest_count} guests\n`;
-  text += `Total Budget: ${currency} ${totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n`;
-  text += `Emergency Contingency: ${currency} ${contingencyAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${contingencyPct.toFixed(1)}% safety buffer)\n`;
-  text += `Theme: ${p.intake.theme || 'Curated Aesthetic'}\n\n`;
-
-  text += `--- BUDGET ALLOCATION ---\n`;
-  items.forEach((item) => {
-    const isBuffer = item.is_contingency ? ' [SAFETY BUFFER]' : '';
-    text += `- ${item.category}: ${currency} ${Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })} (${Number(item.percentage).toFixed(1)}%)${isBuffer}\n`;
+export function generateIcsContent(
+  plan,
+  { activePlanId = null, completedMilestones = new Set(), now = new Date() } = {},
+) {
+  if (!plan) return "";
+  const formatDate = (value) => value.replace(/-/g, "");
+  const pad = (value) => String(value).padStart(2, "0");
+  const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+  const planUid = activePlanId || `plan-${formatDate(plan.intake.date)}`;
+  const events = plan.timeline.milestones.map((milestone, index) => {
+    const done = completedMilestones.has(`milestone-${index}`);
+    const lines = [
+      "BEGIN:VEVENT",
+      `UID:eventease-${planUid}-milestone-${index}@eventease.app`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${formatDate(milestone.target_date)}`,
+      `DTEND;VALUE=DATE:${getNextDayIcs(milestone.target_date)}`,
+      `SUMMARY:${escapeIcsText(`[EventEase] ${milestone.period_label} - ${plan.intake.event_type.toUpperCase()} Prep`)}`,
+      `DESCRIPTION:${escapeIcsText(`${milestone.description}\n\nTasks:\n${milestone.tasks.map((task) => `- ${task}`).join("\n")}`)}`,
+      `STATUS:${done ? "COMPLETED" : "CONFIRMED"}`,
+      "END:VEVENT",
+    ];
+    return lines.map((line) => foldIcsLine(line)).join("\r\n");
   });
 
-  text += `\n--- KEY MILESTONES ---\n`;
-  (p.timeline?.milestones || []).forEach((m) => {
-    text += `* ${m.target_date} [${m.days_before_event}d before]: ${m.title}\n`;
-  });
+  const celebrationLines = [
+    "BEGIN:VEVENT",
+    `UID:eventease-${planUid}-celebration-day@eventease.app`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${formatDate(plan.intake.date)}`,
+    `DTEND;VALUE=DATE:${getNextDayIcs(plan.intake.date)}`,
+    `SUMMARY:${escapeIcsText(`🎉 ${plan.intake.event_type.toUpperCase()} Celebration Day!`)}`,
+    `DESCRIPTION:${escapeIcsText(`Celebration in ${plan.intake.city} with ${plan.intake.guest_count} guests! Total budget: ${plan.budget.currency} ${plan.budget.total_budget}.`)}`,
+    "STATUS:CONFIRMED",
+    "END:VEVENT",
+  ];
+  events.push(celebrationLines.map((line) => foldIcsLine(line)).join("\r\n"));
 
-  text += `\n--- VENDOR CHECKLIST ---\n`;
-  (p.checklist?.tasks || []).forEach((t) => {
-    text += `[${(t.status || 'to-do').toUpperCase()}] ${t.vendor_type} (${t.category})\n`;
-  });
-
-  return text;
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//EventEase//Celebration Planning Prototype//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    ...events,
+    "END:VCALENDAR",
+  ].join("\r\n");
 }

@@ -48,3 +48,6 @@ jobs:
 
       - name: Run Browser DOM Integration Tests
         run: npm run test:browser
+
+      - name: Run Export Unit Tests
+        run: npm run test:exports
