@@ -1261,7 +1261,10 @@ async function runTests() {
     assert(duplicateIds.length === 0, "Document has no duplicate IDs");
     assert(document.querySelectorAll("h1").length === 1, "Document has exactly one main heading");
 
-    const unlabeledControls = [...document.querySelectorAll("input, select, textarea")].filter(
+    const formControls = [...document.querySelectorAll("input, select, textarea")];
+    assert(formControls.length >= 20, `Accessibility check covers the form controls (found ${formControls.length})`);
+
+    const unlabeledControls = formControls.filter(
       (control) => !control.labels?.length && !control.getAttribute("aria-label") && !control.getAttribute("aria-labelledby"),
     );
     assert(unlabeledControls.length === 0, `All form controls have accessible names (found ${unlabeledControls.length})`);
